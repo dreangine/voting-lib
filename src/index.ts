@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid'
 
 import {
+  RegisterVoteByUserIdParams,
   RegisterVoteParams,
   RegisterVotersParams,
   StartVotingParams,
@@ -9,7 +10,7 @@ import {
   Voting,
 } from './types'
 
-export function startVoting(startVotingParams: StartVotingParams): Voting {
+export async function startVoting(startVotingParams: StartVotingParams): Promise<Voting> {
   const { persistVoting, votingParams } = startVotingParams
   console.log('Voting params:', votingParams)
   const voting = {
@@ -22,15 +23,17 @@ export function startVoting(startVotingParams: StartVotingParams): Voting {
   return voting
 }
 
-export function registerVoters(registerVotersParams: RegisterVotersParams): Voter[] {
-  const { persistVoters, userIds } = registerVotersParams
+export async function registerVoters(
+  registerVotersParams: RegisterVotersParams
+): Promise<Voter[] | null> {
+  const { persistVoters, userIds, omitReturnedData } = registerVotersParams
   const voters = userIds.map((userId) => ({ voterId: nanoid(), userId }))
   persistVoters(voters)
   console.log('Voters registered:', voters)
-  return voters
+  return omitReturnedData ? null : voters
 }
 
-export function registerVote(registerVoteParams: RegisterVoteParams): Vote {
+export async function registerVote(registerVoteParams: RegisterVoteParams): Promise<Vote> {
   const { persistVote, voteParams } = registerVoteParams
   const vote = {
     ...voteParams,
@@ -40,4 +43,18 @@ export function registerVote(registerVoteParams: RegisterVoteParams): Vote {
   persistVote(vote)
   console.log('Vote registered:', vote)
   return vote
+}
+
+export async function registerVoteByUserId(
+  registerVoteByUserIdParams: RegisterVoteByUserIdParams
+): Promise<Vote> {
+  const { persistVote, retrieveVoter, voteParams } = registerVoteByUserIdParams
+  const { voterId } = await retrieveVoter(voteParams.userId)
+  return registerVote({
+    persistVote,
+    voteParams: {
+      voterId,
+      ...voteParams,
+    },
+  })
 }

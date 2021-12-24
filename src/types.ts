@@ -16,8 +16,7 @@ export type EvidenceType = 'text' | 'image'
 
 export type Evidence = {
   type: EvidenceType
-  // the actual text or an image URL
-  data: string
+  data: string // the actual text or an image URL
 }
 
 export type Voting = {
@@ -53,9 +52,16 @@ export type StartVotingParams = {
 export type RegisterVotersParams = {
   persistVoters: (voters: Voter[]) => Promise<void>
   userIds: UserId[]
+  omitReturnedData?: boolean
 }
 
 export type RegisterVoteParams = {
   persistVote: (vote: Vote) => Promise<void>
   voteParams: VoteParams
+}
+
+export type RegisterVoteByUserIdParams = {
+  persistVote: (vote: Vote) => Promise<void>
+  retrieveVoter: (userId: UserId) => Promise<Voter>
+  voteParams: { userId: UserId } & Omit<VoteParams, 'voterId'>
 }

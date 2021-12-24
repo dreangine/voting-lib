@@ -8,7 +8,7 @@ import {
   RegisterVotersParams,
   RetrieveVotingSummaryParams,
   StartVotingParams,
-  TargetStats,
+  CandidatesStats,
   Vote,
   Voter,
   Voting,
@@ -66,7 +66,7 @@ describe('Start election', () => {
       votingParams: {
         votingDescriptionId: 'VD1ASDF',
         startedBy: 'V1ASDF',
-        targetedAt: ['V1ASDF', 'V2ASDF'],
+        candidates: ['V1ASDF', 'V2ASDF'],
         endsAt: new Date(),
       },
     }
@@ -89,7 +89,7 @@ describe('Add a vote', () => {
         votingId: 'V1ASDF',
         voterId: 'V1ASDF',
         choice: 'yes',
-        targetId: 'V2ASDF',
+        candidateId: 'V2ASDF',
       },
     }
 
@@ -112,7 +112,7 @@ describe('Add a vote', () => {
         userId: 'U1ASDF',
         votingId: 'V1ASDF',
         choice: 'yes',
-        targetId: 'V2ASDF',
+        candidateId: 'V2ASDF',
       },
     }
 
@@ -137,17 +137,17 @@ describe('Retrieve voting summary', () => {
       ['V2ASDF', 'yes'],
       ['V2ASDF', 'no'],
     ]
-    const targets = votesDistribution
-      .map(([targetId]) => targetId)
+    const candidates = votesDistribution
+      .map(([csandidateId]) => csandidateId)
       .filter((item, pos, self) => self.indexOf(item) === pos)
     const votes = votesDistribution.map(
-      ([targetId, vote]) =>
+      ([candidateId, vote]) =>
         ({
           voteId: generateVoteId(),
           votingId,
           voterId: generateVoterId(),
           choice: vote,
-          targetId,
+          candidateId: candidateId,
           createdAt: new Date(),
         } as Vote)
     )
@@ -157,7 +157,7 @@ describe('Retrieve voting summary', () => {
         votingDescriptionId: 'VD1ASDF',
         startedAt: new Date(),
         endsAt: new Date(),
-        targetedAt: targets,
+        candidates: candidates,
         startedBy: generateVoterId(),
       } as Voting)
     )
@@ -169,19 +169,19 @@ describe('Retrieve voting summary', () => {
     }
 
     const result = await retrieveVotingSummary(retrieveVotingSummaryParams)
-    const expectedStats = votesDistribution.reduce((targetsStats, vote) => {
-      const [targetId, voteType] = vote
-      if (!targetsStats[targetId]) {
-        targetsStats[targetId] = { yes: 0, no: 0 }
+    const expectedStats = votesDistribution.reduce((candidatesStats, vote) => {
+      const [candidateId, choice] = vote
+      if (!candidatesStats[candidateId]) {
+        candidatesStats[candidateId] = { yes: 0, no: 0 }
       }
-      targetsStats[targetId][voteType]++
-      return targetsStats
-    }, {} as TargetStats)
+      candidatesStats[candidateId][choice]++
+      return candidatesStats
+    }, {} as CandidatesStats)
     expect(retrieveVotingSpy).to.have.been.called.once
     expect(retrieveVotingSpy).to.have.been.called.with('V1ASDF')
     expect(retrieveVotesSpy).to.have.been.called.once
     expect(retrieveVotesSpy).to.have.been.called.with('V1ASDF')
     expect(result).to.exist
-    expect(result.targetsStats).to.deep.equal(expectedStats)
+    expect(result.candidatesStats).to.deep.equal(expectedStats)
   })
 })

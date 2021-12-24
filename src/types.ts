@@ -23,7 +23,7 @@ export type Voting = {
   votingId: VotingId
   votingDescriptionId: VotingDescriptionId
   startedBy: VoterId
-  targetedAt: VoterId[]
+  candidates: VoterId[]
   startedAt: Date
   endsAt: Date
   evidence?: Evidence
@@ -38,14 +38,14 @@ export type Vote = {
   votingId: VotingId
   voterId: VoterId
   choice: VoteChoice
-  targetId: VoterId
+  candidateId: VoterId
   createdAt: Date
 }
 
 export type VoteParams = Omit<Vote, 'voteId' | 'createdAt'>
 
-export type TargetStats = {
-  [targetId: VoterId]: {
+export type CandidatesStats = {
+  [candidateId: VoterId]: {
     yes: number
     no: number
   }
@@ -53,12 +53,7 @@ export type TargetStats = {
 
 export type VotingSummary = {
   voting: Voting
-  targetsStats: {
-    [targetId: VoterId]: {
-      yes: number
-      no: number
-    }
-  }
+  candidatesStats: CandidatesStats
 }
 
 export type StartVotingParams = {

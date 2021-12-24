@@ -6,7 +6,7 @@ import {
   RegisterVotersParams,
   RetrieveVotingSummaryParams,
   StartVotingParams,
-  TargetStats,
+  CandidatesStats,
   Vote,
   VoteId,
   Voter,
@@ -86,15 +86,16 @@ export async function retrieveVotingSummary(
       throw new Error(`Votes for voting ${votingId} not found`)
     }
     const voting = votingResult.value
-    const targetsStats = votesResult.value.reduce((targetsStats, vote) => {
-      const { targetId, choice: voteType } = vote
-      if (!targetsStats[targetId]) {
-        targetsStats[targetId] = { yes: 0, no: 0 }
+    const candidatesStats = votesResult.value.reduce((candidatesStats, vote) => {
+      const { candidateId, choice } = vote
+      if (!candidatesStats[candidateId]) {
+        candidatesStats[candidateId] = { yes: 0, no: 0 }
       }
-      targetsStats[targetId][voteType]++
-      return targetsStats
-    }, {} as TargetStats)
-    console.log('Voting summary:', { voting, targetsStats })
-    return { voting, targetsStats }
+      candidatesStats[candidateId][choice]++
+      return candidatesStats
+    }, {} as CandidatesStats)
+    const votingSummary = { voting, candidatesStats }
+    console.log('Voting summary:', votingSummary)
+    return votingSummary
   })
 }

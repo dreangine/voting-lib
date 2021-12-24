@@ -31,18 +31,35 @@ export type Voting = {
 
 export type VotingParams = Omit<Voting, 'votingId' | 'startedAt'>
 
-export type VoteType = 'yes' | 'no'
+export type VoteChoice = 'yes' | 'no'
 
 export type Vote = {
   voteId: VoteId
   votingId: VotingId
   voterId: VoterId
-  vote: VoteType
+  choice: VoteChoice
   targetId: VoterId
   createdAt: Date
 }
 
 export type VoteParams = Omit<Vote, 'voteId' | 'createdAt'>
+
+export type TargetStats = {
+  [targetId: VoterId]: {
+    yes: number
+    no: number
+  }
+}
+
+export type VotingSummary = {
+  voting: Voting
+  targetsStats: {
+    [targetId: VoterId]: {
+      yes: number
+      no: number
+    }
+  }
+}
 
 export type StartVotingParams = {
   persistVoting: (voting: Voting) => Promise<void>
@@ -64,4 +81,10 @@ export type RegisterVoteByUserIdParams = {
   persistVote: (vote: Vote) => Promise<void>
   retrieveVoter: (userId: UserId) => Promise<Voter>
   voteParams: { userId: UserId } & Omit<VoteParams, 'voterId'>
+}
+
+export type RetrieveVotingSummaryParams = {
+  retrieveVoting: (votingId: VotingId) => Promise<Voting>
+  retrieveVotes: (votingId: VotingId) => Promise<Vote[]>
+  votingId: VotingId
 }

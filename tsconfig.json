@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es2020",
     "module": "commonjs",
     "moduleResolution": "node",
     "sourceMap": true,
@@ -10,7 +10,7 @@
     "strictNullChecks": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "lib": ["es6", "dom"],
+    "lib": ["es2020", "dom"],
     "baseUrl": "./src",
     "paths": {
       "*": ["./node_modules/*"]

@@ -6,11 +6,24 @@ import {
   RegisterVoteByUserIdParams,
   RegisterVoteParams,
   RegisterVotersParams,
+  RetrieveVotingSummaryParams,
   StartVotingParams,
+  TargetStats,
+  Vote,
   Voter,
-} from '../src/types'
+  Voting,
+} from './types'
 
-import { registerVote, registerVoteByUserId, registerVoters, startVoting } from '../src/index'
+import {
+  generateVoteId,
+  generateVoterId,
+  generateVotingId,
+  registerVote,
+  registerVoteByUserId,
+  registerVoters,
+  retrieveVotingSummary,
+  startVoting,
+} from './index'
 
 chai.use(spies)
 
@@ -75,7 +88,7 @@ describe('Add a vote', () => {
       voteParams: {
         votingId: 'V1ASDF',
         voterId: 'V1ASDF',
-        vote: 'yes',
+        choice: 'yes',
         targetId: 'V2ASDF',
       },
     }
@@ -98,7 +111,7 @@ describe('Add a vote', () => {
       voteParams: {
         userId: 'U1ASDF',
         votingId: 'V1ASDF',
-        vote: 'yes',
+        choice: 'yes',
         targetId: 'V2ASDF',
       },
     }
@@ -111,5 +124,64 @@ describe('Add a vote', () => {
     expect(result.voterId).to.equal(voter.voterId)
     expect(result.voteId).to.exist
     expect(result.createdAt).to.exist
+  })
+})
+
+describe('Retrieve voting summary', () => {
+  it('should retrieve voting summary', async () => {
+    const votingId = generateVotingId()
+    const votesDistribution = [
+      ['V1ASDF', 'yes'],
+      ['V1ASDF', 'yes'],
+      ['V1ASDF', 'no'],
+      ['V2ASDF', 'yes'],
+      ['V2ASDF', 'no'],
+    ]
+    const targets = votesDistribution
+      .map(([targetId]) => targetId)
+      .filter((item, pos, self) => self.indexOf(item) === pos)
+    const votes = votesDistribution.map(
+      ([targetId, vote]) =>
+        ({
+          voteId: generateVoteId(),
+          votingId,
+          voterId: generateVoterId(),
+          choice: vote,
+          targetId,
+          createdAt: new Date(),
+        } as Vote)
+    )
+    const retrieveVotingSpy = chai.spy(() =>
+      Promise.resolve({
+        votingId,
+        votingDescriptionId: 'VD1ASDF',
+        startedAt: new Date(),
+        endsAt: new Date(),
+        targetedAt: targets,
+        startedBy: generateVoterId(),
+      } as Voting)
+    )
+    const retrieveVotesSpy = chai.spy(() => Promise.resolve(votes))
+    const retrieveVotingSummaryParams: RetrieveVotingSummaryParams = {
+      retrieveVoting: retrieveVotingSpy,
+      retrieveVotes: retrieveVotesSpy,
+      votingId: 'V1ASDF',
+    }
+
+    const result = await retrieveVotingSummary(retrieveVotingSummaryParams)
+    const expectedStats = votesDistribution.reduce((targetsStats, vote) => {
+      const [targetId, voteType] = vote
+      if (!targetsStats[targetId]) {
+        targetsStats[targetId] = { yes: 0, no: 0 }
+      }
+      targetsStats[targetId][voteType]++
+      return targetsStats
+    }, {} as TargetStats)
+    expect(retrieveVotingSpy).to.have.been.called.once
+    expect(retrieveVotingSpy).to.have.been.called.with('V1ASDF')
+    expect(retrieveVotesSpy).to.have.been.called.once
+    expect(retrieveVotesSpy).to.have.been.called.with('V1ASDF')
+    expect(result).to.exist
+    expect(result.targetsStats).to.deep.equal(expectedStats)
   })
 })

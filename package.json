@@ -6,7 +6,7 @@
   "scripts": {
     "start": "tsc && node dist/index.js",
     "lint": "eslint src/**/*.ts",
-    "test": "mocha -r ts-node/register 'tests/**/*.test.ts'"
+    "test": "mocha -r ts-node/register 'src/**/*.test.ts'"
   },
   "repository": {
     "type": "git",

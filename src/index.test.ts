@@ -137,9 +137,7 @@ describe('Retrieve voting summary', () => {
       ['V2ASDF', 'yes'],
       ['V2ASDF', 'no'],
     ]
-    const candidates = votesDistribution
-      .map(([csandidateId]) => csandidateId)
-      .filter((item, pos, self) => self.indexOf(item) === pos)
+    const candidates = [...new Set(votesDistribution.map(([csandidateId]) => csandidateId))]
     const votes = votesDistribution.map(
       ([candidateId, vote]) =>
         ({

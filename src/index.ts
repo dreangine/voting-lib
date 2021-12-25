@@ -1,19 +1,20 @@
 import { nanoid } from 'nanoid'
 
 import {
-  RegisterVoteByUserIdParams,
-  RegisterVoteParams,
-  RegisterVotersParams,
-  RetrieveVotingSummaryParams,
-  StartVotingParams,
+  RegisterVoteByUserIdRequest,
+  RegisterVoteRequest,
+  RegisterVotersRequest,
+  RetrieveVotingSummaryRequest,
+  StartVotingRequest,
   CandidatesStats,
-  Vote,
   VoteId,
-  Voter,
   VoterId,
-  Voting,
   VotingId,
-  VotingSummary,
+  StartVotingResponse,
+  RegisterVotersResponse,
+  RegisterVoteResponse,
+  RetrieveVotingSummaryResponse,
+  VotingData,
 } from './types'
 
 export function generateVotingId(): VotingId {
@@ -28,41 +29,56 @@ export function generateVoteId(): VoteId {
   return nanoid()
 }
 
-export async function startVoting(params: StartVotingParams): Promise<Voting> {
-  const { persistVoting, votingParams } = params
+export async function startVoting(request: StartVotingRequest): Promise<StartVotingResponse> {
+  const { persistVoting, votingParams } = request
   console.log('Voting params:', votingParams)
-  const voting = {
+  const now = new Date()
+  const voting: VotingData = {
+    startsAt: now,
     ...votingParams,
     votingId: generateVotingId(),
-    startedAt: new Date(),
+    createdAt: now,
+    updatedAt: now,
   }
   await persistVoting(voting)
   console.log('Voting started:', voting)
-  return voting
+  return { voting }
 }
 
-export async function registerVoters(params: RegisterVotersParams): Promise<Voter[] | null> {
-  const { persistVoters, userIds, omitReturnedData } = params
-  const voters = userIds.map((userId) => ({ voterId: nanoid(), userId }))
+export async function registerVoters(
+  request: RegisterVotersRequest
+): Promise<RegisterVotersResponse> {
+  const { persistVoters, userIds, omitReturnedData } = request
+  const now = new Date()
+  const voters = userIds.map((userId) => ({
+    voterId: nanoid(),
+    userId,
+    createdAt: now,
+    updatedAt: now,
+  }))
   await persistVoters(voters)
   console.log('Voters registered:', voters)
-  return omitReturnedData ? null : voters
+  return { voters: omitReturnedData ? undefined : voters }
 }
 
-export async function registerVote(params: RegisterVoteParams): Promise<Vote> {
-  const { persistVote, voteParams } = params
+export async function registerVote(request: RegisterVoteRequest): Promise<RegisterVoteResponse> {
+  const { persistVote, voteParams } = request
+  const now = new Date()
   const vote = {
     ...voteParams,
     voteId: generateVoterId(),
-    createdAt: new Date(),
+    createdAt: now,
+    updatedAt: now,
   }
   await persistVote(vote)
   console.log('Vote registered:', vote)
-  return vote
+  return { vote }
 }
 
-export async function registerVoteByUserId(params: RegisterVoteByUserIdParams): Promise<Vote> {
-  const { persistVote, retrieveVoter, voteParams } = params
+export async function registerVoteByUserId(
+  request: RegisterVoteByUserIdRequest
+): Promise<RegisterVoteResponse> {
+  const { persistVote, retrieveVoter, voteParams } = request
   const { voterId } = await retrieveVoter(voteParams.userId)
   return registerVote({
     persistVote,
@@ -74,9 +90,9 @@ export async function registerVoteByUserId(params: RegisterVoteByUserIdParams): 
 }
 
 export async function retrieveVotingSummary(
-  params: RetrieveVotingSummaryParams
-): Promise<VotingSummary> {
-  const { retrieveVoting, retrieveVotes, votingId } = params
+  request: RetrieveVotingSummaryRequest
+): Promise<RetrieveVotingSummaryResponse> {
+  const { retrieveVoting, retrieveVotes, votingId } = request
   return Promise.allSettled([retrieveVoting(votingId), retrieveVotes(votingId)]).then((results) => {
     const [votingResult, votesResult] = results
     if (votingResult.status === 'rejected') {
@@ -94,8 +110,8 @@ export async function retrieveVotingSummary(
       candidatesStats[candidateId][choice]++
       return candidatesStats
     }, {} as CandidatesStats)
-    const votingSummary = { voting, candidatesStats }
-    console.log('Voting summary:', votingSummary)
-    return votingSummary
+    const response = { voting, candidatesStats }
+    console.log('Voting summary:', response)
+    return response
   })
 }

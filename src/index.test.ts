@@ -3,15 +3,15 @@ import * as chai from 'chai'
 import * as spies from 'chai-spies'
 
 import {
-  RegisterVoteByUserIdParams,
-  RegisterVoteParams,
-  RegisterVotersParams,
-  RetrieveVotingSummaryParams,
-  StartVotingParams,
+  RegisterVoteByUserIdRequest,
+  RegisterVoteRequest,
+  RegisterVotersRequest,
+  RetrieveVotingSummaryRequest,
+  StartVotingRequest,
   CandidatesStats,
-  Vote,
-  Voter,
-  Voting,
+  VoteData,
+  VoterData,
+  VotingData,
 } from './types'
 
 import {
@@ -30,60 +30,64 @@ chai.use(spies)
 describe('Add voters', () => {
   it('should add voters', async () => {
     const spy = chai.spy(() => Promise.resolve())
-    const registerVotersParams: RegisterVotersParams = {
+    const request: RegisterVotersRequest = {
       persistVoters: spy,
       userIds: ['U1ASDF', 'U2ASDF'],
     }
-    const result = await registerVoters(registerVotersParams)
+    const response = await registerVoters(request)
+    const { voters: responseVoters } = response
 
     expect(spy).to.have.been.called.once
-    expect(spy).to.have.been.called.with(result)
-    expect(result).to.exist
-    result &&
-      result.forEach((voter) => {
+    expect(spy).to.have.been.called.with(responseVoters)
+    expect(responseVoters).to.exist
+    responseVoters &&
+      responseVoters.forEach((voter) => {
         expect(voter.voterId).to.exist
       })
   })
   it('should add voters - omit data', async () => {
     const spy = chai.spy(() => Promise.resolve())
-    const registerVotersParams: RegisterVotersParams = {
+    const request: RegisterVotersRequest = {
       persistVoters: spy,
       userIds: ['U1ASDF', 'U2ASDF'],
       omitReturnedData: true,
     }
-    const result = await registerVoters(registerVotersParams)
+    const response = await registerVoters(request)
 
     expect(spy).to.have.been.called.once
-    expect(result).to.be.null
+    expect(response.voters).to.be.undefined
   })
 })
 
 describe('Start election', () => {
   it('should start an election', async () => {
     const spy = chai.spy(() => Promise.resolve())
-    const startVotingParams: StartVotingParams = {
+    const request: StartVotingRequest = {
       persistVoting: spy,
       votingParams: {
-        votingDescriptionId: 'VD1ASDF',
+        votingDescription: {
+          'en-US': 'Test voting',
+        },
         startedBy: 'V1ASDF',
         candidates: ['V1ASDF', 'V2ASDF'],
         endsAt: new Date(),
       },
     }
 
-    const result = await startVoting(startVotingParams)
+    const response = await startVoting(request)
+    const { voting: responseVoting } = response
 
     expect(spy).to.have.been.called.once
-    expect(spy).to.have.been.called.with(result)
-    expect(result.votingId).to.exist
-    expect(result.startedAt).to.exist
+    expect(spy).to.have.been.called.with(responseVoting)
+    expect(responseVoting.votingId).to.exist
+    expect(responseVoting.startsAt).to.exist
   })
 })
 
 describe('Add a vote', () => {
   it('should add a vote', async () => {
     const spy = chai.spy(() => Promise.resolve())
-    const registerVoteParams: RegisterVoteParams = {
+    const request: RegisterVoteRequest = {
       persistVote: spy,
       voteParams: {
         votingId: 'V1ASDF',
@@ -93,19 +97,25 @@ describe('Add a vote', () => {
       },
     }
 
-    const result = await registerVote(registerVoteParams)
+    const response = await registerVote(request)
+    const { vote: responseVote } = response
 
     expect(spy).to.have.been.called.once
-    expect(spy).to.have.been.called.with(result)
-    expect(result.voteId).to.exist
-    expect(result.createdAt).to.exist
+    expect(spy).to.have.been.called.with(responseVote)
+    expect(responseVote.voteId).to.exist
+    expect(responseVote.createdAt).to.exist
   })
 
   it('should add a vote - by userId', async () => {
     const spyPersist = chai.spy(() => Promise.resolve())
-    const voter: Voter = { voterId: 'V1ASDF', userId: 'U1ASDF' }
+    const voter: VoterData = {
+      voterId: 'V1ASDF',
+      userId: 'U1ASDF',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
     const spyRetrieve = chai.spy(() => Promise.resolve(voter))
-    const registerVoteParams: RegisterVoteByUserIdParams = {
+    const request: RegisterVoteByUserIdRequest = {
       persistVote: spyPersist,
       retrieveVoter: spyRetrieve,
       voteParams: {
@@ -116,14 +126,15 @@ describe('Add a vote', () => {
       },
     }
 
-    const result = await registerVoteByUserId(registerVoteParams)
+    const response = await registerVoteByUserId(request)
+    const { vote: responseVote } = response
 
     expect(spyPersist).to.have.been.called.once
-    expect(spyPersist).to.have.been.called.with(result)
+    expect(spyPersist).to.have.been.called.with(responseVote)
     expect(spyRetrieve).to.have.been.called.once
-    expect(result.voterId).to.equal(voter.voterId)
-    expect(result.voteId).to.exist
-    expect(result.createdAt).to.exist
+    expect(responseVote.voterId).to.equal(voter.voterId)
+    expect(responseVote.voteId).to.exist
+    expect(responseVote.createdAt).to.exist
   })
 })
 
@@ -147,26 +158,30 @@ describe('Retrieve voting summary', () => {
           choice: vote,
           candidateId: candidateId,
           createdAt: new Date(),
-        } as Vote)
+        } as VoteData)
     )
     const retrieveVotingSpy = chai.spy(() =>
       Promise.resolve({
         votingId,
-        votingDescriptionId: 'VD1ASDF',
-        startedAt: new Date(),
+        votingDescription: {
+          'en-US': 'Test voting',
+        },
+        startsAt: new Date(),
         endsAt: new Date(),
         candidates: candidates,
         startedBy: generateVoterId(),
-      } as Voting)
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as VotingData)
     )
     const retrieveVotesSpy = chai.spy(() => Promise.resolve(votes))
-    const retrieveVotingSummaryParams: RetrieveVotingSummaryParams = {
+    const request: RetrieveVotingSummaryRequest = {
       retrieveVoting: retrieveVotingSpy,
       retrieveVotes: retrieveVotesSpy,
       votingId: 'V1ASDF',
     }
 
-    const result = await retrieveVotingSummary(retrieveVotingSummaryParams)
+    const result = await retrieveVotingSummary(request)
     const expectedStats = votesDistribution.reduce((candidatesStats, vote) => {
       const [candidateId, choice] = vote
       if (!candidatesStats[candidateId]) {

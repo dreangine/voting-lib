@@ -60,7 +60,7 @@ export type VoterData = Voter & BasicData
 
 export type VotingData = Voting & BasicData
 
-export type VoteData = Vote & BasicData
+export type VoteData = Vote & Omit<BasicData, 'updatedAt'>
 
 /**
  * PARAMS

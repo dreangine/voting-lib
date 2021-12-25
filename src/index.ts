@@ -51,7 +51,7 @@ export async function registerVoters(
   const { persistVoters, userIds, omitReturnedData } = request
   const now = new Date()
   const voters = userIds.map((userId) => ({
-    voterId: nanoid(),
+    voterId: generateVoterId(),
     userId,
     createdAt: now,
     updatedAt: now,
@@ -66,7 +66,7 @@ export async function registerVote(request: RegisterVoteRequest): Promise<Regist
   const now = new Date()
   const vote = {
     ...voteParams,
-    voteId: generateVoterId(),
+    voteId: generateVoteId(),
     createdAt: now,
     updatedAt: now,
   }

@@ -15,5 +15,6 @@
     "paths": {
       "*": ["./node_modules/*"]
     }
-  }
+  },
+  "exclude": ["src/**/*.test.ts"]
 }

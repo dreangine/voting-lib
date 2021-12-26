@@ -66,6 +66,12 @@ export async function registerVoters(
 export async function registerVote(request: RegisterVoteRequest): Promise<RegisterVoteResponse> {
   const { persistVote, voteParams } = request
   const now = new Date()
+
+  // Validate
+  const { voterId, choices } = voteParams
+  const candidates = choices.map((choice) => choice.candidateId)
+  if (candidates.includes(voterId)) throw new Error('Voter cannot vote for themselves')
+
   const vote = {
     ...voteParams,
     voteId: generateVoteId(),

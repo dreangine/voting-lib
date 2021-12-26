@@ -15,6 +15,7 @@ import {
   RegisterVoteResponse,
   RetrieveVotingSummaryResponse,
   VotingData,
+  VotingSummaryState,
 } from './types'
 
 export function generateVotingId(): VotingId {
@@ -130,7 +131,8 @@ export async function retrieveVotingSummary(
       })
       return candidatesStats
     }, {} as CandidatesStats)
-    const response = { voting, candidatesStats }
+    const votingSummaryState: VotingSummaryState = voting.endsAt < new Date() ? 'final' : 'partial'
+    const response = { voting, candidatesStats, votingSummaryState }
     return response
   })
 }

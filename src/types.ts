@@ -27,6 +27,8 @@ export type CandidatesStats = {
   }
 }
 
+export type VotingSummaryState = 'partial' | 'final'
+
 export type VotingDescription = {
   [language: string]: string
 }
@@ -129,4 +131,5 @@ export type RegisterVoteResponse = {
 export type RetrieveVotingSummaryResponse = {
   voting: VotingData
   candidatesStats: CandidatesStats
+  votingSummaryState: VotingSummaryState
 }

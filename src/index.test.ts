@@ -322,7 +322,7 @@ describe('Add a vote', () => {
 })
 
 describe('Retrieve voting summary', () => {
-  it('should retrieve voting summary', async () => {
+  it('should retrieve voting summary - ongoing voting', async () => {
     const votingId = generateVotingId()
     const votesDistribution = [
       ['V1ASDF', 'guilty'],
@@ -348,6 +348,7 @@ describe('Retrieve voting summary', () => {
           createdAt: new Date(),
         } as VoteData)
     )
+    const tomorrowDate = new Date(Date.now() + 24 * 60 * 60 * 1000)
     const retrieveVotingSpy = chai.spy(() =>
       Promise.resolve({
         votingId,
@@ -356,7 +357,7 @@ describe('Retrieve voting summary', () => {
         },
         votingType: 'judgement',
         startsAt: new Date(),
-        endsAt: new Date(),
+        endsAt: tomorrowDate,
         candidates: candidates,
         startedBy: generateVoterId(),
         createdAt: new Date(),
@@ -385,5 +386,73 @@ describe('Retrieve voting summary', () => {
     expect(retrieveVotesSpy).to.have.been.called.with('V1ASDF')
     expect(result).to.exist
     expect(result.candidatesStats).to.deep.equal(expectedStats)
+    expect(result.votingSummaryState).to.equal('partial')
+  })
+
+  it('should retrieve voting summary - ended voting', async () => {
+    const votingId = generateVotingId()
+    const votesDistribution = [
+      ['V1ASDF', 'guilty'],
+      ['V1ASDF', 'guilty'],
+      ['V1ASDF', 'innocent'],
+      ['V2ASDF', 'guilty'],
+      ['V2ASDF', 'innocent'],
+    ]
+    const candidates = [...new Set(votesDistribution.map(([csandidateId]) => csandidateId))]
+    const votes = votesDistribution.map(
+      ([candidateId, vote]) =>
+        ({
+          voteId: generateVoteId(),
+          votingId,
+          voterId: generateVoterId(),
+          choices: [
+            {
+              candidateId,
+              veredict: vote,
+            },
+          ],
+          candidateId: candidateId,
+          createdAt: new Date(),
+        } as VoteData)
+    )
+    const yesterdayDate = new Date(Date.now() - 1000 * 60 * 60 * 24)
+    const retrieveVotingSpy = chai.spy(() =>
+      Promise.resolve({
+        votingId,
+        votingDescription: {
+          'en-US': 'Test voting',
+        },
+        votingType: 'judgement',
+        startsAt: new Date(),
+        endsAt: yesterdayDate,
+        candidates: candidates,
+        startedBy: generateVoterId(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as VotingData)
+    )
+    const retrieveVotesSpy = chai.spy(() => Promise.resolve(votes))
+    const request: RetrieveVotingSummaryRequest = {
+      retrieveVoting: retrieveVotingSpy,
+      retrieveVotes: retrieveVotesSpy,
+      votingId: 'V1ASDF',
+    }
+
+    const result = await retrieveVotingSummary(request)
+    const expectedStats = votesDistribution.reduce((candidatesStats, vote) => {
+      const [candidateId, choice] = vote
+      if (!candidatesStats[candidateId]) {
+        candidatesStats[candidateId] = { guilty: 0, innocent: 0, elect: 0 }
+      }
+      candidatesStats[candidateId][choice]++
+      return candidatesStats
+    }, {} as CandidatesStats)
+    expect(retrieveVotingSpy).to.have.been.called.once
+    expect(retrieveVotingSpy).to.have.been.called.with('V1ASDF')
+    expect(retrieveVotesSpy).to.have.been.called.once
+    expect(retrieveVotesSpy).to.have.been.called.with('V1ASDF')
+    expect(result).to.exist
+    expect(result.candidatesStats).to.deep.equal(expectedStats)
+    expect(result.votingSummaryState).to.equal('final')
   })
 })

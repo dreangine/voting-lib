@@ -10,12 +10,20 @@ export type Evidence = {
   data: string // the actual text or an image URL
 }
 
-export type VoteChoice = 'yes' | 'no'
+export type Veredict = 'elect' | 'innocent' | 'guilty'
+
+export type VotingType = 'election' | 'judgement'
+
+export type VoteChoice = {
+  candidateId: VoterId
+  veredict: Veredict
+}
 
 export type CandidatesStats = {
   [candidateId: VoterId]: {
-    yes: number
-    no: number
+    guilty: number
+    innocent: number
+    elect: number
   }
 }
 
@@ -32,6 +40,7 @@ export type Voter = {
 export type Voting = {
   votingId: VotingId
   votingDescription: VotingDescription
+  votingType: VotingType
   startedBy: VoterId
   candidates: VoterId[]
   startsAt: Date
@@ -43,8 +52,7 @@ export type Vote = {
   voteId: VoteId
   votingId: VotingId
   voterId: VoterId
-  choice: VoteChoice
-  candidateId: VoterId
+  choices: VoteChoice[]
 }
 
 /**

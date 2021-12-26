@@ -31,8 +31,13 @@ export function generateVoteId(): VoteId {
 
 export async function startVoting(request: StartVotingRequest): Promise<StartVotingResponse> {
   const { persistVoting, votingParams } = request
+  const { startedBy, candidates } = votingParams
   console.log('Voting params:', votingParams)
   const now = new Date()
+
+  // Validate
+  if (candidates.includes(startedBy)) throw new Error('Voting cannot be started by a candidate')
+
   const voting: VotingData = {
     startsAt: now,
     ...votingParams,
@@ -102,12 +107,25 @@ export async function retrieveVotingSummary(
       throw new Error(`Votes for voting ${votingId} not found`)
     }
     const voting = votingResult.value
-    const candidatesStats = votesResult.value.reduce((candidatesStats, vote) => {
-      const { candidateId, choice } = vote
-      if (!candidatesStats[candidateId]) {
-        candidatesStats[candidateId] = { yes: 0, no: 0 }
-      }
-      candidatesStats[candidateId][choice]++
+    const candidatesStats = votesResult.value.reduce((candidatesStats, { choices }) => {
+      choices.forEach(({ candidateId, veredict }) => {
+        candidatesStats[candidateId] = candidatesStats[candidateId] || {
+          guilty: 0,
+          innocent: 0,
+          elect: 0,
+        }
+        switch (veredict) {
+          case 'guilty':
+            candidatesStats[candidateId].guilty++
+            break
+          case 'innocent':
+            candidatesStats[candidateId].innocent++
+            break
+          case 'elect':
+            candidatesStats[candidateId].elect++
+            break
+        }
+      })
       return candidatesStats
     }, {} as CandidatesStats)
     const response = { voting, candidatesStats }

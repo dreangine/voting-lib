@@ -1,6 +1,7 @@
 import { expect } from 'chai'
 import * as chai from 'chai'
 import * as spies from 'chai-spies'
+import * as chaiPromised from 'chai-as-promised'
 
 import {
   RegisterVoteByUserIdRequest,
@@ -26,6 +27,7 @@ import {
 } from './index'
 
 chai.use(spies)
+chai.use(chaiPromised)
 
 describe('Add voters', () => {
   it('should add voters', async () => {
@@ -59,28 +61,96 @@ describe('Add voters', () => {
   })
 })
 
-describe('Start election', () => {
-  it('should start an election', async () => {
-    const spy = chai.spy(() => Promise.resolve())
-    const request: StartVotingRequest = {
-      persistVoting: spy,
-      votingParams: {
-        votingDescription: {
-          'en-US': 'Test voting',
+describe('Start a voting', () => {
+  describe('Election', () => {
+    const votingType = 'election'
+    it('should start an election', async () => {
+      const spy = chai.spy(() => Promise.resolve())
+      const request: StartVotingRequest = {
+        persistVoting: spy,
+        votingParams: {
+          votingDescription: {
+            'en-US': 'Test voting',
+          },
+          votingType,
+          startedBy: 'V1ASDF',
+          candidates: ['V2ASDF', 'V3ASDF'],
+          endsAt: new Date(),
         },
-        startedBy: 'V1ASDF',
-        candidates: ['V1ASDF', 'V2ASDF'],
-        endsAt: new Date(),
-      },
-    }
+      }
 
-    const response = await startVoting(request)
-    const { voting: responseVoting } = response
+      const response = await startVoting(request)
+      const { voting: responseVoting } = response
 
-    expect(spy).to.have.been.called.once
-    expect(spy).to.have.been.called.with(responseVoting)
-    expect(responseVoting.votingId).to.exist
-    expect(responseVoting.startsAt).to.exist
+      expect(spy).to.have.been.called.once
+      expect(spy).to.have.been.called.with(responseVoting)
+      expect(responseVoting.votingId).to.exist
+      expect(responseVoting.startsAt).to.exist
+    })
+    it('an election cannot be started by a candidate', async () => {
+      const spy = chai.spy(() => Promise.resolve())
+      const request: StartVotingRequest = {
+        persistVoting: spy,
+        votingParams: {
+          votingDescription: {
+            'en-US': 'Test election',
+          },
+          votingType,
+          startedBy: 'V1ASDF',
+          candidates: ['V1ASDF'],
+          endsAt: new Date(),
+        },
+      }
+
+      await expect(startVoting(request)).to.be.rejectedWith(
+        'Voting cannot be started by a candidate'
+      )
+    })
+  })
+  describe('Judgement', () => {
+    const votingType = 'judgement'
+    it('should start a judgement', async () => {
+      const spy = chai.spy(() => Promise.resolve())
+      const request: StartVotingRequest = {
+        persistVoting: spy,
+        votingParams: {
+          votingDescription: {
+            'en-US': 'Test judgement',
+          },
+          votingType,
+          startedBy: 'V1ASDF',
+          candidates: ['V2ASDF', 'V3ASDF'],
+          endsAt: new Date(),
+        },
+      }
+
+      const response = await startVoting(request)
+      const { voting: responseVoting } = response
+
+      expect(spy).to.have.been.called.once
+      expect(spy).to.have.been.called.with(responseVoting)
+      expect(responseVoting.votingId).to.exist
+      expect(responseVoting.startsAt).to.exist
+    })
+    it('an election cannot be started by a candidate', async () => {
+      const spy = chai.spy(() => Promise.resolve())
+      const request: StartVotingRequest = {
+        persistVoting: spy,
+        votingParams: {
+          votingDescription: {
+            'en-US': 'Test judgement',
+          },
+          votingType,
+          startedBy: 'V1ASDF',
+          candidates: ['V1ASDF'],
+          endsAt: new Date(),
+        },
+      }
+
+      await expect(startVoting(request)).to.be.rejectedWith(
+        'Voting cannot be started by a candidate'
+      )
+    })
   })
 })
 
@@ -92,8 +162,12 @@ describe('Add a vote', () => {
       voteParams: {
         votingId: 'V1ASDF',
         voterId: 'V1ASDF',
-        choice: 'yes',
-        candidateId: 'V2ASDF',
+        choices: [
+          {
+            candidateId: 'V2ASDF',
+            veredict: 'elect',
+          },
+        ],
       },
     }
 
@@ -121,8 +195,12 @@ describe('Add a vote', () => {
       voteParams: {
         userId: 'U1ASDF',
         votingId: 'V1ASDF',
-        choice: 'yes',
-        candidateId: 'V2ASDF',
+        choices: [
+          {
+            candidateId: 'V2ASDF',
+            veredict: 'elect',
+          },
+        ],
       },
     }
 
@@ -142,11 +220,11 @@ describe('Retrieve voting summary', () => {
   it('should retrieve voting summary', async () => {
     const votingId = generateVotingId()
     const votesDistribution = [
-      ['V1ASDF', 'yes'],
-      ['V1ASDF', 'yes'],
-      ['V1ASDF', 'no'],
-      ['V2ASDF', 'yes'],
-      ['V2ASDF', 'no'],
+      ['V1ASDF', 'guilty'],
+      ['V1ASDF', 'guilty'],
+      ['V1ASDF', 'innocent'],
+      ['V2ASDF', 'guilty'],
+      ['V2ASDF', 'innocent'],
     ]
     const candidates = [...new Set(votesDistribution.map(([csandidateId]) => csandidateId))]
     const votes = votesDistribution.map(
@@ -155,7 +233,12 @@ describe('Retrieve voting summary', () => {
           voteId: generateVoteId(),
           votingId,
           voterId: generateVoterId(),
-          choice: vote,
+          choices: [
+            {
+              candidateId,
+              veredict: vote,
+            },
+          ],
           candidateId: candidateId,
           createdAt: new Date(),
         } as VoteData)
@@ -166,6 +249,7 @@ describe('Retrieve voting summary', () => {
         votingDescription: {
           'en-US': 'Test voting',
         },
+        votingType: 'judgement',
         startsAt: new Date(),
         endsAt: new Date(),
         candidates: candidates,
@@ -185,7 +269,7 @@ describe('Retrieve voting summary', () => {
     const expectedStats = votesDistribution.reduce((candidatesStats, vote) => {
       const [candidateId, choice] = vote
       if (!candidatesStats[candidateId]) {
-        candidatesStats[candidateId] = { yes: 0, no: 0 }
+        candidatesStats[candidateId] = { guilty: 0, innocent: 0, elect: 0 }
       }
       candidatesStats[candidateId][choice]++
       return candidatesStats

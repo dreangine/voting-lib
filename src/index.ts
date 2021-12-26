@@ -32,7 +32,6 @@ export function generateVoteId(): VoteId {
 export async function startVoting(request: StartVotingRequest): Promise<StartVotingResponse> {
   const { persistVoting, votingParams } = request
   const { startedBy, candidates } = votingParams
-  console.log('Voting params:', votingParams)
   const now = new Date()
 
   // Validate
@@ -46,7 +45,6 @@ export async function startVoting(request: StartVotingRequest): Promise<StartVot
     updatedAt: now,
   }
   await persistVoting(voting)
-  console.log('Voting started:', voting)
   return { voting }
 }
 
@@ -62,7 +60,6 @@ export async function registerVoters(
     updatedAt: now,
   }))
   await persistVoters(voters)
-  console.log('Voters registered:', voters)
   return { voters: omitReturnedData ? undefined : voters }
 }
 
@@ -76,7 +73,6 @@ export async function registerVote(request: RegisterVoteRequest): Promise<Regist
     updatedAt: now,
   }
   await persistVote(vote)
-  console.log('Vote registered:', vote)
   return { vote }
 }
 
@@ -129,7 +125,6 @@ export async function retrieveVotingSummary(
       return candidatesStats
     }, {} as CandidatesStats)
     const response = { voting, candidatesStats }
-    console.log('Voting summary:', response)
     return response
   })
 }

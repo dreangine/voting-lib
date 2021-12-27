@@ -13,6 +13,10 @@ import {
   VoteData,
   VoterData,
   VotingData,
+  VoteChoice,
+  VotingType,
+  VoterId,
+  UserId,
 } from './types'
 
 import {
@@ -28,6 +32,108 @@ import {
 
 chai.use(spies)
 chai.use(chaiPromised)
+
+// Setup
+const nowDate = new Date()
+const yesterdayDate = new Date(nowDate.getTime() - 1000 * 60 * 60 * 24)
+const tomorrowDate = new Date(nowDate.getTime() + 24 * 60 * 60 * 1000)
+
+async function checkRegisterVoteByVoterId(
+  voterId: VoterId,
+  votingType: VotingType,
+  candidates: VoterId[],
+  choices: VoteChoice[]
+) {
+  const votingId = 'V1ASDF'
+  const spyRetrieveVoting = chai.spy(() =>
+    Promise.resolve({
+      votingId,
+      votingDescription: {
+        'en-US': `Test voting (${votingType})`,
+      },
+      votingType,
+      startsAt: yesterdayDate,
+      endsAt: tomorrowDate,
+      candidates,
+      startedBy: generateVoterId(),
+      createdAt: yesterdayDate,
+      updatedAt: yesterdayDate,
+    } as VotingData)
+  )
+  const spyPersist = chai.spy(() => Promise.resolve())
+  const request: RegisterVoteRequest = {
+    retrieveVoting: spyRetrieveVoting,
+    persistVote: spyPersist,
+    voteParams: {
+      votingId,
+      voterId,
+      choices,
+    },
+  }
+
+  const response = await registerVote(request)
+  const { vote: responseVote } = response
+
+  expect(spyRetrieveVoting).to.have.been.called.once
+  expect(spyRetrieveVoting).to.have.been.called.with(votingId)
+  expect(spyPersist).to.have.been.called.once
+  expect(spyPersist).to.have.been.called.with(responseVote)
+  expect(responseVote.voteId).to.exist
+  expect(responseVote.createdAt).to.exist
+}
+
+async function checkRegisterVoteByUserId(
+  userId: UserId,
+  votingType: VotingType,
+  candidates: VoterId[],
+  choices: VoteChoice[]
+) {
+  const votingId = 'V1ASDF'
+  const voterId = generateVoterId()
+  const spyRetrieveVoting = chai.spy(() =>
+    Promise.resolve({
+      votingId,
+      votingDescription: {
+        'en-US': `Test voting (${votingType})`,
+      },
+      votingType,
+      startsAt: yesterdayDate,
+      endsAt: tomorrowDate,
+      candidates,
+      startedBy: generateVoterId(),
+      createdAt: yesterdayDate,
+      updatedAt: yesterdayDate,
+    } as VotingData)
+  )
+  const spyPersistVote = chai.spy(() => Promise.resolve())
+  const spyRetrieveVoter = chai.spy(() =>
+    Promise.resolve({
+      userId,
+      voterId,
+    } as VoterData)
+  )
+  const request: RegisterVoteByUserIdRequest = {
+    retrieveVoting: spyRetrieveVoting,
+    persistVote: spyPersistVote,
+    retrieveVoter: spyRetrieveVoter,
+    voteParams: {
+      votingId,
+      userId,
+      choices,
+    },
+  }
+
+  const response = await registerVoteByUserId(request)
+  const { vote: responseVote } = response
+
+  expect(spyRetrieveVoting).to.have.been.called.once
+  expect(spyRetrieveVoting).to.have.been.called.with(votingId)
+  expect(spyPersistVote).to.have.been.called.once
+  expect(spyPersistVote).to.have.been.called.with(responseVote)
+  expect(responseVote.voteId).to.exist
+  expect(responseVote.voterId).to.equal(voterId)
+  expect(responseVote.createdAt).to.exist
+}
 
 describe('Add voters', () => {
   it('should add voters', async () => {
@@ -161,69 +267,41 @@ describe('Start a voting', () => {
 describe('Add a vote', () => {
   describe('Election', () => {
     const veredict = 'elect'
+    const votingType = 'election'
     it('should add a vote', async () => {
-      const spy = chai.spy(() => Promise.resolve())
-      const request: RegisterVoteRequest = {
-        persistVote: spy,
-        voteParams: {
-          votingId: 'V1ASDF',
-          voterId: 'V1ASDF',
-          choices: [
-            {
-              candidateId: 'V2ASDF',
-              veredict,
-            },
-          ],
-        },
-      }
-
-      const response = await registerVote(request)
-      const { vote: responseVote } = response
-
-      expect(spy).to.have.been.called.once
-      expect(spy).to.have.been.called.with(responseVote)
-      expect(responseVote.voteId).to.exist
-      expect(responseVote.createdAt).to.exist
+      await checkRegisterVoteByVoterId(
+        'V1ASDF',
+        votingType,
+        ['V2ASDF', 'V3ASDF'],
+        [
+          {
+            candidateId: 'V2ASDF',
+            veredict,
+          },
+        ]
+      )
     })
 
     it('should add a vote - by userId', async () => {
-      const spyPersist = chai.spy(() => Promise.resolve())
-      const voter: VoterData = {
-        voterId: 'V1ASDF',
-        userId: 'U1ASDF',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-      const spyRetrieve = chai.spy(() => Promise.resolve(voter))
-      const request: RegisterVoteByUserIdRequest = {
-        persistVote: spyPersist,
-        retrieveVoter: spyRetrieve,
-        voteParams: {
-          userId: 'U1ASDF',
-          votingId: 'V1ASDF',
-          choices: [
-            {
-              candidateId: 'V2ASDF',
-              veredict,
-            },
-          ],
-        },
-      }
-
-      const response = await registerVoteByUserId(request)
-      const { vote: responseVote } = response
-
-      expect(spyPersist).to.have.been.called.once
-      expect(spyPersist).to.have.been.called.with(responseVote)
-      expect(spyRetrieve).to.have.been.called.once
-      expect(responseVote.voterId).to.equal(voter.voterId)
-      expect(responseVote.voteId).to.exist
-      expect(responseVote.createdAt).to.exist
+      await checkRegisterVoteByUserId(
+        'U1ASDF',
+        votingType,
+        ['V2ASDF', 'V3ASDF'],
+        [
+          {
+            candidateId: 'V2ASDF',
+            veredict,
+          },
+        ]
+      )
     })
 
     it('cannot vote on yourself', async () => {
+      const spyRetrieveVoting = chai.spy(() => Promise.resolve({} as VotingData))
+      const spyPersist = chai.spy(() => Promise.resolve())
       const request: RegisterVoteRequest = {
-        persistVote: () => Promise.resolve(),
+        retrieveVoting: spyRetrieveVoting,
+        persistVote: spyPersist,
         voteParams: {
           votingId: 'V1ASDF',
           voterId: 'V1ASDF',
@@ -237,73 +315,85 @@ describe('Add a vote', () => {
       }
 
       await expect(registerVote(request)).to.be.rejectedWith('Voter cannot vote for themselves')
+      expect(spyRetrieveVoting).to.not.have.been.called
+      expect(spyPersist).to.not.have.been.called
+    })
+
+    it('cannot vote after voting has ended', async () => {
+      const votingId = 'V1ASDF'
+      const spyRetrieveVoting = chai.spy(() =>
+        Promise.resolve({
+          votingId,
+          votingDescription: {
+            'en-US': `Test voting (${votingType})`,
+          },
+          votingType,
+          startsAt: yesterdayDate,
+          endsAt: yesterdayDate,
+          candidates: ['V2ASDF', 'V3ASDF'],
+          startedBy: generateVoterId(),
+          createdAt: yesterdayDate,
+          updatedAt: yesterdayDate,
+        } as VotingData)
+      )
+      const spyPersist = chai.spy(() => Promise.resolve())
+      const request: RegisterVoteRequest = {
+        retrieveVoting: spyRetrieveVoting,
+        persistVote: spyPersist,
+        voteParams: {
+          votingId,
+          voterId: 'V1ASDF',
+          choices: [
+            {
+              candidateId: 'V2ASDF',
+              veredict,
+            },
+          ],
+        },
+      }
+
+      await expect(registerVote(request)).to.be.rejectedWith('Voting has ended')
+      expect(spyRetrieveVoting).to.have.been.called.once
+      expect(spyRetrieveVoting).to.have.been.called.with(votingId)
+      expect(spyPersist).to.not.have.been.called
     })
   })
 
   describe('Judgement', () => {
     it('should add a vote', async () => {
-      const spy = chai.spy(() => Promise.resolve())
-      const request: RegisterVoteRequest = {
-        persistVote: spy,
-        voteParams: {
-          votingId: 'V1ASDF',
-          voterId: 'V1ASDF',
-          choices: [
-            {
-              candidateId: 'V2ASDF',
-              veredict: 'guilty',
-            },
-          ],
-        },
-      }
-
-      const response = await registerVote(request)
-      const { vote: responseVote } = response
-
-      expect(spy).to.have.been.called.once
-      expect(spy).to.have.been.called.with(responseVote)
-      expect(responseVote.voteId).to.exist
-      expect(responseVote.createdAt).to.exist
+      await checkRegisterVoteByVoterId(
+        'V1ASDF',
+        'judgement',
+        ['V2ASDF', 'V3ASDF'],
+        [
+          {
+            candidateId: 'V2ASDF',
+            veredict: 'guilty',
+          },
+        ]
+      )
     })
 
     it('should add a vote - by userId', async () => {
-      const spyPersist = chai.spy(() => Promise.resolve())
-      const voter: VoterData = {
-        voterId: 'V1ASDF',
-        userId: 'U1ASDF',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-      const spyRetrieve = chai.spy(() => Promise.resolve(voter))
-      const request: RegisterVoteByUserIdRequest = {
-        persistVote: spyPersist,
-        retrieveVoter: spyRetrieve,
-        voteParams: {
-          userId: 'U1ASDF',
-          votingId: 'V1ASDF',
-          choices: [
-            {
-              candidateId: 'V2ASDF',
-              veredict: 'guilty',
-            },
-          ],
-        },
-      }
-
-      const response = await registerVoteByUserId(request)
-      const { vote: responseVote } = response
-
-      expect(spyPersist).to.have.been.called.once
-      expect(spyPersist).to.have.been.called.with(responseVote)
-      expect(spyRetrieve).to.have.been.called.once
-      expect(responseVote.voterId).to.equal(voter.voterId)
-      expect(responseVote.voteId).to.exist
-      expect(responseVote.createdAt).to.exist
+      await checkRegisterVoteByUserId(
+        'U1ASDF',
+        'judgement',
+        ['V2ASDF', 'V3ASDF'],
+        [
+          {
+            candidateId: 'V2ASDF',
+            veredict: 'guilty',
+          },
+        ]
+      )
     })
 
     it('cannot vote for yourself', async () => {
+      const spyRetrieveVoting = chai.spy(() => Promise.resolve({} as VotingData))
+      const spyPersist = chai.spy(() => Promise.resolve())
       const request: RegisterVoteRequest = {
-        persistVote: () => Promise.resolve(),
+        retrieveVoting: spyRetrieveVoting,
+        persistVote: spyPersist,
         voteParams: {
           votingId: 'V1ASDF',
           voterId: 'V1ASDF',
@@ -317,6 +407,8 @@ describe('Add a vote', () => {
       }
 
       await expect(registerVote(request)).to.be.rejectedWith('Voter cannot vote for themselves')
+      expect(spyRetrieveVoting).to.not.have.been.called
+      expect(spyPersist).to.not.have.been.called
     })
   })
 })
@@ -348,7 +440,6 @@ describe('Retrieve voting summary', () => {
           createdAt: new Date(),
         } as VoteData)
     )
-    const tomorrowDate = new Date(Date.now() + 24 * 60 * 60 * 1000)
     const retrieveVotingSpy = chai.spy(() =>
       Promise.resolve({
         votingId,
@@ -415,7 +506,6 @@ describe('Retrieve voting summary', () => {
           createdAt: new Date(),
         } as VoteData)
     )
-    const yesterdayDate = new Date(Date.now() - 1000 * 60 * 60 * 24)
     const retrieveVotingSpy = chai.spy(() =>
       Promise.resolve({
         votingId,

@@ -96,11 +96,13 @@ export type RegisterVotersRequest = {
 }
 
 export type RegisterVoteRequest = {
+  retrieveVoting: (votingId: VotingId) => Promise<VotingData>
   persistVote: (vote: VoteData) => Promise<void>
   voteParams: VoteParams
 }
 
 export type RegisterVoteByUserIdRequest = {
+  retrieveVoting: (votingId: VotingId) => Promise<VotingData>
   persistVote: (vote: VoteData) => Promise<void>
   retrieveVoter: (userId: UserId) => Promise<VoterData>
   voteParams: { userId: UserId } & Omit<VoteParams, 'voterId'>

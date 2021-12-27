@@ -30,6 +30,10 @@ export function generateVoteId(): VoteId {
   return nanoid()
 }
 
+export function hasVotingEnded(voting: VotingData): boolean {
+  return voting.endsAt < new Date()
+}
+
 export async function startVoting(request: StartVotingRequest): Promise<StartVotingResponse> {
   const { persistVoting, votingParams } = request
   const { startedBy, candidates } = votingParams
@@ -67,11 +71,15 @@ export async function registerVoters(
 export async function registerVote(request: RegisterVoteRequest): Promise<RegisterVoteResponse> {
   const { persistVote, voteParams } = request
   const now = new Date()
+  const { votingId, voterId, choices } = voteParams
 
   // Validate
-  const { voterId, choices } = voteParams
   const candidates = choices.map((choice) => choice.candidateId)
   if (candidates.includes(voterId)) throw new Error('Voter cannot vote for themselves')
+
+  // Check if voting has ended
+  const voting = await request.retrieveVoting(votingId)
+  if (hasVotingEnded(voting)) throw new Error('Voting has ended')
 
   const vote = {
     ...voteParams,
@@ -86,9 +94,10 @@ export async function registerVote(request: RegisterVoteRequest): Promise<Regist
 export async function registerVoteByUserId(
   request: RegisterVoteByUserIdRequest
 ): Promise<RegisterVoteResponse> {
-  const { persistVote, retrieveVoter, voteParams } = request
+  const { retrieveVoting, persistVote, retrieveVoter, voteParams } = request
   const { voterId } = await retrieveVoter(voteParams.userId)
   return registerVote({
+    retrieveVoting,
     persistVote,
     voteParams: {
       voterId,
@@ -131,7 +140,7 @@ export async function retrieveVotingSummary(
       })
       return candidatesStats
     }, {} as CandidatesStats)
-    const votingSummaryState: VotingSummaryState = voting.endsAt < new Date() ? 'final' : 'partial'
+    const votingSummaryState: VotingSummaryState = hasVotingEnded(voting) ? 'final' : 'partial'
     const response = { voting, candidatesStats, votingSummaryState }
     return response
   })

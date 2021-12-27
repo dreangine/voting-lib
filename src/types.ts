@@ -10,7 +10,9 @@ export type Evidence = {
   data: string // the actual text or an image URL
 }
 
-export type Veredict = 'elect' | 'innocent' | 'guilty'
+export type Veredict = 'elect' | 'pass' | 'innocent' | 'guilty'
+
+export type VeredictFinal = 'elected' | 'not elected' | 'innocent' | 'guilty' | 'undecided'
 
 export type VotingType = 'election' | 'judgement'
 
@@ -24,7 +26,12 @@ export type CandidatesStats = {
     guilty: number
     innocent: number
     elect: number
+    pass: number
   }
+}
+
+export type FinalVeredictStats = {
+  [candidateId: VoterId]: VeredictFinal
 }
 
 export type VotingSummaryState = 'partial' | 'final'
@@ -134,4 +141,5 @@ export type RetrieveVotingSummaryResponse = {
   voting: VotingData
   candidatesStats: CandidatesStats
   votingSummaryState: VotingSummaryState
+  finalVeredict?: FinalVeredictStats
 }

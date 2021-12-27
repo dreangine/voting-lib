@@ -16,6 +16,7 @@ import {
   RetrieveVotingSummaryResponse,
   VotingData,
   VotingSummaryState,
+  FinalVeredictStats,
 } from './types'
 
 export function generateVotingId(): VotingId {
@@ -32,6 +33,26 @@ export function generateVoteId(): VoteId {
 
 export function hasVotingEnded(voting: VotingData): boolean {
   return voting.endsAt < new Date()
+}
+
+export function generateFinalVeredict(candidatesStats: CandidatesStats): FinalVeredictStats {
+  return Object.entries(candidatesStats).reduce(
+    (finalVeredict, [candidateId, { guilty, innocent, elect, pass }]) => {
+      if (guilty > innocent) {
+        finalVeredict[candidateId] = 'guilty'
+      } else if (innocent > guilty) {
+        finalVeredict[candidateId] = 'innocent'
+      } else if (elect > pass) {
+        finalVeredict[candidateId] = 'elected'
+      } else if (pass > elect) {
+        finalVeredict[candidateId] = 'not elected'
+      } else {
+        finalVeredict[candidateId] = 'undecided'
+      }
+      return finalVeredict
+    },
+    {} as FinalVeredictStats
+  )
 }
 
 export async function startVoting(request: StartVotingRequest): Promise<StartVotingResponse> {
@@ -125,6 +146,7 @@ export async function retrieveVotingSummary(
           guilty: 0,
           innocent: 0,
           elect: 0,
+          pass: 0,
         }
         switch (veredict) {
           case 'guilty':
@@ -136,12 +158,24 @@ export async function retrieveVotingSummary(
           case 'elect':
             candidatesStats[candidateId].elect++
             break
+          case 'pass':
+            candidatesStats[candidateId].pass++
+            break
         }
       })
       return candidatesStats
     }, {} as CandidatesStats)
-    const votingSummaryState: VotingSummaryState = hasVotingEnded(voting) ? 'final' : 'partial'
-    const response = { voting, candidatesStats, votingSummaryState }
+    const isVotingFinal = hasVotingEnded(voting)
+    const votingSummaryState: VotingSummaryState = isVotingFinal ? 'final' : 'partial'
+
+    const finalVeredict = isVotingFinal && generateFinalVeredict(candidatesStats)
+
+    const response = {
+      voting,
+      candidatesStats,
+      votingSummaryState,
+      ...(finalVeredict && { finalVeredict }),
+    }
     return response
   })
 }

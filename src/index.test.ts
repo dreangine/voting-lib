@@ -466,7 +466,7 @@ describe('Retrieve voting summary', () => {
     const expectedStats = votesDistribution.reduce((candidatesStats, vote) => {
       const [candidateId, choice] = vote
       if (!candidatesStats[candidateId]) {
-        candidatesStats[candidateId] = { guilty: 0, innocent: 0, elect: 0 }
+        candidatesStats[candidateId] = { guilty: 0, innocent: 0, elect: 0, pass: 0 }
       }
       candidatesStats[candidateId][choice]++
       return candidatesStats
@@ -532,7 +532,7 @@ describe('Retrieve voting summary', () => {
     const expectedStats = votesDistribution.reduce((candidatesStats, vote) => {
       const [candidateId, choice] = vote
       if (!candidatesStats[candidateId]) {
-        candidatesStats[candidateId] = { guilty: 0, innocent: 0, elect: 0 }
+        candidatesStats[candidateId] = { guilty: 0, innocent: 0, elect: 0, pass: 0 }
       }
       candidatesStats[candidateId][choice]++
       return candidatesStats
@@ -544,5 +544,10 @@ describe('Retrieve voting summary', () => {
     expect(result).to.exist
     expect(result.candidatesStats).to.deep.equal(expectedStats)
     expect(result.votingSummaryState).to.equal('final')
+    expect(result.finalVeredict).to.exist
+    if (result.finalVeredict) {
+      expect(result.finalVeredict['V1ASDF']).to.equal('guilty')
+      expect(result.finalVeredict['V2ASDF']).to.equal('undecided')
+    }
   })
 })

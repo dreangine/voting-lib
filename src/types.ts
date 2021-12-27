@@ -64,6 +64,15 @@ export type Vote = {
   choices: VoteChoice[]
 }
 
+export type Callbacks = {
+  persistVoting: (voting: VotingData) => Promise<void>
+  persistVoters: (voters: VoterData[]) => Promise<void>
+  persistVote: (vote: VoteData) => Promise<void>
+  retrieveVoting: (votingId: VotingId) => Promise<VotingData | null>
+  retrieveVoter: (userId: UserId) => Promise<VoterData | null>
+  retrieveVotes: (votingId: VotingId) => Promise<VoteData[] | null>
+}
+
 /**
  * DATA
  */
@@ -92,32 +101,23 @@ export type VoteParams = Omit<Vote, 'voteId'>
  */
 
 export type StartVotingRequest = {
-  persistVoting: (voting: VotingData) => Promise<void>
   votingParams: VotingParams
 }
 
 export type RegisterVotersRequest = {
-  persistVoters: (voters: VoterData[]) => Promise<void>
   userIds: UserId[]
   omitReturnedData?: boolean
 }
 
 export type RegisterVoteRequest = {
-  retrieveVoting: (votingId: VotingId) => Promise<VotingData>
-  persistVote: (vote: VoteData) => Promise<void>
   voteParams: VoteParams
 }
 
 export type RegisterVoteByUserIdRequest = {
-  retrieveVoting: (votingId: VotingId) => Promise<VotingData>
-  persistVote: (vote: VoteData) => Promise<void>
-  retrieveVoter: (userId: UserId) => Promise<VoterData>
   voteParams: { userId: UserId } & Omit<VoteParams, 'voterId'>
 }
 
 export type RetrieveVotingSummaryRequest = {
-  retrieveVoting: (votingId: VotingId) => Promise<VotingData>
-  retrieveVotes: (votingId: VotingId) => Promise<VoteData[]>
   votingId: VotingId
 }
 

@@ -21,12 +21,13 @@ import {
 } from './types'
 
 const callbacks: Callbacks = {
-  persistVoting: () => Promise.resolve(),
-  persistVoters: () => Promise.resolve(),
-  persistVote: () => Promise.resolve(),
-  retrieveVoting: () => Promise.resolve(null),
-  retrieveVoter: () => Promise.resolve(null),
-  retrieveVotes: () => Promise.resolve(null),
+  persistVoting: () => Promise.reject(new Error('not implemented')),
+  persistVoters: () => Promise.reject(new Error('not implemented')),
+  persistVote: () => Promise.reject(new Error('not implemented')),
+  retrieveVoting: () => Promise.reject(new Error('not implemented')),
+  retrieveVoter: () => Promise.reject(new Error('not implemented')),
+  retrieveVotes: () => Promise.reject(new Error('not implemented')),
+  checkVoters: () => Promise.reject(new Error('not implemented')),
 }
 
 export function setCallbacks(newCallbacks: Partial<Callbacks>) {
@@ -76,6 +77,11 @@ export async function startVoting(request: StartVotingRequest): Promise<StartVot
 
   // Validate
   if (candidates.includes(startedBy)) throw new Error('Voting cannot be started by a candidate')
+  const checkedVoters = await callbacks.checkVoters([startedBy, ...candidates])
+  const notFoundVoterIds = Object.entries(checkedVoters)
+    .filter(([, exists]) => !exists)
+    .map(([voterId]) => voterId)
+  if (notFoundVoterIds.length) throw new Error(`Voters ${notFoundVoterIds.join(', ')} do not exist`)
 
   const voting: VotingData = {
     startsAt: now,

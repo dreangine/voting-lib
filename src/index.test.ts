@@ -155,6 +155,7 @@ beforeEach(() => {
     retrieveVoting: () => Promise.resolve(null),
     retrieveVoter: () => Promise.resolve(null),
     retrieveVotes: () => Promise.resolve(null),
+    checkVoters: () => Promise.resolve({}),
   })
 })
 

@@ -188,20 +188,7 @@ export async function retrieveVotingSummary(
           elect: 0,
           pass: 0,
         }
-        switch (veredict) {
-          case 'guilty':
-            candidatesStats[candidateId].guilty++
-            break
-          case 'innocent':
-            candidatesStats[candidateId].innocent++
-            break
-          case 'elect':
-            candidatesStats[candidateId].elect++
-            break
-          case 'pass':
-            candidatesStats[candidateId].pass++
-            break
-        }
+        candidatesStats[candidateId][veredict]++
       })
       return candidatesStats
     }, {} as CandidatesStats)

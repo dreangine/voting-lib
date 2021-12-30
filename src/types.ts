@@ -54,6 +54,8 @@ export type Voting = {
   candidates: VoterId[]
   startsAt: Date
   endsAt: Date
+  totalVoters: number
+  requiredParticipationPercentage?: number
   evidence?: Evidence
 }
 
@@ -74,6 +76,7 @@ export type Callbacks = {
   checkVoters: (votersIds: VoterId[]) => Promise<{
     [voterId: VoterId]: boolean
   }>
+  countVoters: () => Promise<number>
 }
 
 /**
@@ -95,7 +98,8 @@ export type VoteData = Vote & Omit<BasicData, 'updatedAt'>
  * PARAMS
  */
 
-export type VotingParams = Partial<Pick<Voting, 'startsAt'>> & Omit<Voting, 'votingId' | 'startsAt'>
+export type VotingParams = Partial<Pick<Voting, 'startsAt'>> &
+  Omit<Voting, 'votingId' | 'startsAt' | 'totalVoters'>
 
 export type VoteParams = Omit<Vote, 'voteId'>
 

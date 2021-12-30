@@ -58,6 +58,7 @@ async function checkRegisterVoteByVoterId(
       endsAt: tomorrowDate,
       candidates,
       startedBy: generateVoterId(),
+      totalVoters: candidates.length + 1,
       createdAt: yesterdayDate,
       updatedAt: yesterdayDate,
     } as VotingData)
@@ -107,6 +108,7 @@ async function checkRegisterVoteByUserId(
       endsAt: tomorrowDate,
       candidates,
       startedBy: generateVoterId(),
+      totalVoters: candidates.length + 1,
       createdAt: yesterdayDate,
       updatedAt: yesterdayDate,
     } as VotingData)
@@ -156,6 +158,7 @@ beforeEach(() => {
     retrieveVoter: () => Promise.resolve(null),
     retrieveVotes: () => Promise.resolve(null),
     checkVoters: () => Promise.resolve({}),
+    countVoters: () => Promise.resolve(0),
   })
 })
 
@@ -376,6 +379,7 @@ describe('Add a vote', () => {
             endsAt: yesterdayDate,
             candidates: ['V2ASDF', 'V3ASDF'],
             startedBy: generateVoterId(),
+            totalVoters: 3,
             createdAt: yesterdayDate,
             updatedAt: yesterdayDate,
           } as VotingData)
@@ -447,6 +451,7 @@ describe('Retrieve voting summary', () => {
         endsAt: tomorrowDate,
         candidates: candidates,
         startedBy: generateVoterId(),
+        totalVoters: candidates.length + 1,
         createdAt: new Date(),
         updatedAt: new Date(),
       } as VotingData)
@@ -517,6 +522,7 @@ describe('Retrieve voting summary', () => {
         endsAt: yesterdayDate,
         candidates: candidates,
         startedBy: generateVoterId(),
+        totalVoters: candidates.length + 1,
         createdAt: new Date(),
         updatedAt: new Date(),
       } as VotingData)

@@ -30,7 +30,7 @@ const callbacks: Callbacks = {
   retrieveVoter: () => Promise.reject(new Error('not implemented')),
   retrieveVotes: () => Promise.reject(new Error('not implemented')),
   checkVoters: () => Promise.reject(new Error('not implemented')),
-  countVoters: () => Promise.reject(new Error('not implemented')),
+  countActiveVoters: () => Promise.reject(new Error('not implemented')),
 }
 
 export function setCallbacks(newCallbacks: Partial<Callbacks>) {
@@ -87,7 +87,7 @@ export async function startVoting(request: StartVotingRequest): Promise<StartVot
   if (notFoundVoterIds.length) throw new Error(`Voters ${notFoundVoterIds.join(', ')} do not exist`)
 
   // Get the total amount of voters when voting starts
-  const totalVoters = await callbacks.countVoters()
+  const totalVoters = await callbacks.countActiveVoters()
 
   const voting: VotingData = {
     startsAt: now,
@@ -111,6 +111,7 @@ export async function registerVoters(
       ({
         voterId: generateVoterId(),
         userId,
+        status: 'active',
         createdAt: now,
         updatedAt: now,
       } as VoterData)

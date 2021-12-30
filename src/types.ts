@@ -40,10 +40,13 @@ export type VotingDescription = {
   [language: string]: string
 }
 
+export type VoterStatus = 'active' | 'inactive'
+
 // Anyone can see how the voter voted but its user information isn't public
 export type Voter = {
   voterId: VoterId
   userId: UserId
+  status: VoterStatus
 }
 
 export type Voting = {
@@ -76,7 +79,7 @@ export type Callbacks = {
   checkVoters: (votersIds: VoterId[]) => Promise<{
     [voterId: VoterId]: boolean
   }>
-  countVoters: () => Promise<number>
+  countActiveVoters: () => Promise<number>
 }
 
 /**

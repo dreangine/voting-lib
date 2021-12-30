@@ -18,6 +18,8 @@ import {
   VotingSummaryState,
   FinalVeredictStats,
   Callbacks,
+  VoteData,
+  VoterData,
 } from './types'
 
 const callbacks: Callbacks = {
@@ -104,12 +106,15 @@ export async function registerVoters(
 ): Promise<RegisterVotersResponse> {
   const { userIds, omitReturnedData } = request
   const now = new Date()
-  const voters = userIds.map((userId) => ({
-    voterId: generateVoterId(),
-    userId,
-    createdAt: now,
-    updatedAt: now,
-  }))
+  const voters = userIds.map(
+    (userId) =>
+      ({
+        voterId: generateVoterId(),
+        userId,
+        createdAt: now,
+        updatedAt: now,
+      } as VoterData)
+  )
   await callbacks.persistVoters(voters)
   return { voters: omitReturnedData ? undefined : voters }
 }
@@ -126,11 +131,10 @@ export async function registerVote(request: RegisterVoteRequest): Promise<Regist
   if (!voting) throw new Error('Voting does not exist')
   if (hasVotingEnded(voting)) throw new Error('Voting has ended')
 
-  const vote = {
+  const vote: VoteData = {
     ...voteParams,
     voteId: generateVoteId(),
     createdAt: now,
-    updatedAt: now,
   }
   await callbacks.persistVote(vote)
   return { vote }

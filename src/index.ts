@@ -86,7 +86,7 @@ export async function startVoting(request: StartVotingRequest): Promise<StartVot
     .map(([voterId]) => voterId)
   if (notFoundVoterIds.length) throw new Error(`Voters ${notFoundVoterIds.join(', ')} do not exist`)
 
-  // Get the total amount of voters when voting starts
+  // Get the total amount of active voters when voting starts
   const totalVoters = await callbacks.countActiveVoters()
 
   const voting: VotingData = {

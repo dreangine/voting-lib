@@ -29,7 +29,7 @@ const callbacks: Callbacks = {
   retrieveVoting: () => Promise.reject(new Error('not implemented')),
   retrieveVoter: () => Promise.reject(new Error('not implemented')),
   retrieveVotes: () => Promise.reject(new Error('not implemented')),
-  checkVoters: () => Promise.reject(new Error('not implemented')),
+  checkActiveVoters: () => Promise.reject(new Error('not implemented')),
   countActiveVoters: () => Promise.reject(new Error('not implemented')),
 }
 
@@ -80,7 +80,7 @@ export async function startVoting(request: StartVotingRequest): Promise<StartVot
 
   // Validate
   if (candidates.includes(startedBy)) throw new Error('Voting cannot be started by a candidate')
-  const checkedVoters = await callbacks.checkVoters([startedBy, ...candidates])
+  const checkedVoters = await callbacks.checkActiveVoters([startedBy, ...candidates])
   const notFoundVoterIds = Object.entries(checkedVoters)
     .filter(([, exists]) => !exists)
     .map(([voterId]) => voterId)

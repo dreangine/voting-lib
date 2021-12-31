@@ -159,7 +159,7 @@ beforeEach(() => {
     retrieveVoting: () => Promise.resolve(null),
     retrieveVoter: () => Promise.resolve(null),
     retrieveVotes: () => Promise.resolve(null),
-    checkVoters: () => Promise.resolve({}),
+    checkActiveVoters: () => Promise.resolve({}),
     countActiveVoters: () => Promise.resolve(0),
   })
 })
@@ -220,7 +220,7 @@ describe('Start a voting', () => {
 
         setCallbacks({
           persistVoting: spy,
-          checkVoters: checkVotersSpy,
+          checkActiveVoters: checkVotersSpy,
         })
 
         const request: StartVotingRequest = {
@@ -258,7 +258,7 @@ describe('Start a voting', () => {
 
         setCallbacks({
           persistVoting: spy,
-          checkVoters: checkVotersSpy,
+          checkActiveVoters: checkVotersSpy,
         })
 
         const request: StartVotingRequest = {
@@ -284,7 +284,7 @@ describe('Start a voting', () => {
 
         setCallbacks({
           persistVoting: spy,
-          checkVoters: checkVotersSpy,
+          checkActiveVoters: checkVotersSpy,
         })
 
         const request: StartVotingRequest = {

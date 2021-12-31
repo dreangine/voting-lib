@@ -76,7 +76,7 @@ export type Callbacks = {
   retrieveVoting: (votingId: VotingId) => Promise<VotingData | null>
   retrieveVoter: (userId: UserId) => Promise<VoterData | null>
   retrieveVotes: (votingId: VotingId) => Promise<VoteData[] | null>
-  checkVoters: (votersIds: VoterId[]) => Promise<{
+  checkActiveVoters: (votersIds: VoterId[]) => Promise<{
     [voterId: VoterId]: boolean
   }>
   countActiveVoters: () => Promise<number>

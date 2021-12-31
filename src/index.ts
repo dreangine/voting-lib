@@ -1,4 +1,4 @@
-import { nanoid } from 'nanoid'
+import { nanoid } from 'nanoid/async'
 
 import {
   RegisterVoteByUserIdRequest,
@@ -37,16 +37,16 @@ export function setCallbacks(newCallbacks: Partial<Callbacks>) {
   Object.assign(callbacks, newCallbacks)
 }
 
-export function generateVotingId(): VotingId {
-  return nanoid()
+export async function generateVotingId(): Promise<VotingId> {
+  return await nanoid()
 }
 
-export function generateVoterId(): VoterId {
-  return nanoid()
+export async function generateVoterId(): Promise<VoterId> {
+  return await nanoid()
 }
 
-export function generateVoteId(): VoteId {
-  return nanoid()
+export async function generateVoteId(): Promise<VoteId> {
+  return await nanoid()
 }
 
 export function hasVotingEnded(voting: VotingData): boolean {
@@ -92,7 +92,7 @@ export async function startVoting(request: StartVotingRequest): Promise<StartVot
   const voting: VotingData = {
     startsAt: now,
     ...votingParams,
-    votingId: generateVotingId(),
+    votingId: await generateVotingId(),
     totalVoters,
     createdAt: now,
     updatedAt: now,
@@ -106,15 +106,17 @@ export async function registerVoters(
 ): Promise<RegisterVotersResponse> {
   const { userIds, omitReturnedData } = request
   const now = new Date()
-  const voters = userIds.map(
-    (userId) =>
-      ({
-        voterId: generateVoterId(),
-        userId,
-        status: 'active',
-        createdAt: now,
-        updatedAt: now,
-      } as VoterData)
+  const voters = await Promise.all(
+    userIds.map(
+      async (userId) =>
+        ({
+          voterId: await generateVoterId(),
+          userId,
+          status: 'active',
+          createdAt: now,
+          updatedAt: now,
+        } as VoterData)
+    )
   )
   await callbacks.persistVoters(voters)
   return { voters: omitReturnedData ? undefined : voters }
@@ -134,7 +136,7 @@ export async function registerVote(request: RegisterVoteRequest): Promise<Regist
 
   const vote: VoteData = {
     ...voteParams,
-    voteId: generateVoteId(),
+    voteId: await generateVoteId(),
     createdAt: now,
   }
   await callbacks.persistVote(vote)

@@ -47,21 +47,22 @@ async function checkRegisterVoteByVoterId(
   choices: VoteChoice[]
 ) {
   const votingId = 'V1ASDF'
-  const spyRetrieveVoting = chai.spy(() =>
-    Promise.resolve({
-      votingId,
-      votingDescription: {
-        'en-US': `Test voting (${votingType})`,
-      },
-      votingType,
-      startsAt: yesterdayDate,
-      endsAt: tomorrowDate,
-      candidates,
-      startedBy: generateVoterId(),
-      totalVoters: candidates.length + 1,
-      createdAt: yesterdayDate,
-      updatedAt: yesterdayDate,
-    } as VotingData)
+  const spyRetrieveVoting = chai.spy(
+    async () =>
+      ({
+        votingId,
+        votingDescription: {
+          'en-US': `Test voting (${votingType})`,
+        },
+        votingType,
+        startsAt: yesterdayDate,
+        endsAt: tomorrowDate,
+        candidates,
+        startedBy: await generateVoterId(),
+        totalVoters: candidates.length + 1,
+        createdAt: yesterdayDate,
+        updatedAt: yesterdayDate,
+      } as VotingData)
   )
   const spyPersist = chai.spy(() => Promise.resolve())
 
@@ -96,22 +97,23 @@ async function checkRegisterVoteByUserId(
   choices: VoteChoice[]
 ) {
   const votingId = 'V1ASDF'
-  const voterId = generateVoterId()
-  const spyRetrieveVoting = chai.spy(() =>
-    Promise.resolve({
-      votingId,
-      votingDescription: {
-        'en-US': `Test voting (${votingType})`,
-      },
-      votingType,
-      startsAt: yesterdayDate,
-      endsAt: tomorrowDate,
-      candidates,
-      startedBy: generateVoterId(),
-      totalVoters: candidates.length + 1,
-      createdAt: yesterdayDate,
-      updatedAt: yesterdayDate,
-    } as VotingData)
+  const voterId = await generateVoterId()
+  const spyRetrieveVoting = chai.spy(
+    async () =>
+      ({
+        votingId,
+        votingDescription: {
+          'en-US': `Test voting (${votingType})`,
+        },
+        votingType,
+        startsAt: yesterdayDate,
+        endsAt: tomorrowDate,
+        candidates,
+        startedBy: await generateVoterId(),
+        totalVoters: candidates.length + 1,
+        createdAt: yesterdayDate,
+        updatedAt: yesterdayDate,
+      } as VotingData)
   )
   const spyPersistVote = chai.spy(() => Promise.resolve())
   const spyRetrieveVoter = chai.spy(() =>
@@ -368,21 +370,22 @@ describe('Add a vote', () => {
 
       it('cannot vote after voting has ended', async () => {
         const votingId = 'V1ASDF'
-        const spyRetrieveVoting = chai.spy(() =>
-          Promise.resolve({
-            votingId,
-            votingDescription: {
-              'en-US': `Test voting (${votingType})`,
-            },
-            votingType,
-            startsAt: yesterdayDate,
-            endsAt: yesterdayDate,
-            candidates: ['V2ASDF', 'V3ASDF'],
-            startedBy: generateVoterId(),
-            totalVoters: 3,
-            createdAt: yesterdayDate,
-            updatedAt: yesterdayDate,
-          } as VotingData)
+        const spyRetrieveVoting = chai.spy(
+          async () =>
+            ({
+              votingId,
+              votingDescription: {
+                'en-US': `Test voting (${votingType})`,
+              },
+              votingType,
+              startsAt: yesterdayDate,
+              endsAt: yesterdayDate,
+              candidates: ['V2ASDF', 'V3ASDF'],
+              startedBy: await generateVoterId(),
+              totalVoters: 3,
+              createdAt: yesterdayDate,
+              updatedAt: yesterdayDate,
+            } as VotingData)
         )
         const spyPersist = chai.spy(() => Promise.resolve())
 
@@ -415,7 +418,7 @@ describe('Add a vote', () => {
 
 describe('Retrieve voting summary', () => {
   it('should retrieve voting summary - ongoing voting', async () => {
-    const votingId = generateVotingId()
+    const votingId = await generateVotingId()
     const votesDistribution = [
       ['V1ASDF', 'guilty'],
       ['V1ASDF', 'guilty'],
@@ -424,37 +427,40 @@ describe('Retrieve voting summary', () => {
       ['V2ASDF', 'innocent'],
     ]
     const candidates = [...new Set(votesDistribution.map(([csandidateId]) => csandidateId))]
-    const votes = votesDistribution.map(
-      ([candidateId, vote]) =>
-        ({
-          voteId: generateVoteId(),
-          votingId,
-          voterId: generateVoterId(),
-          choices: [
-            {
-              candidateId,
-              veredict: vote,
-            },
-          ],
-          candidateId: candidateId,
-          createdAt: new Date(),
-        } as VoteData)
+    const votes = Promise.all(
+      votesDistribution.map(
+        async ([candidateId, vote]) =>
+          ({
+            voteId: await generateVoteId(),
+            votingId,
+            voterId: await generateVoterId(),
+            choices: [
+              {
+                candidateId,
+                veredict: vote,
+              },
+            ],
+            candidateId: candidateId,
+            createdAt: new Date(),
+          } as VoteData)
+      )
     )
-    const retrieveVotingSpy = chai.spy(() =>
-      Promise.resolve({
-        votingId,
-        votingDescription: {
-          'en-US': 'Test voting',
-        },
-        votingType: 'judgement',
-        startsAt: new Date(),
-        endsAt: tomorrowDate,
-        candidates: candidates,
-        startedBy: generateVoterId(),
-        totalVoters: candidates.length + 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as VotingData)
+    const retrieveVotingSpy = chai.spy(
+      async () =>
+        ({
+          votingId,
+          votingDescription: {
+            'en-US': 'Test voting',
+          },
+          votingType: 'judgement',
+          startsAt: new Date(),
+          endsAt: tomorrowDate,
+          candidates: candidates,
+          startedBy: await generateVoterId(),
+          totalVoters: candidates.length + 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as VotingData)
     )
     const retrieveVotesSpy = chai.spy(() => Promise.resolve(votes))
 
@@ -486,7 +492,7 @@ describe('Retrieve voting summary', () => {
   })
 
   it('should retrieve voting summary - ended voting', async () => {
-    const votingId = generateVotingId()
+    const votingId = await generateVotingId()
     const votesDistribution = [
       ['V1ASDF', 'guilty'],
       ['V1ASDF', 'guilty'],
@@ -495,37 +501,40 @@ describe('Retrieve voting summary', () => {
       ['V2ASDF', 'innocent'],
     ]
     const candidates = [...new Set(votesDistribution.map(([csandidateId]) => csandidateId))]
-    const votes = votesDistribution.map(
-      ([candidateId, vote]) =>
-        ({
-          voteId: generateVoteId(),
-          votingId,
-          voterId: generateVoterId(),
-          choices: [
-            {
-              candidateId,
-              veredict: vote,
-            },
-          ],
-          candidateId: candidateId,
-          createdAt: new Date(),
-        } as VoteData)
+    const votes = Promise.all(
+      votesDistribution.map(
+        async ([candidateId, vote]) =>
+          ({
+            voteId: await generateVoteId(),
+            votingId,
+            voterId: await generateVoterId(),
+            choices: [
+              {
+                candidateId,
+                veredict: vote,
+              },
+            ],
+            candidateId: candidateId,
+            createdAt: new Date(),
+          } as VoteData)
+      )
     )
-    const retrieveVotingSpy = chai.spy(() =>
-      Promise.resolve({
-        votingId,
-        votingDescription: {
-          'en-US': 'Test voting',
-        },
-        votingType: 'judgement',
-        startsAt: new Date(),
-        endsAt: yesterdayDate,
-        candidates: candidates,
-        startedBy: generateVoterId(),
-        totalVoters: candidates.length + 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as VotingData)
+    const retrieveVotingSpy = chai.spy(
+      async () =>
+        ({
+          votingId,
+          votingDescription: {
+            'en-US': 'Test voting',
+          },
+          votingType: 'judgement',
+          startsAt: new Date(),
+          endsAt: yesterdayDate,
+          candidates: candidates,
+          startedBy: await generateVoterId(),
+          totalVoters: candidates.length + 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as VotingData)
     )
     const retrieveVotesSpy = chai.spy(() => Promise.resolve(votes))
 

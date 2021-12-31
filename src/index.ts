@@ -80,10 +80,9 @@ export async function startVoting(request: StartVotingRequest): Promise<StartVot
 
   // Validate
   if (candidates.includes(startedBy)) throw new Error('Voting cannot be started by a candidate')
-  const checkedVoters = await callbacks.checkActiveVoters([startedBy, ...candidates])
-  const notFoundVoterIds = Object.entries(checkedVoters)
-    .filter(([, exists]) => !exists)
-    .map(([voterId]) => voterId)
+  const allVoters = [startedBy, ...candidates]
+  const checkedVoters = await callbacks.checkActiveVoters(allVoters)
+  const notFoundVoterIds = allVoters.filter((candidate) => !checkedVoters[candidate])
   if (notFoundVoterIds.length) throw new Error(`Voters ${notFoundVoterIds.join(', ')} do not exist`)
 
   // Get the total amount of active voters when voting starts

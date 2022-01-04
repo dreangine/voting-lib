@@ -39,6 +39,13 @@ const nowDate = new Date()
 const yesterdayDate = new Date(nowDate.getTime() - 1000 * 60 * 60 * 24)
 const tomorrowDate = new Date(nowDate.getTime() + 24 * 60 * 60 * 1000)
 const votingTypes: VotingType[] = ['election', 'judgement']
+const voters: {
+  starter: VoterId
+  candidates: VoterId[]
+} = {
+  starter: 'V1ASDF',
+  candidates: ['V2ASDF', 'V3ASDF'],
+}
 
 async function checkRegisterVoteByVoterId(
   voterId: VoterId,
@@ -151,6 +158,11 @@ async function checkRegisterVoteByUserId(
   expect(responseVote.createdAt).to.exist
 }
 
+before(async () => {
+  voters.starter = await generateVoterId()
+  voters.candidates = [await generateVoterId(), await generateVoterId()]
+})
+
 beforeEach(() => {
   setCallbacks({
     persistVote: () => Promise.resolve(),
@@ -207,14 +219,16 @@ describe('Add voters', () => {
 
 describe('Start a voting', () => {
   votingTypes.forEach((votingType) => {
-    describe(`Voting type: ${votingType}`, () => {
+    describe(`Voting type: ${votingType}`, async () => {
       it('should start a voting', async () => {
         const spy = chai.spy(() => Promise.resolve())
         const checkVotersSpy = chai.spy(() =>
           Promise.resolve({
-            V1ASDF: true,
-            V2ASDF: true,
-            V3ASDF: true,
+            [voters.starter]: true,
+            ...voters.candidates.reduce((acc, candidate) => {
+              acc[candidate] = true
+              return acc
+            }, {}),
           })
         )
 
@@ -229,8 +243,8 @@ describe('Start a voting', () => {
               'en-US': 'Test voting',
             },
             votingType,
-            startedBy: 'V1ASDF',
-            candidates: ['V2ASDF', 'V3ASDF'],
+            startedBy: voters.starter,
+            candidates: voters.candidates,
             endsAt: new Date(),
           },
         }
@@ -241,18 +255,22 @@ describe('Start a voting', () => {
         expect(spy).to.have.been.called.once
         expect(spy).to.have.been.called.with(responseVoting)
         expect(checkVotersSpy).to.have.been.called.once
-        expect(checkVotersSpy).to.have.been.called.with(['V1ASDF', 'V2ASDF', 'V3ASDF'])
+        expect(checkVotersSpy).to.have.been.called.with([voters.starter, ...voters.candidates])
         expect(responseVoting.votingId).to.exist
         expect(responseVoting.startsAt).to.exist
       })
 
       it('should have all voters registered', async () => {
+        const [firstCandidate, ...others] = voters.candidates
         const spy = chai.spy(() => Promise.resolve())
         const checkVotersSpy = chai.spy(() =>
           Promise.resolve({
-            V1ASDF: false,
-            V2ASDF: false,
-            V3ASDF: true,
+            [voters.starter]: false,
+            [firstCandidate]: false,
+            ...others.reduce((acc, candidate) => {
+              acc[candidate] = true
+              return acc
+            }, {}),
           })
         )
 
@@ -267,18 +285,20 @@ describe('Start a voting', () => {
               'en-US': 'Test voting',
             },
             votingType,
-            startedBy: 'V1ASDF',
-            candidates: ['V2ASDF', 'V3ASDF'],
+            startedBy: voters.starter,
+            candidates: voters.candidates,
             endsAt: new Date(),
           },
         }
 
-        await expect(startVoting(request)).to.be.rejectedWith('Voters V1ASDF, V2ASDF do not exist')
+        await expect(startVoting(request)).to.be.rejectedWith(
+          `Voters ${[voters.starter, firstCandidate].join(', ')} do not exist`
+        )
         expect(checkVotersSpy).to.have.been.called.once
         expect(spy).to.not.have.been.called
       })
 
-      it('an election cannot be started by a candidate', async () => {
+      it('a voting cannot be started by a candidate', async () => {
         const spy = chai.spy(() => Promise.resolve())
         const checkVotersSpy = chai.spy(() => Promise.resolve({}))
 
@@ -293,8 +313,8 @@ describe('Start a voting', () => {
               'en-US': 'Test election',
             },
             votingType,
-            startedBy: 'V1ASDF',
-            candidates: ['V1ASDF'],
+            startedBy: voters.starter,
+            candidates: [voters.starter],
             endsAt: new Date(),
           },
         }
@@ -315,7 +335,7 @@ describe('Add a vote', () => {
       const veredict = votingType === 'election' ? 'elect' : 'guilty'
       it('should add a vote', async () => {
         await checkRegisterVoteByVoterId(
-          'V1ASDF',
+          voters.starter,
           votingType,
           ['V2ASDF', 'V3ASDF'],
           [
@@ -352,11 +372,11 @@ describe('Add a vote', () => {
 
         const request: RegisterVoteRequest = {
           voteParams: {
-            votingId: 'V1ASDF',
-            voterId: 'V1ASDF',
+            votingId: await generateVotingId(),
+            voterId: voters.starter,
             choices: [
               {
-                candidateId: 'V1ASDF',
+                candidateId: voters.starter,
                 veredict,
               },
             ],
@@ -369,7 +389,7 @@ describe('Add a vote', () => {
       })
 
       it('cannot vote after voting has ended', async () => {
-        const votingId = 'V1ASDF'
+        const votingId = await generateVotingId()
         const spyRetrieveVoting = chai.spy(
           async () =>
             ({
@@ -380,8 +400,8 @@ describe('Add a vote', () => {
               votingType,
               startsAt: yesterdayDate,
               endsAt: yesterdayDate,
-              candidates: ['V2ASDF', 'V3ASDF'],
-              startedBy: await generateVoterId(),
+              candidates: voters.candidates,
+              startedBy: voters.starter,
               totalVoters: 3,
               createdAt: yesterdayDate,
               updatedAt: yesterdayDate,
@@ -397,10 +417,10 @@ describe('Add a vote', () => {
         const request: RegisterVoteRequest = {
           voteParams: {
             votingId,
-            voterId: 'V1ASDF',
+            voterId: voters.starter,
             choices: [
               {
-                candidateId: 'V2ASDF',
+                candidateId: voters.candidates[0],
                 veredict,
               },
             ],
@@ -417,14 +437,15 @@ describe('Add a vote', () => {
 })
 
 describe('Retrieve voting summary', () => {
+  const [firstCandidate, secondCandidate] = voters.candidates
   it('should retrieve voting summary - ongoing voting', async () => {
     const votingId = await generateVotingId()
     const votesDistribution = [
-      ['V1ASDF', 'guilty'],
-      ['V1ASDF', 'guilty'],
-      ['V1ASDF', 'innocent'],
-      ['V2ASDF', 'guilty'],
-      ['V2ASDF', 'innocent'],
+      [firstCandidate, 'guilty'],
+      [firstCandidate, 'guilty'],
+      [firstCandidate, 'innocent'],
+      [secondCandidate, 'guilty'],
+      [secondCandidate, 'innocent'],
     ]
     const candidates = [...new Set(votesDistribution.map(([csandidateId]) => csandidateId))]
     const votes = Promise.all(
@@ -456,7 +477,7 @@ describe('Retrieve voting summary', () => {
           startsAt: new Date(),
           endsAt: tomorrowDate,
           candidates: candidates,
-          startedBy: await generateVoterId(),
+          startedBy: voters.starter,
           totalVoters: candidates.length + 1,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -470,7 +491,7 @@ describe('Retrieve voting summary', () => {
     })
 
     const request: RetrieveVotingSummaryRequest = {
-      votingId: 'V1ASDF',
+      votingId,
     }
 
     const result = await retrieveVotingSummary(request)
@@ -483,9 +504,9 @@ describe('Retrieve voting summary', () => {
       return candidatesStats
     }, {} as CandidatesStats)
     expect(retrieveVotingSpy).to.have.been.called.once
-    expect(retrieveVotingSpy).to.have.been.called.with('V1ASDF')
+    expect(retrieveVotingSpy).to.have.been.called.with(votingId)
     expect(retrieveVotesSpy).to.have.been.called.once
-    expect(retrieveVotesSpy).to.have.been.called.with('V1ASDF')
+    expect(retrieveVotesSpy).to.have.been.called.with(votingId)
     expect(result).to.exist
     expect(result.candidatesStats).to.deep.equal(expectedStats)
     expect(result.votingSummaryState).to.equal('partial')
@@ -494,11 +515,11 @@ describe('Retrieve voting summary', () => {
   it('should retrieve voting summary - ended voting', async () => {
     const votingId = await generateVotingId()
     const votesDistribution = [
-      ['V1ASDF', 'guilty'],
-      ['V1ASDF', 'guilty'],
-      ['V1ASDF', 'innocent'],
-      ['V2ASDF', 'guilty'],
-      ['V2ASDF', 'innocent'],
+      [firstCandidate, 'guilty'],
+      [firstCandidate, 'guilty'],
+      [firstCandidate, 'innocent'],
+      [secondCandidate, 'guilty'],
+      [secondCandidate, 'innocent'],
     ]
     const candidates = [...new Set(votesDistribution.map(([csandidateId]) => csandidateId))]
     const votes = Promise.all(
@@ -530,7 +551,7 @@ describe('Retrieve voting summary', () => {
           startsAt: new Date(),
           endsAt: yesterdayDate,
           candidates: candidates,
-          startedBy: await generateVoterId(),
+          startedBy: voters.starter,
           totalVoters: candidates.length + 1,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -544,7 +565,7 @@ describe('Retrieve voting summary', () => {
     })
 
     const request: RetrieveVotingSummaryRequest = {
-      votingId: 'V1ASDF',
+      votingId,
     }
 
     const result = await retrieveVotingSummary(request)
@@ -557,16 +578,16 @@ describe('Retrieve voting summary', () => {
       return candidatesStats
     }, {} as CandidatesStats)
     expect(retrieveVotingSpy).to.have.been.called.once
-    expect(retrieveVotingSpy).to.have.been.called.with('V1ASDF')
+    expect(retrieveVotingSpy).to.have.been.called.with(votingId)
     expect(retrieveVotesSpy).to.have.been.called.once
-    expect(retrieveVotesSpy).to.have.been.called.with('V1ASDF')
+    expect(retrieveVotesSpy).to.have.been.called.with(votingId)
     expect(result).to.exist
     expect(result.candidatesStats).to.deep.equal(expectedStats)
     expect(result.votingSummaryState).to.equal('final')
     expect(result.finalVeredict).to.exist
     if (result.finalVeredict) {
-      expect(result.finalVeredict['V1ASDF']).to.equal('guilty')
-      expect(result.finalVeredict['V2ASDF']).to.equal('undecided')
+      expect(result.finalVeredict[firstCandidate]).to.equal('guilty')
+      expect(result.finalVeredict[secondCandidate]).to.equal('undecided')
     }
   })
 })

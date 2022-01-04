@@ -38,15 +38,15 @@ export function setCallbacks(newCallbacks: Partial<Callbacks>) {
 }
 
 export async function generateVotingId(): Promise<VotingId> {
-  return await nanoid()
+  return `voting-${await nanoid()}`
 }
 
 export async function generateVoterId(): Promise<VoterId> {
-  return await nanoid()
+  return `voter-${await nanoid()}`
 }
 
 export async function generateVoteId(): Promise<VoteId> {
-  return await nanoid()
+  return `vote-${await nanoid()}`
 }
 
 export function hasVotingEnded(voting: VotingData): boolean {

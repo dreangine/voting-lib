@@ -11,7 +11,7 @@ A library to manage voting systems, having its own voting rules and options whil
 
 ## Installation
 
-    $ npm i voting-system
+    $ npm i voting-lib
 
 ## Setup
 

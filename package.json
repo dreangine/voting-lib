@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dreangine/voting-system.git"
+    "url": "git+https://github.com/dreangine/voting-lib.git"
   },
   "author": "Omar V. Buede <omar@dreangine.xyz>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/dreangine/voting-system/issues"
+    "url": "https://github.com/dreangine/voting-lib/issues"
   },
-  "homepage": "https://github.com/dreangine/voting-system#readme",
+  "homepage": "https://github.com/dreangine/voting-lib#readme",
   "dependencies": {
     "nanoid": "3.1.30"
   },

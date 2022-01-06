@@ -1,0 +1,45 @@
+{
+  "name": "voting-lib",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "tsc && node dist/index.js",
+    "lint": "eslint src/**/*.ts",
+    "test": "mocha -r ts-node/register 'src/**/*.test.ts'",
+    "coverage": "nyc nyc --reporter=lcov npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dreangine/voting-system.git"
+  },
+  "author": "Omar V. Buede <omar@dreangine.xyz>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dreangine/voting-system/issues"
+  },
+  "homepage": "https://github.com/dreangine/voting-system#readme",
+  "dependencies": {
+    "nanoid": "3.1.30"
+  },
+  "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "1.0.2",
+    "@types/chai": "4.3.0",
+    "@types/chai-as-promised": "7.1.4",
+    "@types/chai-spies": "1.0.3",
+    "@types/mocha": "9.0.0",
+    "@typescript-eslint/eslint-plugin": "5.7.0",
+    "@typescript-eslint/parser": "5.7.0",
+    "chai": "4.3.4",
+    "chai-as-promised": "7.1.1",
+    "chai-spies": "1.0.0",
+    "eslint": "8.4.1",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-prettier": "4.0.0",
+    "mocha": "9.1.3",
+    "nyc": "15.1.0",
+    "prettier": "2.5.1",
+    "ts-node": "10.4.0",
+    "typescript": "4.5.4"
+  }
+}

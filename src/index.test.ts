@@ -101,15 +101,20 @@ describe('Not implemented', () => {
 })
 
 describe('Voter', () => {
+  const userIds = ['U1ASDF', 'U2ASDF']
   it('should add voters', async () => {
-    const spy = chai.spy(() => Promise.resolve())
+    const spy = chai.spy(() =>
+      Promise.resolve({
+        inserts: userIds.length,
+      })
+    )
 
     setCallbacks({
       persistVoters: spy,
     })
 
     const request: RegisterVotersRequest = {
-      userIds: ['U1ASDF', 'U2ASDF'],
+      userIds,
     }
     const response = await registerVoters(request)
     const { voters: responseVoters } = response
@@ -124,14 +129,18 @@ describe('Voter', () => {
   })
 
   it('should add voters - omit data', async () => {
-    const spy = chai.spy(() => Promise.resolve())
+    const spy = chai.spy(() =>
+      Promise.resolve({
+        inserts: userIds.length,
+      })
+    )
 
     setCallbacks({
       persistVoters: spy,
     })
 
     const request: RegisterVotersRequest = {
-      userIds: ['U1ASDF', 'U2ASDF'],
+      userIds,
       omitReturnedData: true,
     }
     const response = await registerVoters(request)
@@ -145,7 +154,11 @@ describe('Voting', () => {
   votingTypes.forEach((votingType) => {
     describe(`Voting type: ${votingType}`, async () => {
       it('should start a voting', async () => {
-        const spy = chai.spy(() => Promise.resolve())
+        const spy = chai.spy(() =>
+          Promise.resolve({
+            inserts: 1,
+          })
+        )
         const checkVotersSpy = chai.spy(() =>
           Promise.resolve({
             [voters.starter]: true,
@@ -190,7 +203,11 @@ describe('Voting', () => {
 
       it('should have all voters registered', async () => {
         const [firstCandidate, ...others] = voters.candidates
-        const spy = chai.spy(() => Promise.resolve())
+        const spy = chai.spy(() =>
+          Promise.resolve({
+            inserts: 1,
+          })
+        )
         const checkVotersSpy = chai.spy(() =>
           Promise.resolve({
             [voters.starter]: false,
@@ -227,7 +244,11 @@ describe('Voting', () => {
       })
 
       it('a voting cannot be started by a candidate', async () => {
-        const spy = chai.spy(() => Promise.resolve())
+        const spy = chai.spy(() =>
+          Promise.resolve({
+            inserts: 1,
+          })
+        )
         const checkVotersSpy = chai.spy(() => Promise.resolve({}))
 
         setCallbacks({
@@ -263,24 +284,27 @@ describe('Vote', () => {
       const veredict = votingType === 'election' ? 'elect' : 'guilty'
       it('should add a vote', async () => {
         const votingId = await generateVotingId()
-        const spyRetrieveVoting = chai.spy(
-          async () =>
-            ({
-              votingId,
-              votingDescription: {
-                'en-US': `Test voting (${votingType})`,
-              },
-              votingType,
-              startsAt: yesterdayDate,
-              endsAt: tomorrowDate,
-              candidates: voters.candidates,
-              startedBy: voters.starter,
-              totalVoters: voters.candidates.length + 1,
-              createdAt: yesterdayDate,
-              updatedAt: yesterdayDate,
-            } as VotingData)
+        const spyRetrieveVoting = chai.spy(async () => ({
+          data: {
+            votingId,
+            votingDescription: {
+              'en-US': `Test voting (${votingType})`,
+            },
+            votingType,
+            startsAt: yesterdayDate,
+            endsAt: tomorrowDate,
+            candidates: voters.candidates,
+            startedBy: voters.starter,
+            totalVoters: voters.candidates.length + 1,
+            createdAt: yesterdayDate,
+            updatedAt: yesterdayDate,
+          } as VotingData,
+        }))
+        const spyPersist = chai.spy(() =>
+          Promise.resolve({
+            inserts: 1,
+          })
         )
-        const spyPersist = chai.spy(() => Promise.resolve())
 
         setCallbacks({
           retrieveVoting: spyRetrieveVoting,
@@ -314,29 +338,34 @@ describe('Vote', () => {
       it('should add a vote - by userId', async () => {
         const votingId = await generateVotingId()
         const userId = 'U1ASDF'
-        const spyRetrieveVoting = chai.spy(
-          async () =>
-            ({
-              votingId,
-              votingDescription: {
-                'en-US': `Test voting (${votingType})`,
-              },
-              votingType,
-              startsAt: yesterdayDate,
-              endsAt: tomorrowDate,
-              candidates: voters.candidates,
-              startedBy: voters.starter,
-              totalVoters: voters.candidates.length + 1,
-              createdAt: yesterdayDate,
-              updatedAt: yesterdayDate,
-            } as VotingData)
+        const spyRetrieveVoting = chai.spy(async () => ({
+          data: {
+            votingId,
+            votingDescription: {
+              'en-US': `Test voting (${votingType})`,
+            },
+            votingType,
+            startsAt: yesterdayDate,
+            endsAt: tomorrowDate,
+            candidates: voters.candidates,
+            startedBy: voters.starter,
+            totalVoters: voters.candidates.length + 1,
+            createdAt: yesterdayDate,
+            updatedAt: yesterdayDate,
+          } as VotingData,
+        }))
+        const spyPersistVote = chai.spy(() =>
+          Promise.resolve({
+            inserts: 1,
+          })
         )
-        const spyPersistVote = chai.spy(() => Promise.resolve())
         const spyRetrieveVoter = chai.spy(() =>
           Promise.resolve({
-            userId,
-            voterId: voters.starter,
-          } as VoterData)
+            data: {
+              userId,
+              voterId: voters.starter,
+            } as VoterData,
+          })
         )
 
         setCallbacks({
@@ -373,8 +402,8 @@ describe('Vote', () => {
       })
 
       it('cannot vote on yourself', async () => {
-        const spyRetrieveVoting = chai.spy(() => Promise.resolve({} as VotingData))
-        const spyPersist = chai.spy(() => Promise.resolve())
+        const spyRetrieveVoting = chai.spy(() => Promise.reject())
+        const spyPersist = chai.spy(() => Promise.reject())
 
         setCallbacks({
           retrieveVoting: spyRetrieveVoting,
@@ -401,24 +430,23 @@ describe('Vote', () => {
 
       it('cannot vote after voting has ended', async () => {
         const votingId = await generateVotingId()
-        const spyRetrieveVoting = chai.spy(
-          async () =>
-            ({
-              votingId,
-              votingDescription: {
-                'en-US': `Test voting (${votingType})`,
-              },
-              votingType,
-              startsAt: yesterdayDate,
-              endsAt: yesterdayDate,
-              candidates: voters.candidates,
-              startedBy: voters.starter,
-              totalVoters: 3,
-              createdAt: yesterdayDate,
-              updatedAt: yesterdayDate,
-            } as VotingData)
-        )
-        const spyPersist = chai.spy(() => Promise.resolve())
+        const spyRetrieveVoting = chai.spy(async () => ({
+          data: {
+            votingId,
+            votingDescription: {
+              'en-US': `Test voting (${votingType})`,
+            },
+            votingType,
+            startsAt: yesterdayDate,
+            endsAt: yesterdayDate,
+            candidates: voters.candidates,
+            startedBy: voters.starter,
+            totalVoters: 3,
+            createdAt: yesterdayDate,
+            updatedAt: yesterdayDate,
+          } as VotingData,
+        }))
+        const spyPersist = chai.spy(() => Promise.reject())
 
         setCallbacks({
           retrieveVoting: spyRetrieveVoting,
@@ -446,8 +474,8 @@ describe('Vote', () => {
 
       it('voting does not exist', async () => {
         const votingId = await generateVotingId()
-        const spyRetrieveVoting = chai.spy(() => Promise.resolve())
-        const spyPersist = chai.spy(() => Promise.resolve())
+        const spyRetrieveVoting = chai.spy(() => Promise.resolve({ data: null }))
+        const spyPersist = chai.spy(() => Promise.reject())
 
         setCallbacks({
           retrieveVoting: spyRetrieveVoting,
@@ -476,9 +504,9 @@ describe('Vote', () => {
       it('voter does not exist', async () => {
         const votingId = await generateVotingId()
         const userId = 'U1ASDF'
-        const spyRetrieveVoting = chai.spy(() => Promise.resolve())
-        const spyPersistVote = chai.spy(() => Promise.resolve())
-        const spyRetrieveVoter = chai.spy(() => Promise.resolve())
+        const spyRetrieveVoting = chai.spy(() => Promise.reject())
+        const spyPersistVote = chai.spy(() => Promise.reject())
+        const spyRetrieveVoter = chai.spy(() => Promise.resolve({ data: null }))
 
         setCallbacks({
           retrieveVoting: spyRetrieveVoting,
@@ -541,24 +569,25 @@ describe('Voting summary', () => {
               } as VoteData)
           )
         )
-        const retrieveVotingSpy = chai.spy(
-          async () =>
-            ({
-              votingId,
-              votingDescription: {
-                'en-US': 'Test voting',
-              },
-              votingType,
-              startsAt: new Date(),
-              endsAt: tomorrowDate,
-              candidates: candidates,
-              startedBy: voters.starter,
-              totalVoters: candidates.length + 1,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            } as VotingData)
-        )
-        const retrieveVotesSpy = chai.spy(() => Promise.resolve(votes))
+        const retrieveVotingSpy = chai.spy(async () => ({
+          data: {
+            votingId,
+            votingDescription: {
+              'en-US': 'Test voting',
+            },
+            votingType,
+            startsAt: new Date(),
+            endsAt: tomorrowDate,
+            candidates: candidates,
+            startedBy: voters.starter,
+            totalVoters: candidates.length + 1,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          } as VotingData,
+        }))
+        const retrieveVotesSpy = chai.spy(async () => ({
+          data: await votes,
+        }))
 
         setCallbacks({
           retrieveVoting: retrieveVotingSpy,
@@ -585,6 +614,7 @@ describe('Voting summary', () => {
         expect(result).to.exist
         expect(result.candidatesStats).to.deep.equal(expectedStats)
         expect(result.votingSummaryState).to.equal('partial')
+        expect(result.finalVeredict).to.not.exist
       })
 
       it('should retrieve voting summary - ended voting', async () => {
@@ -616,24 +646,25 @@ describe('Voting summary', () => {
               } as VoteData)
           )
         )
-        const retrieveVotingSpy = chai.spy(
-          async () =>
-            ({
-              votingId,
-              votingDescription: {
-                'en-US': 'Test voting',
-              },
-              votingType,
-              startsAt: new Date(),
-              endsAt: yesterdayDate,
-              candidates: candidates,
-              startedBy: voters.starter,
-              totalVoters: candidates.length + 1,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            } as VotingData)
-        )
-        const retrieveVotesSpy = chai.spy(() => Promise.resolve(votes))
+        const retrieveVotingSpy = chai.spy(async () => ({
+          data: {
+            votingId,
+            votingDescription: {
+              'en-US': 'Test voting',
+            },
+            votingType,
+            startsAt: new Date(),
+            endsAt: yesterdayDate,
+            candidates: candidates,
+            startedBy: voters.starter,
+            totalVoters: candidates.length + 1,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          } as VotingData,
+        }))
+        const retrieveVotesSpy = chai.spy(async () => ({
+          data: await votes,
+        }))
 
         setCallbacks({
           retrieveVoting: retrieveVotingSpy,
@@ -698,24 +729,25 @@ describe('Voting summary', () => {
               } as VoteData)
           )
         )
-        const retrieveVotingSpy = chai.spy(
-          async () =>
-            ({
-              votingId,
-              votingDescription: {
-                'en-US': 'Test voting',
-              },
-              votingType,
-              startsAt: new Date(),
-              endsAt: yesterdayDate,
-              candidates: candidates,
-              startedBy: voters.starter,
-              totalVoters: candidates.length + 1,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            } as VotingData)
-        )
-        const retrieveVotesSpy = chai.spy(() => Promise.resolve(votes))
+        const retrieveVotingSpy = chai.spy(async () => ({
+          data: {
+            votingId,
+            votingDescription: {
+              'en-US': 'Test voting',
+            },
+            votingType,
+            startsAt: new Date(),
+            endsAt: yesterdayDate,
+            candidates: candidates,
+            startedBy: voters.starter,
+            totalVoters: candidates.length + 1,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          } as VotingData,
+        }))
+        const retrieveVotesSpy = chai.spy(async () => ({
+          data: await votes,
+        }))
 
         setCallbacks({
           retrieveVoting: retrieveVotingSpy,
@@ -748,13 +780,108 @@ describe('Voting summary', () => {
           expect(result.finalVeredict[secondCandidate]).to.equal('undecided')
         }
       })
+
+      it('no votes - ongoing voting', async () => {
+        const votingId = await generateVotingId()
+        const retrieveVotingSpy = chai.spy(async () => ({
+          data: {
+            votingId,
+            votingDescription: {
+              'en-US': 'Test voting',
+            },
+            votingType,
+            startsAt: new Date(),
+            endsAt: tomorrowDate,
+            candidates: voters.candidates,
+            startedBy: voters.starter,
+            totalVoters: voters.totalVoters(),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          } as VotingData,
+        }))
+        const retrieveVotesSpy = chai.spy(async () => ({
+          data: [],
+        }))
+
+        setCallbacks({
+          retrieveVoting: retrieveVotingSpy,
+          retrieveVotes: retrieveVotesSpy,
+        })
+
+        const request: RetrieveVotingSummaryRequest = {
+          votingId,
+        }
+
+        const result = await retrieveVotingSummary(request)
+        const expectedStats = voters.candidates.reduce((candidatesStats, candidateId) => {
+          candidatesStats[candidateId] = { guilty: 0, innocent: 0, elect: 0, pass: 0 }
+          return candidatesStats
+        }, {} as CandidatesStats)
+        expect(retrieveVotingSpy).to.have.been.called.once
+        expect(retrieveVotingSpy).to.have.been.called.with(votingId)
+        expect(retrieveVotesSpy).to.have.been.called.once
+        expect(retrieveVotesSpy).to.have.been.called.with(votingId)
+        expect(result).to.exist
+        expect(result.candidatesStats).to.deep.equal(expectedStats)
+        expect(result.votingSummaryState).to.equal('partial')
+        expect(result.finalVeredict).to.not.exist
+      })
+
+      it('no votes - ended voting', async () => {
+        const votingId = await generateVotingId()
+        const retrieveVotingSpy = chai.spy(async () => ({
+          data: {
+            votingId,
+            votingDescription: {
+              'en-US': 'Test voting',
+            },
+            votingType,
+            startsAt: new Date(),
+            endsAt: yesterdayDate,
+            candidates: voters.candidates,
+            startedBy: voters.starter,
+            totalVoters: voters.totalVoters(),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          } as VotingData,
+        }))
+        const retrieveVotesSpy = chai.spy(async () => ({
+          data: [],
+        }))
+
+        setCallbacks({
+          retrieveVoting: retrieveVotingSpy,
+          retrieveVotes: retrieveVotesSpy,
+        })
+
+        const request: RetrieveVotingSummaryRequest = {
+          votingId,
+        }
+
+        const result = await retrieveVotingSummary(request)
+        const expectedStats = voters.candidates.reduce((candidatesStats, candidateId) => {
+          candidatesStats[candidateId] = { guilty: 0, innocent: 0, elect: 0, pass: 0 }
+          return candidatesStats
+        }, {} as CandidatesStats)
+        expect(retrieveVotingSpy).to.have.been.called.once
+        expect(retrieveVotingSpy).to.have.been.called.with(votingId)
+        expect(retrieveVotesSpy).to.have.been.called.once
+        expect(retrieveVotesSpy).to.have.been.called.with(votingId)
+        expect(result).to.exist
+        expect(result.candidatesStats).to.deep.equal(expectedStats)
+        expect(result.votingSummaryState).to.equal('final')
+        expect(result.finalVeredict).to.exist
+        voters.candidates.forEach((candidateId) => {
+          expect(result.finalVeredict && result.finalVeredict[candidateId]).to.equal('undecided')
+        })
+      })
     })
   })
 
   it('voting not found', async () => {
     const votingId = await generateVotingId()
-    const retrieveVotingSpy = chai.spy(() => Promise.resolve())
-    const retrieveVotesSpy = chai.spy(() => Promise.resolve())
+    const retrieveVotingSpy = chai.spy(() => Promise.resolve({ data: null }))
+    const retrieveVotesSpy = chai.spy(() => Promise.resolve({ data: [] }))
 
     setCallbacks({
       retrieveVoting: retrieveVotingSpy,
@@ -774,7 +901,7 @@ describe('Voting summary', () => {
   it('unable to retrieve voting', async () => {
     const votingId = await generateVotingId()
     const retrieveVotingSpy = chai.spy(() => Promise.reject('Unknown error'))
-    const retrieveVotesSpy = chai.spy(() => Promise.resolve())
+    const retrieveVotesSpy = chai.spy(() => Promise.reject())
 
     setCallbacks({
       retrieveVoting: retrieveVotingSpy,
@@ -793,9 +920,9 @@ describe('Voting summary', () => {
     expect(retrieveVotesSpy).to.not.have.been.called
   })
 
-  it('unable to retrieve voting', async () => {
+  it('unable to retrieve votes', async () => {
     const votingId = await generateVotingId()
-    const retrieveVotingSpy = chai.spy(() => Promise.resolve())
+    const retrieveVotingSpy = chai.spy(() => Promise.resolve({ data: null }))
     const retrieveVotesSpy = chai.spy(() => Promise.reject('Unknown error'))
 
     setCallbacks({

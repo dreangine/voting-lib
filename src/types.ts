@@ -70,12 +70,12 @@ export type Vote = {
 }
 
 export type Callbacks = {
-  persistVoting: (voting: VotingData) => Promise<void>
-  persistVoters: (voters: VoterData[]) => Promise<void>
-  persistVote: (vote: VoteData) => Promise<void>
-  retrieveVoting: (votingId: VotingId) => Promise<VotingData | void>
-  retrieveVoter: (userId: UserId) => Promise<VoterData | void>
-  retrieveVotes: (votingId: VotingId) => Promise<VoteData[] | void>
+  persistVoting: (voting: VotingData) => Promise<PersistResponse>
+  persistVoters: (voters: VoterData[]) => Promise<PersistResponse>
+  persistVote: (vote: VoteData) => Promise<PersistResponse>
+  retrieveVoting: (votingId: VotingId) => Promise<RetrieveResponse<VotingData>>
+  retrieveVoter: (userId: UserId) => Promise<RetrieveResponse<VoterData>>
+  retrieveVotes: (votingId: VotingId) => Promise<RetrieveResponse<VoteData[]>>
   checkActiveVoters: (votersIds: VoterId[]) => Promise<{
     [voterId: VoterId]: boolean
   }>
@@ -134,6 +134,18 @@ export type RetrieveVotingSummaryRequest = {
 /**
  * RESPONSES
  */
+
+export type PersistResponse =
+  | {
+      inserts: number
+    }
+  | {
+      updates: number
+    }
+
+export type RetrieveResponse<T> = {
+  data: T | null
+}
 
 export type StartVotingResponse = {
   voting: VotingData

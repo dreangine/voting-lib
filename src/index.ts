@@ -129,7 +129,7 @@ export async function registerVote(request: RegisterVoteRequest): Promise<Regist
   // Validate
   const candidates = choices.map((choice) => choice.candidateId)
   if (candidates.includes(voterId)) throw new Error('Voter cannot vote for themselves')
-  const voting = await callbacks.retrieveVoting(votingId)
+  const { data: voting } = await callbacks.retrieveVoting(votingId)
   if (!voting) throw new Error('Voting does not exist')
   if (hasVotingEnded(voting)) throw new Error('Voting has ended')
 
@@ -146,7 +146,7 @@ export async function registerVoteByUserId(
   request: RegisterVoteByUserIdRequest
 ): Promise<RegisterVoteResponse> {
   const { voteParams } = request
-  const voter = await callbacks.retrieveVoter(voteParams.userId)
+  const { data: voter } = await callbacks.retrieveVoter(voteParams.userId)
 
   // Validate
   if (!voter) throw new Error('Voter not registered')
@@ -176,23 +176,33 @@ export async function retrieveVotingSummary(
       throw new Error(`Unable to retrieve votes: ${votesResult.reason}`)
     }
 
-    const voting = votingResult.value
-    const votes = votesResult.value || []
+    const { data: voting } = votingResult.value
+    const { data: votes } = votesResult.value
 
     if (!voting) throw new Error('Voting not found')
 
-    const candidatesStats = votes.reduce((candidatesStats, { choices }) => {
-      choices.forEach(({ candidateId, veredict }) => {
-        candidatesStats[candidateId] = candidatesStats[candidateId] || {
-          guilty: 0,
-          innocent: 0,
-          elect: 0,
-          pass: 0,
-        }
-        candidatesStats[candidateId][veredict]++
-      })
-      return candidatesStats
-    }, {} as CandidatesStats)
+    const candidatesStats = votes?.length
+      ? votes.reduce((candidatesStats, { choices }) => {
+          choices.forEach(({ candidateId, veredict }) => {
+            candidatesStats[candidateId] = candidatesStats[candidateId] || {
+              guilty: 0,
+              innocent: 0,
+              elect: 0,
+              pass: 0,
+            }
+            candidatesStats[candidateId][veredict]++
+          })
+          return candidatesStats
+        }, {} as CandidatesStats)
+      : voting.candidates.reduce((candidatesStats, candidateId) => {
+          candidatesStats[candidateId] = {
+            guilty: 0,
+            innocent: 0,
+            elect: 0,
+            pass: 0,
+          }
+          return candidatesStats
+        }, {} as CandidatesStats)
     const isVotingFinal = hasVotingEnded(voting)
     const votingSummaryState: VotingSummaryState = isVotingFinal ? 'final' : 'partial'
 

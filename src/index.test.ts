@@ -52,18 +52,53 @@ before(async () => {
   voters.candidates = [await generateVoterId(), await generateVoterId()]
 })
 
-// beforeEach(() => {
-//   setCallbacks({
-//     persistVote: () => Promise.resolve(),
-//     persistVoters: () => Promise.resolve(),
-//     persistVoting: () => Promise.resolve(),
-//     retrieveVoting: () => Promise.resolve(),
-//     retrieveVoter: () => Promise.resolve(),
-//     retrieveVotes: () => Promise.resolve(),
-//     checkActiveVoters: () => Promise.resolve({}),
-//     countActiveVoters: () => Promise.resolve(0),
-//   })
-// })
+describe('Not implemented', () => {
+  it('registerVoters', async () => {
+    await expect(
+      registerVoters({
+        userIds: ['U1ASDF', 'U2ASDF'],
+      })
+    ).to.be.rejectedWith('Not implemented')
+  })
+  it('startVoting', async () => {
+    await expect(
+      startVoting({
+        votingParams: {
+          votingDescription: {
+            'en-US': 'Test voting',
+          },
+          votingType: 'election',
+          startedBy: voters.starter,
+          candidates: voters.candidates,
+          endsAt: new Date(),
+        },
+      })
+    ).to.be.rejectedWith('Not implemented')
+  })
+  it('registerVote', async () => {
+    await expect(
+      registerVote({
+        voteParams: {
+          votingId: await generateVotingId(),
+          voterId: voters.starter,
+          choices: [
+            {
+              candidateId: voters.candidates[0],
+              veredict: 'guilty',
+            },
+          ],
+        },
+      })
+    ).to.be.rejectedWith('Not implemented')
+  })
+  it('retrieveVotingSummary', async () => {
+    await expect(
+      retrieveVotingSummary({
+        votingId: await generateVotingId(),
+      })
+    ).to.be.rejectedWith('Not implemented')
+  })
+})
 
 describe('Voter', () => {
   it('should add voters', async () => {

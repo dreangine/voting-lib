@@ -23,14 +23,14 @@ import {
 } from './types'
 
 const callbacks: Callbacks = {
-  persistVoting: () => Promise.reject(new Error('not implemented')),
-  persistVoters: () => Promise.reject(new Error('not implemented')),
-  persistVote: () => Promise.reject(new Error('not implemented')),
-  retrieveVoting: () => Promise.reject(new Error('not implemented')),
-  retrieveVoter: () => Promise.reject(new Error('not implemented')),
-  retrieveVotes: () => Promise.reject(new Error('not implemented')),
-  checkActiveVoters: () => Promise.reject(new Error('not implemented')),
-  countActiveVoters: () => Promise.reject(new Error('not implemented')),
+  persistVoting: () => Promise.reject(new Error('Not implemented')),
+  persistVoters: () => Promise.reject(new Error('Not implemented')),
+  persistVote: () => Promise.reject(new Error('Not implemented')),
+  retrieveVoting: () => Promise.reject(new Error('Not implemented')),
+  retrieveVoter: () => Promise.reject(new Error('Not implemented')),
+  retrieveVotes: () => Promise.reject(new Error('Not implemented')),
+  checkActiveVoters: () => Promise.reject(new Error('Not implemented')),
+  countActiveVoters: () => Promise.reject(new Error('Not implemented')),
 }
 
 export function setCallbacks(newCallbacks: Partial<Callbacks>) {

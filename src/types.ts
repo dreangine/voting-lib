@@ -73,9 +73,9 @@ export type Callbacks = {
   persistVoting: (voting: VotingData) => Promise<void>
   persistVoters: (voters: VoterData[]) => Promise<void>
   persistVote: (vote: VoteData) => Promise<void>
-  retrieveVoting: (votingId: VotingId) => Promise<VotingData | null>
-  retrieveVoter: (userId: UserId) => Promise<VoterData | null>
-  retrieveVotes: (votingId: VotingId) => Promise<VoteData[] | null>
+  retrieveVoting: (votingId: VotingId) => Promise<VotingData | void>
+  retrieveVoter: (userId: UserId) => Promise<VoterData | void>
+  retrieveVotes: (votingId: VotingId) => Promise<VoteData[] | void>
   checkActiveVoters: (votersIds: VoterId[]) => Promise<{
     [voterId: VoterId]: boolean
   }>

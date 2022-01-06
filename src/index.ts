@@ -170,16 +170,16 @@ export async function retrieveVotingSummary(
   ]).then((results) => {
     const [votingResult, votesResult] = results
     if (votingResult.status === 'rejected') {
-      throw new Error(`Voting ${votingId} not found`)
+      throw new Error(`Unable to retrieve voting: ${votingResult.reason}`)
     }
     if (votesResult.status === 'rejected') {
-      throw new Error(`Votes for voting ${votingId} not found`)
+      throw new Error(`Unable to retrieve votes: ${votesResult.reason}`)
     }
 
     const voting = votingResult.value
     const votes = votesResult.value || []
 
-    if (!voting) throw new Error(`Voting ${votingId} not found`)
+    if (!voting) throw new Error('Voting not found')
 
     const candidatesStats = votes.reduce((candidatesStats, { choices }) => {
       choices.forEach(({ candidateId, veredict }) => {

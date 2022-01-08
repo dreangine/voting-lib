@@ -18,7 +18,7 @@ A library to manage voting systems, having its own voting rules and options whil
 You should configure all the callbacks necessary to handle the data (wherever and however it is stored). This can be done using the method `setCallbacks` passing all or some of the callbacks.
 
 ```javascript
-import { setCallbacks } from 'voting-system'
+import { setCallbacks } from 'voting-lib'
 
 setCallbacks({
   persistVote: () => {...},

@@ -1,7 +1,13 @@
 {
   "name": "voting-lib",
   "version": "0.0.2",
-  "description": "",
+  "description": "A library to manage voting systems",
+  "keywords": [
+    "voting",
+    "election",
+    "judgment",
+    "transparency"
+  ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

@@ -59,7 +59,7 @@ export type Voting = {
   endsAt: Date
   totalVoters: number
   requiredParticipationPercentage?: number
-  evidence?: Evidence
+  evidences?: Evidence[]
 }
 
 export type Vote = {

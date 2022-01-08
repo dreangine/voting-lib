@@ -7,7 +7,7 @@ A library to manage voting systems, having its own voting rules and options whil
 - **Transparency**: to have open and traceable votes without revealing real user data
 - **Flexibility**: to support multiple voting methods, including:
   - **Election**: each person votes for one candidate and the elected candidate is the one with the most votes
-  - **Judgement**: each person votes for one or more candidates the the guilty ones are the ones with more votes for guilty than for innocent
+  - **Judgement**: each person votes for one or more candidates and the guilty ones are the ones with more votes for guilty than for innocent
 
 ## Installation
 
@@ -32,3 +32,127 @@ setCallbacks({
 ```
 
 This method can be called any number of times to change all or some of the callbacks, but it is important that all the callbacks are set before calling any of the functions that manipulate the data.
+
+## Rules
+
+- All participants must be registered prior to starting the voting
+- A voting cannot be started by a candidate
+
+## Usage
+
+### Registering a voter
+
+```javascript
+const request = {
+  userIds: ['<userId1>', '<userId2>', ...],
+}
+const response = await registerVoters(request)
+```
+
+### Election
+
+#### Starting an election
+
+```javascript
+const request = {
+  votingParams: {
+    votingDescription: {
+      'en-US': 'Test voting',
+    },
+    votingType: 'election',
+    startedBy: '<voterId>',
+    candidates: ['<candidateId>', ...],
+    startsAt: new Date(),
+    endsAt: (() => {
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      return tomorrow
+    })(),
+  },
+}
+
+const response = await startVoting(request)
+```
+
+#### Registering an election vote
+
+```javascript
+const request = {
+  voteParams: {
+    votingId: '<votingId>',
+    voterId: '<voterId>',
+    choices: [
+      {
+        candidateId: '<candidateId>',
+        veredict: 'elect',
+      },
+    ],
+  },
+}
+
+const response = await registerVote(request)
+```
+
+### Judgement
+
+#### Starting a judgement
+
+```javascript
+const request = {
+  votingParams: {
+    votingDescription: {
+      'en-US': 'Test voting',
+    },
+    votingType: 'judgement',
+    startedBy: '<voterId>',
+    candidates: ['<candidateId>', ...],
+    startsAt: new Date(),
+    endsAt: (() => {
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      return tomorrow
+    })(),
+    evidences: [
+      {
+        type: 'text',
+        data: 'This is the evidence',
+      },
+      {
+        type: 'image',
+        data: '<imageUrl>',
+      },
+    ]
+  },
+}
+
+const response = await startVoting(request)
+```
+
+#### Registering a judgement vote
+
+```javascript
+const request = {
+  voteParams: {
+    votingId: '<votingId>',
+    voterId: '<voterId>',
+    choices: [
+      {
+        candidateId: '<candidateId>',
+        veredict: 'guilty',
+      },
+    ],
+  },
+}
+
+const response = await registerVote(request)
+```
+
+### Retrieving the summary
+
+```javascript
+const request = {
+  votingId: '<votingId>',
+}
+
+const result = await retrieveVotingSummary(request)
+```

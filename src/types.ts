@@ -23,10 +23,7 @@ export type VoteChoice = {
 
 export type CandidatesStats = {
   [candidateId: VoterId]: {
-    guilty: number
-    innocent: number
-    elect: number
-    pass: number
+    [veredict in Veredict]: number
   }
 }
 

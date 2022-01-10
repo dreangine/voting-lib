@@ -31,7 +31,7 @@ export const defaultCandidateStats: CandidateStats = Object.freeze({
   pass: 0,
 })
 
-const callbacks: Callbacks = {
+export const defaultCallbacks: Callbacks = Object.freeze({
   persistVoting: () => Promise.reject(new Error('Not implemented')),
   persistVoters: () => Promise.reject(new Error('Not implemented')),
   persistVote: () => Promise.reject(new Error('Not implemented')),
@@ -40,6 +40,10 @@ const callbacks: Callbacks = {
   retrieveVotes: () => Promise.reject(new Error('Not implemented')),
   checkActiveVoters: () => Promise.reject(new Error('Not implemented')),
   countActiveVoters: () => Promise.reject(new Error('Not implemented')),
+})
+
+const callbacks: Callbacks = {
+  ...defaultCallbacks,
 }
 
 export function setCallbacks(newCallbacks: Partial<Callbacks>) {

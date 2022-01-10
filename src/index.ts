@@ -20,7 +20,16 @@ import {
   Callbacks,
   VoteData,
   VoterData,
+  VotesStats,
+  CandidateStats,
 } from './types'
+
+export const defaultCandidateStats: CandidateStats = Object.freeze({
+  guilty: 0,
+  innocent: 0,
+  elect: 0,
+  pass: 0,
+})
 
 const callbacks: Callbacks = {
   persistVoting: () => Promise.reject(new Error('Not implemented')),
@@ -51,6 +60,33 @@ export async function generateVoteId(): Promise<VoteId> {
 
 export function hasVotingEnded(voting: VotingData): boolean {
   return voting.endsAt < new Date()
+}
+
+export function generateVotesStats(votesData?: VoteData[] | VotesStats | null): CandidatesStats {
+  if (!votesData) return {}
+  return votesData instanceof Array
+    ? (votesData as VoteData[]).reduce((candidatesStats, { choices }) => {
+        choices.forEach(({ candidateId, veredict }) => {
+          candidatesStats[candidateId] = candidatesStats[candidateId] || {
+            ...defaultCandidateStats,
+          }
+          candidatesStats[candidateId][veredict]++
+        })
+        return candidatesStats
+      }, {} as CandidatesStats)
+    : Object.entries(votesData as VotesStats).reduce(
+        (candidatesStats, [candidateId, { guilty = 0, innocent = 0, elect = 0, pass = 0 }]) => {
+          candidatesStats[candidateId] = candidatesStats[candidateId] || {
+            ...defaultCandidateStats,
+          }
+          candidatesStats[candidateId].guilty += guilty
+          candidatesStats[candidateId].innocent += innocent
+          candidatesStats[candidateId].elect += elect
+          candidatesStats[candidateId].pass += pass
+          return candidatesStats
+        },
+        {} as CandidatesStats
+      )
 }
 
 export function generateFinalVeredict(candidatesStats: CandidatesStats): FinalVeredictStats {
@@ -181,28 +217,11 @@ export async function retrieveVotingSummary(
 
     if (!voting) throw new Error('Voting not found')
 
-    const candidatesStats = votes?.length
-      ? votes.reduce((candidatesStats, { choices }) => {
-          choices.forEach(({ candidateId, veredict }) => {
-            candidatesStats[candidateId] = candidatesStats[candidateId] || {
-              guilty: 0,
-              innocent: 0,
-              elect: 0,
-              pass: 0,
-            }
-            candidatesStats[candidateId][veredict]++
-          })
-          return candidatesStats
-        }, {} as CandidatesStats)
-      : voting.candidates.reduce((candidatesStats, candidateId) => {
-          candidatesStats[candidateId] = {
-            guilty: 0,
-            innocent: 0,
-            elect: 0,
-            pass: 0,
-          }
-          return candidatesStats
-        }, {} as CandidatesStats)
+    const baseStats: CandidatesStats = voting.candidates.reduce((candidatesStats, candidateId) => {
+      candidatesStats[candidateId] = { ...defaultCandidateStats }
+      return candidatesStats
+    }, {} as CandidatesStats)
+    const candidatesStats = { ...baseStats, ...generateVotesStats(votes) }
     const isVotingFinal = hasVotingEnded(voting)
     const votingSummaryState: VotingSummaryState = isVotingFinal ? 'final' : 'partial'
 

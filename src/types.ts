@@ -21,10 +21,16 @@ export type VoteChoice = {
   veredict: Veredict
 }
 
+export type CandidateStats = {
+  [veredict in Veredict]: number
+}
+
+export type VotesStats = {
+  [candidateId: VoterId]: Partial<CandidateStats>
+}
+
 export type CandidatesStats = {
-  [candidateId: VoterId]: {
-    [veredict in Veredict]: number
-  }
+  [candidateId: VoterId]: CandidateStats
 }
 
 export type FinalVeredictStats = {
@@ -72,7 +78,7 @@ export type Callbacks = {
   persistVote: (vote: VoteData) => Promise<PersistResponse>
   retrieveVoting: (votingId: VotingId) => Promise<RetrieveResponse<VotingData>>
   retrieveVoter: (userId: UserId) => Promise<RetrieveResponse<VoterData>>
-  retrieveVotes: (votingId: VotingId) => Promise<RetrieveResponse<VoteData[]>>
+  retrieveVotes: (votingId: VotingId) => Promise<RetrieveResponse<VoteData[] | VotesStats>>
   checkActiveVoters: (votersIds: VoterId[]) => Promise<{
     [voterId: VoterId]: boolean
   }>

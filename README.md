@@ -33,6 +33,17 @@ setCallbacks({
 
 This method can be called any number of times to change all or some of the callbacks, but it is important that all the callbacks are set before calling any of the functions that manipulate the data.
 
+### Callbacks
+
+- `persistVoting` to persist a voting
+- `persistVoters` to persist voters
+- `persistVote` to persist a vote
+- `retrieveVoting` to retrieve a voting
+- `retrieveVoter` to retrieve a voter
+- `retrieveVotes` to retrieve votes or votes stats (returning whole votes is discouraged for large data sets, use filters and counts to return stats instead)
+- `checkActiveVoters` to check if a set of voters are active
+- `countActiveVoters` to count the number of active voters
+
 ## Rules
 
 - All participants must be registered prior to starting the voting

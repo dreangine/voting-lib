@@ -95,7 +95,7 @@ const request = {
     choices: [
       {
         candidateId: '<candidateId>',
-        veredict: 'elect',
+        veredict: '<elect|pass>',
       },
     ],
   },
@@ -117,7 +117,6 @@ const request = {
     votingType: 'judgement',
     startedBy: '<voterId>',
     candidates: ['<candidateId>', ...],
-    startsAt: new Date(),
     endsAt: (() => {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
@@ -149,7 +148,7 @@ const request = {
     choices: [
       {
         candidateId: '<candidateId>',
-        veredict: 'guilty',
+        veredict: '<innocent|guilty>',
       },
     ],
   },

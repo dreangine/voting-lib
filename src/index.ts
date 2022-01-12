@@ -5,12 +5,10 @@ import {
   RegisterVoteRequest,
   RegisterVotersRequest,
   RetrieveVotingSummaryRequest,
-  StartVotingRequest,
   CandidatesStats,
   VoteId,
   VoterId,
   VotingId,
-  StartVotingResponse,
   RegisterVotersResponse,
   RegisterVoteResponse,
   RetrieveVotingSummaryResponse,
@@ -22,6 +20,8 @@ import {
   VoterData,
   VotesStats,
   CandidateStats,
+  RegisterVotingRequest,
+  RegisterVotingResponse,
 } from './types'
 
 // Defaults
@@ -126,13 +126,14 @@ export function generateFinalVeredict(candidatesStats: CandidatesStats): FinalVe
   )
 }
 
-export async function startVoting(request: StartVotingRequest): Promise<StartVotingResponse> {
+export async function registerVoting(
+  request: RegisterVotingRequest
+): Promise<RegisterVotingResponse> {
   const now = new Date()
   const { votingParams } = request
   const { startedBy, candidates, startsAt = now, endsAt, votingType } = votingParams
 
   // Validate
-  if (startsAt < now) throw new Error('Voting cannot start in the past')
   if (endsAt < startsAt) throw new Error('Voting cannot end before it starts')
   const timeDiff = endsAt.getTime() - startsAt.getTime()
   if (timeDiff < MIN_VOTING_DURATION) throw new Error('Voting duration is too short')

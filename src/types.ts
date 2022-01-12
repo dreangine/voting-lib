@@ -113,7 +113,7 @@ export type VoteParams = Omit<Vote, 'voteId'>
  * REQUESTS
  */
 
-export type StartVotingRequest = {
+export type RegisterVotingRequest = {
   votingParams: VotingParams
 }
 
@@ -150,7 +150,7 @@ export type RetrieveResponse<T> = {
   data: T | null
 }
 
-export type StartVotingResponse = {
+export type RegisterVotingResponse = {
   voting: VotingData
 }
 

@@ -8,7 +8,6 @@ import {
   RegisterVoteRequest,
   RegisterVotersRequest,
   RetrieveVotingSummaryRequest,
-  StartVotingRequest,
   CandidatesStats,
   VoteData,
   VoterData,
@@ -18,6 +17,7 @@ import {
   VotesStats,
   CandidateStats,
   VotingId,
+  RegisterVotingRequest,
 } from './types'
 
 import {
@@ -31,9 +31,9 @@ import {
   registerVote,
   registerVoteByUserId,
   registerVoters,
+  registerVoting,
   retrieveVotingSummary,
   setCallbacks,
-  startVoting,
 } from './index'
 
 chai.use(spies)
@@ -118,9 +118,9 @@ describe('Not implemented', () => {
       })
     ).to.be.rejectedWith('Not implemented')
   })
-  it('startVoting', async () => {
+  it('registerVoting', async () => {
     await expect(
-      startVoting({
+      registerVoting({
         votingParams: {
           votingDescription: {
             'en-US': 'Test voting',
@@ -233,7 +233,7 @@ describe('Voting', () => {
           countActiveVoters: spyCoundActiveVoters,
         })
 
-        const request: StartVotingRequest = {
+        const request: RegisterVotingRequest = {
           votingParams: {
             votingDescription: {
               'en-US': 'Test voting',
@@ -245,7 +245,7 @@ describe('Voting', () => {
           },
         }
 
-        const response = await startVoting(request)
+        const response = await registerVoting(request)
         const { voting: responseVoting } = response
 
         expect(spy).to.have.been.called.once
@@ -281,7 +281,7 @@ describe('Voting', () => {
           checkActiveVoters: checkVotersSpy,
         })
 
-        const request: StartVotingRequest = {
+        const request: RegisterVotingRequest = {
           votingParams: {
             votingDescription: {
               'en-US': 'Test voting',
@@ -293,33 +293,16 @@ describe('Voting', () => {
           },
         }
 
-        await expect(startVoting(request)).to.be.rejectedWith(
+        await expect(registerVoting(request)).to.be.rejectedWith(
           `Voters ${[getStartedBy(), firstCandidate].join(', ')} do not exist`
         )
         expect(checkVotersSpy).to.have.been.called.once
         expect(spy).to.not.have.been.called
       })
 
-      it('a voting cannot start in the past', async () => {
-        await expect(
-          startVoting({
-            votingParams: {
-              votingDescription: {
-                'en-US': 'Test voting',
-              },
-              votingType,
-              startedBy: getStartedBy(),
-              candidates: getCandidates(),
-              startsAt: yesterdayDate,
-              endsAt: tomorrowDate,
-            },
-          })
-        ).to.be.rejectedWith('Voting cannot start in the past')
-      })
-
       it('a voting cannot be too short', async () => {
         await expect(
-          startVoting({
+          registerVoting({
             votingParams: {
               votingDescription: {
                 'en-US': 'Test voting',
@@ -327,6 +310,7 @@ describe('Voting', () => {
               votingType,
               startedBy: getStartedBy(),
               candidates: getCandidates(),
+              startsAt: nowDate,
               endsAt: new Date(nowDate.getTime() + MIN_VOTING_DURATION - 1),
             },
           })
@@ -335,7 +319,7 @@ describe('Voting', () => {
 
       it('a voting cannot be too long', async () => {
         await expect(
-          startVoting({
+          registerVoting({
             votingParams: {
               votingDescription: {
                 'en-US': 'Test voting',
@@ -343,7 +327,8 @@ describe('Voting', () => {
               votingType,
               startedBy: getStartedBy(),
               candidates: getCandidates(),
-              endsAt: new Date(nowDate.getTime() + MAX_VOTING_DURATION * 2),
+              startsAt: nowDate,
+              endsAt: new Date(nowDate.getTime() + MAX_VOTING_DURATION + 1),
             },
           })
         ).to.be.rejectedWith('Voting duration is too long')
@@ -351,7 +336,7 @@ describe('Voting', () => {
 
       it('a voting cannot end before it starts', async () => {
         await expect(
-          startVoting({
+          registerVoting({
             votingParams: {
               votingDescription: {
                 'en-US': 'Test voting',
@@ -379,7 +364,7 @@ describe('Voting', () => {
           checkActiveVoters: checkVotersSpy,
         })
 
-        const request: StartVotingRequest = {
+        const request: RegisterVotingRequest = {
           votingParams: {
             votingDescription: {
               'en-US': 'Test election',
@@ -391,7 +376,7 @@ describe('Voting', () => {
           },
         }
 
-        await expect(startVoting(request)).to.be.rejectedWith(
+        await expect(registerVoting(request)).to.be.rejectedWith(
           'Voting cannot be started by a candidate'
         )
         expect(checkVotersSpy).to.not.have.been.called
@@ -401,7 +386,7 @@ describe('Voting', () => {
       if (votingType === 'election') {
         it('an election must have more than 1 candidate', async () => {
           await expect(
-            startVoting({
+            registerVoting({
               votingParams: {
                 votingDescription: {
                   'en-US': 'Test election',

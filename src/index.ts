@@ -22,6 +22,8 @@ import {
   CandidateStats,
   RegisterVotingRequest,
   RegisterVotingResponse,
+  VotingParamsValidate,
+  VoteParamsValidate,
 } from './types'
 
 // Defaults
@@ -75,11 +77,11 @@ export async function generateVoteId(): Promise<VoteId> {
   return `vote-${await nanoid()}`
 }
 
-export function hasVotingEnded(voting: VotingData): boolean {
+function hasVotingEnded(voting: VotingData): boolean {
   return voting.endsAt < new Date()
 }
 
-export function generateVotesStats(votesData?: VoteData[] | VotesStats | null): CandidatesStats {
+function generateVotesStats(votesData?: VoteData[] | VotesStats | null): CandidatesStats {
   if (!votesData) return {}
   return votesData instanceof Array
     ? (votesData as VoteData[]).reduce((candidatesStats, { choices }) => {
@@ -106,7 +108,7 @@ export function generateVotesStats(votesData?: VoteData[] | VotesStats | null): 
       )
 }
 
-export function generateFinalVeredict(candidatesStats: CandidatesStats): FinalVeredictStats {
+function generateFinalVeredict(candidatesStats: CandidatesStats): FinalVeredictStats {
   return Object.entries(candidatesStats).reduce(
     (finalVeredict, [candidateId, { guilty, innocent, elect, pass }]) => {
       if (guilty > innocent) {
@@ -126,25 +128,31 @@ export function generateFinalVeredict(candidatesStats: CandidatesStats): FinalVe
   )
 }
 
-export async function registerVoting(
-  request: RegisterVotingRequest
-): Promise<RegisterVotingResponse> {
-  const now = new Date()
-  const { votingParams } = request
-  const { startedBy, candidates, startsAt = now, endsAt, votingType } = votingParams
+async function validateRegisterVoting(votingParams: VotingParamsValidate): Promise<void> {
+  const { startedBy, candidates, startsAt, endsAt, votingType } = votingParams
 
-  // Validate
   if (endsAt < startsAt) throw new Error('Voting cannot end before it starts')
   const timeDiff = endsAt.getTime() - startsAt.getTime()
   if (timeDiff < MIN_VOTING_DURATION) throw new Error('Voting duration is too short')
   if (timeDiff > MAX_VOTING_DURATION) throw new Error('Voting duration is too long')
   if (candidates.length < MIN_CANDIDATES_ELECTION && votingType === 'election')
     throw new Error(`Election must have at least ${MIN_CANDIDATES_ELECTION} candidates`)
+
   if (candidates.includes(startedBy)) throw new Error('Voting cannot be started by a candidate')
   const allVoters = [startedBy, ...candidates]
   const checkedVoters = await CALLBACKS.checkActiveVoters(allVoters)
   const notFoundVoterIds = allVoters.filter((candidate) => !checkedVoters[candidate])
   if (notFoundVoterIds.length) throw new Error(`Voters ${notFoundVoterIds.join(', ')} do not exist`)
+}
+
+export async function registerVoting(
+  request: RegisterVotingRequest
+): Promise<RegisterVotingResponse> {
+  const now = new Date()
+  const { votingParams } = request
+  const { startsAt = now } = votingParams
+
+  await validateRegisterVoting({ ...votingParams, startsAt })
 
   // Get the total amount of active voters when voting starts
   const totalVoters = await CALLBACKS.countActiveVoters()
@@ -182,17 +190,21 @@ export async function registerVoters(
   return { voters: omitReturnedData ? undefined : voters }
 }
 
-export async function registerVote(request: RegisterVoteRequest): Promise<RegisterVoteResponse> {
-  const { voteParams } = request
-  const now = new Date()
+async function validateRegisterVote(voteParams: VoteParamsValidate): Promise<void> {
   const { votingId, voterId, choices } = voteParams
 
-  // Validate
   const candidates = choices.map((choice) => choice.candidateId)
   if (candidates.includes(voterId)) throw new Error('Voter cannot vote for themselves')
   const { data: voting } = await CALLBACKS.retrieveVoting(votingId)
   if (!voting) throw new Error('Voting does not exist')
   if (hasVotingEnded(voting)) throw new Error('Voting has ended')
+}
+
+export async function registerVote(request: RegisterVoteRequest): Promise<RegisterVoteResponse> {
+  const { voteParams } = request
+  const now = new Date()
+
+  await validateRegisterVote(voteParams)
 
   const vote: VoteData = {
     ...voteParams,

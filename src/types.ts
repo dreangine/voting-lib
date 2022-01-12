@@ -107,7 +107,11 @@ export type VoteData = Vote & Omit<BasicData, 'updatedAt'>
 export type VotingParams = Partial<Pick<Voting, 'startsAt'>> &
   Omit<Voting, 'votingId' | 'startsAt' | 'totalVoters'>
 
+export type VotingParamsValidate = Omit<Voting, 'votingId' | 'totalVoters'>
+
 export type VoteParams = Omit<Vote, 'voteId'>
+
+export type VoteParamsValidate = VoteParams
 
 /**
  * REQUESTS

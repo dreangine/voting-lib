@@ -44,6 +44,12 @@ This method can be called any number of times to change all or some of the callb
 - `checkActiveVoters` to check if a set of voters are active
 - `countActiveVoters` to count the number of active voters
 
+### Environment variables
+
+- `MIN_VOTING_DURATION`: minimum duration of a voting in miliseconds
+- `MAX_VOTING_DURATION`: maximum duration of a voting in miliseconds
+- `MIN_CANDIDATES_ELECTION`: minimum number of candidates for an election
+
 ## Rules
 
 - All participants must be registered prior to starting the voting
@@ -65,7 +71,8 @@ const response = await registerVoters(request)
 #### Starting an election
 
 ```javascript
-const request = {
+// Start an election right now
+const response = await registerVoting({
   votingParams: {
     votingDescription: {
       'en-US': 'Test voting',
@@ -80,15 +87,35 @@ const request = {
       return tomorrow
     })(),
   },
-}
+})
 
-const response = await startVoting(request)
+// Schedule an election to start in the future
+const response = await registerVoting({
+  votingParams: {
+    votingDescription: {
+      'en-US': 'Test voting',
+    },
+    votingType: 'election',
+    startedBy: '<voterId>',
+    candidates: ['<candidateId>', ...],
+    startsAt: (() => {
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      return tomorrow
+    })(),
+    endsAt: (() => {
+      const afterTomorrow = new Date()
+      afterTomorrow.setDate(afterTomorrow.getDate() + 2)
+      return afterTomorrow
+    })(),
+  },
+})
 ```
 
 #### Registering an election vote
 
 ```javascript
-const request = {
+const response = await registerVote({
   voteParams: {
     votingId: '<votingId>',
     voterId: '<voterId>',
@@ -99,9 +126,7 @@ const request = {
       },
     ],
   },
-}
-
-const response = await registerVote(request)
+})
 ```
 
 ### Judgement
@@ -109,7 +134,8 @@ const response = await registerVote(request)
 #### Starting a judgement
 
 ```javascript
-const request = {
+// Start a judgement right now
+const response = await registerVoting({
   votingParams: {
     votingDescription: {
       'en-US': 'Test voting',
@@ -133,9 +159,38 @@ const request = {
       },
     ]
   },
-}
-
-const response = await startVoting(request)
+})
+// Schedule a judgement to start in the future
+const response = await registerVoting({
+  votingParams: {
+    votingDescription: {
+      'en-US': 'Test voting',
+    },
+    votingType: 'judgement',
+    startedBy: '<voterId>',
+    candidates: ['<candidateId>', ...],
+    startsAt: (() => {
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      return tomorrow
+    })(),
+    endsAt: (() => {
+      const afterTomorrow = new Date()
+      afterTomorrow.setDate(afterTomorrow.getDate() + 2)
+      return afterTomorrow
+    })(),
+    evidences: [
+      {
+        type: 'text',
+        data: 'This is the evidence',
+      },
+      {
+        type: 'image',
+        data: '<imageUrl>',
+      },
+    ]
+  },
+})
 ```
 
 #### Registering a judgement vote

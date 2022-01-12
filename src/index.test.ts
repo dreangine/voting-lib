@@ -21,11 +21,13 @@ import {
 } from './types'
 
 import {
-  defaultCallbacks,
-  defaultCandidateStats,
+  DEFAULT_CALLBACKS,
+  DEFAULT_CANDIDATE_STATS,
   generateVoteId,
   generateVoterId,
   generateVotingId,
+  MAX_VOTING_DURATION,
+  MIN_VOTING_DURATION,
   registerVote,
   registerVoteByUserId,
   registerVoters,
@@ -40,6 +42,7 @@ chai.use(chaiPromised)
 // Setup
 const nowDate = new Date()
 const yesterdayDate = new Date(nowDate.getTime() - 1000 * 60 * 60 * 24)
+const beforeYesterdayDate = new Date(yesterdayDate.getTime() - 1000 * 60 * 60 * 24)
 const tomorrowDate = new Date(nowDate.getTime() + 24 * 60 * 60 * 1000)
 const votingTypes: VotingType[] = ['election', 'judgement']
 let generatedVoters: VoterId[]
@@ -82,7 +85,7 @@ function generateOngoingVotingBase(): Omit<VotingData, 'votingId' | 'votingType'
 function generateEndedVotingBase(): Omit<VotingData, 'votingId' | 'votingType'> {
   return {
     ...generateVotingBase(),
-    startsAt: yesterdayDate,
+    startsAt: beforeYesterdayDate,
     endsAt: yesterdayDate,
     createdAt: yesterdayDate,
     updatedAt: yesterdayDate,
@@ -103,7 +106,7 @@ before(async () => {
 
 beforeEach(async () => {
   // Reset callbacks
-  setCallbacks(defaultCallbacks)
+  setCallbacks(DEFAULT_CALLBACKS)
   generatedVotingId = await generateVotingId()
 })
 
@@ -125,7 +128,7 @@ describe('Not implemented', () => {
           votingType: 'election',
           startedBy: getStartedBy(),
           candidates: getCandidates(),
-          endsAt: new Date(),
+          endsAt: tomorrowDate,
         },
       })
     ).to.be.rejectedWith('Not implemented')
@@ -238,7 +241,7 @@ describe('Voting', () => {
             votingType,
             startedBy: getStartedBy(),
             candidates: getCandidates(),
-            endsAt: new Date(),
+            endsAt: tomorrowDate,
           },
         }
 
@@ -286,7 +289,7 @@ describe('Voting', () => {
             votingType,
             startedBy: getStartedBy(),
             candidates: getCandidates(),
-            endsAt: new Date(),
+            endsAt: tomorrowDate,
           },
         }
 
@@ -295,6 +298,72 @@ describe('Voting', () => {
         )
         expect(checkVotersSpy).to.have.been.called.once
         expect(spy).to.not.have.been.called
+      })
+
+      it('a voting cannot start in the past', async () => {
+        await expect(
+          startVoting({
+            votingParams: {
+              votingDescription: {
+                'en-US': 'Test voting',
+              },
+              votingType,
+              startedBy: getStartedBy(),
+              candidates: getCandidates(),
+              startsAt: yesterdayDate,
+              endsAt: tomorrowDate,
+            },
+          })
+        ).to.be.rejectedWith('Voting cannot start in the past')
+      })
+
+      it('a voting cannot be too short', async () => {
+        await expect(
+          startVoting({
+            votingParams: {
+              votingDescription: {
+                'en-US': 'Test voting',
+              },
+              votingType,
+              startedBy: getStartedBy(),
+              candidates: getCandidates(),
+              endsAt: new Date(nowDate.getTime() + MIN_VOTING_DURATION - 1),
+            },
+          })
+        ).to.be.rejectedWith('Voting duration is too short')
+      })
+
+      it('a voting cannot be too long', async () => {
+        await expect(
+          startVoting({
+            votingParams: {
+              votingDescription: {
+                'en-US': 'Test voting',
+              },
+              votingType,
+              startedBy: getStartedBy(),
+              candidates: getCandidates(),
+              endsAt: new Date(nowDate.getTime() + MAX_VOTING_DURATION * 2),
+            },
+          })
+        ).to.be.rejectedWith('Voting duration is too long')
+      })
+
+      it('a voting cannot end before it starts', async () => {
+        await expect(
+          startVoting({
+            votingParams: {
+              votingDescription: {
+                'en-US': 'Test voting',
+              },
+              votingType,
+              startedBy: getStartedBy(),
+              candidates: getCandidates(),
+              startsAt: tomorrowDate,
+              endsAt: new Date(tomorrowDate.getTime() - 1),
+            },
+          })
+        ).to.be.rejectedWith(`Voting cannot end before it starts`)
       })
 
       it('a voting cannot be started by a candidate', async () => {
@@ -317,8 +386,8 @@ describe('Voting', () => {
             },
             votingType,
             startedBy: getStartedBy(),
-            candidates: [getStartedBy()],
-            endsAt: new Date(),
+            candidates: [getStartedBy(), ...getCandidates()],
+            endsAt: tomorrowDate,
           },
         }
 
@@ -328,6 +397,24 @@ describe('Voting', () => {
         expect(checkVotersSpy).to.not.have.been.called
         expect(spy).to.not.have.been.called
       })
+
+      if (votingType === 'election') {
+        it('an election must have more than 1 candidate', async () => {
+          await expect(
+            startVoting({
+              votingParams: {
+                votingDescription: {
+                  'en-US': 'Test election',
+                },
+                votingType,
+                startedBy: getStartedBy(),
+                candidates: [getCandidates()[0]],
+                endsAt: tomorrowDate,
+              },
+            })
+          ).to.be.rejectedWith(/Election must have at least \d+ candidates/)
+        })
+      }
     })
   })
 })
@@ -612,12 +699,12 @@ describe('Voting summary', () => {
         const result = await retrieveVotingSummary(request)
         const expectedStats: CandidatesStats = generateExpectedStats(
           {
-            ...defaultCandidateStats,
+            ...DEFAULT_CANDIDATE_STATS,
             [votingType === 'election' ? 'elect' : 'guilty']: 2,
             [votingType === 'election' ? 'pass' : 'innocent']: 1,
           },
           {
-            ...defaultCandidateStats,
+            ...DEFAULT_CANDIDATE_STATS,
             [votingType === 'election' ? 'elect' : 'guilty']: 1,
             [votingType === 'election' ? 'pass' : 'innocent']: 1,
           }
@@ -680,7 +767,7 @@ describe('Voting summary', () => {
         const result = await retrieveVotingSummary(request)
         const expectedStats: CandidatesStats = generateExpectedStats(
           {
-            ...defaultCandidateStats,
+            ...DEFAULT_CANDIDATE_STATS,
             [votingType === 'election' ? 'elect' : 'guilty']: 2,
             [votingType === 'election' ? 'pass' : 'innocent']: 1,
           },
@@ -736,12 +823,12 @@ describe('Voting summary', () => {
         const result = await retrieveVotingSummary(request)
         const expectedStats: CandidatesStats = generateExpectedStats(
           {
-            ...defaultCandidateStats,
+            ...DEFAULT_CANDIDATE_STATS,
             [votingType === 'election' ? 'elect' : 'guilty']: 2,
             [votingType === 'election' ? 'pass' : 'innocent']: 1,
           },
           {
-            ...defaultCandidateStats,
+            ...DEFAULT_CANDIDATE_STATS,
             [votingType === 'election' ? 'elect' : 'guilty']: 1,
             [votingType === 'election' ? 'pass' : 'innocent']: 2,
           }
@@ -813,12 +900,12 @@ describe('Voting summary', () => {
         const result = await retrieveVotingSummary(request)
         const expectedStats: CandidatesStats = generateExpectedStats(
           {
-            ...defaultCandidateStats,
+            ...DEFAULT_CANDIDATE_STATS,
             [votingType === 'election' ? 'elect' : 'guilty']: 1,
             [votingType === 'election' ? 'pass' : 'innocent']: 1,
           },
           {
-            ...defaultCandidateStats,
+            ...DEFAULT_CANDIDATE_STATS,
             [votingType === 'election' ? 'elect' : 'guilty']: 1,
             [votingType === 'election' ? 'pass' : 'innocent']: 1,
           }
@@ -860,7 +947,7 @@ describe('Voting summary', () => {
 
         const result = await retrieveVotingSummary(request)
         const expectedStats = getCandidates().reduce((candidatesStats, candidateId) => {
-          candidatesStats[candidateId] = defaultCandidateStats
+          candidatesStats[candidateId] = DEFAULT_CANDIDATE_STATS
           return candidatesStats
         }, {} as CandidatesStats)
         expect(retrieveVotingSpy).to.have.been.called.once
@@ -896,7 +983,7 @@ describe('Voting summary', () => {
 
         const result = await retrieveVotingSummary(request)
         const expectedStats = getCandidates().reduce((candidatesStats, candidateId) => {
-          candidatesStats[candidateId] = defaultCandidateStats
+          candidatesStats[candidateId] = DEFAULT_CANDIDATE_STATS
           return candidatesStats
         }, {} as CandidatesStats)
         expect(retrieveVotingSpy).to.have.been.called.once

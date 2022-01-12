@@ -24,14 +24,17 @@ import {
   CandidateStats,
 } from './types'
 
-export const defaultCandidateStats: CandidateStats = Object.freeze({
+// Defaults
+export const DEFAULT_CANDIDATE_STATS: CandidateStats = Object.freeze({
   guilty: 0,
   innocent: 0,
   elect: 0,
   pass: 0,
 })
-
-export const defaultCallbacks: Callbacks = Object.freeze({
+export const DEFAULT_MIN_VOTING_DURATION = 1000 * 60 * 5 // 5 minutes
+export const DEFAULT_MAX_VOTING_DURATION = 1000 * 60 * 60 * 24 * 7 // 1 week
+export const DEFAULT_MIN_CANDIDATES_ELECTION = 2
+export const DEFAULT_CALLBACKS: Callbacks = Object.freeze({
   persistVoting: () => Promise.reject(new Error('Not implemented')),
   persistVoters: () => Promise.reject(new Error('Not implemented')),
   persistVote: () => Promise.reject(new Error('Not implemented')),
@@ -42,12 +45,22 @@ export const defaultCallbacks: Callbacks = Object.freeze({
   countActiveVoters: () => Promise.reject(new Error('Not implemented')),
 })
 
-const callbacks: Callbacks = {
-  ...defaultCallbacks,
+// Setup
+export const MIN_VOTING_DURATION: number = +(
+  process.env.MIN_VOTING_DURATION ?? DEFAULT_MIN_VOTING_DURATION
+)
+export const MAX_VOTING_DURATION: number = +(
+  process.env.MAX_VOTING_DURATION ?? DEFAULT_MAX_VOTING_DURATION
+)
+export const MIN_CANDIDATES_ELECTION: number = +(
+  process.env.MIN_CANDIDATES_ELECTION ?? DEFAULT_MIN_CANDIDATES_ELECTION
+)
+const CALLBACKS: Callbacks = {
+  ...DEFAULT_CALLBACKS,
 }
 
 export function setCallbacks(newCallbacks: Partial<Callbacks>) {
-  Object.assign(callbacks, newCallbacks)
+  Object.assign(CALLBACKS, newCallbacks)
 }
 
 export async function generateVotingId(): Promise<VotingId> {
@@ -72,7 +85,7 @@ export function generateVotesStats(votesData?: VoteData[] | VotesStats | null): 
     ? (votesData as VoteData[]).reduce((candidatesStats, { choices }) => {
         choices.forEach(({ candidateId, veredict }) => {
           candidatesStats[candidateId] = candidatesStats[candidateId] || {
-            ...defaultCandidateStats,
+            ...DEFAULT_CANDIDATE_STATS,
           }
           candidatesStats[candidateId][veredict]++
         })
@@ -81,7 +94,7 @@ export function generateVotesStats(votesData?: VoteData[] | VotesStats | null): 
     : Object.entries(votesData as VotesStats).reduce(
         (candidatesStats, [candidateId, { guilty = 0, innocent = 0, elect = 0, pass = 0 }]) => {
           candidatesStats[candidateId] = candidatesStats[candidateId] || {
-            ...defaultCandidateStats,
+            ...DEFAULT_CANDIDATE_STATS,
           }
           candidatesStats[candidateId].guilty += guilty
           candidatesStats[candidateId].innocent += innocent
@@ -114,29 +127,36 @@ export function generateFinalVeredict(candidatesStats: CandidatesStats): FinalVe
 }
 
 export async function startVoting(request: StartVotingRequest): Promise<StartVotingResponse> {
-  const { votingParams } = request
-  const { startedBy, candidates } = votingParams
   const now = new Date()
+  const { votingParams } = request
+  const { startedBy, candidates, startsAt = now, endsAt, votingType } = votingParams
 
   // Validate
+  if (startsAt < now) throw new Error('Voting cannot start in the past')
+  if (endsAt < startsAt) throw new Error('Voting cannot end before it starts')
+  const timeDiff = endsAt.getTime() - startsAt.getTime()
+  if (timeDiff < MIN_VOTING_DURATION) throw new Error('Voting duration is too short')
+  if (timeDiff > MAX_VOTING_DURATION) throw new Error('Voting duration is too long')
+  if (candidates.length < MIN_CANDIDATES_ELECTION && votingType === 'election')
+    throw new Error(`Election must have at least ${MIN_CANDIDATES_ELECTION} candidates`)
   if (candidates.includes(startedBy)) throw new Error('Voting cannot be started by a candidate')
   const allVoters = [startedBy, ...candidates]
-  const checkedVoters = await callbacks.checkActiveVoters(allVoters)
+  const checkedVoters = await CALLBACKS.checkActiveVoters(allVoters)
   const notFoundVoterIds = allVoters.filter((candidate) => !checkedVoters[candidate])
   if (notFoundVoterIds.length) throw new Error(`Voters ${notFoundVoterIds.join(', ')} do not exist`)
 
   // Get the total amount of active voters when voting starts
-  const totalVoters = await callbacks.countActiveVoters()
+  const totalVoters = await CALLBACKS.countActiveVoters()
 
   const voting: VotingData = {
-    startsAt: now,
     ...votingParams,
+    startsAt,
     votingId: await generateVotingId(),
     totalVoters,
     createdAt: now,
     updatedAt: now,
   }
-  await callbacks.persistVoting(voting)
+  await CALLBACKS.persistVoting(voting)
   return { voting }
 }
 
@@ -157,7 +177,7 @@ export async function registerVoters(
         } as VoterData)
     )
   )
-  await callbacks.persistVoters(voters)
+  await CALLBACKS.persistVoters(voters)
   return { voters: omitReturnedData ? undefined : voters }
 }
 
@@ -169,7 +189,7 @@ export async function registerVote(request: RegisterVoteRequest): Promise<Regist
   // Validate
   const candidates = choices.map((choice) => choice.candidateId)
   if (candidates.includes(voterId)) throw new Error('Voter cannot vote for themselves')
-  const { data: voting } = await callbacks.retrieveVoting(votingId)
+  const { data: voting } = await CALLBACKS.retrieveVoting(votingId)
   if (!voting) throw new Error('Voting does not exist')
   if (hasVotingEnded(voting)) throw new Error('Voting has ended')
 
@@ -178,7 +198,7 @@ export async function registerVote(request: RegisterVoteRequest): Promise<Regist
     voteId: await generateVoteId(),
     createdAt: now,
   }
-  await callbacks.persistVote(vote)
+  await CALLBACKS.persistVote(vote)
   return { vote }
 }
 
@@ -186,7 +206,7 @@ export async function registerVoteByUserId(
   request: RegisterVoteByUserIdRequest
 ): Promise<RegisterVoteResponse> {
   const { voteParams } = request
-  const { data: voter } = await callbacks.retrieveVoter(voteParams.userId)
+  const { data: voter } = await CALLBACKS.retrieveVoter(voteParams.userId)
 
   // Validate
   if (!voter) throw new Error('Voter not registered')
@@ -205,8 +225,8 @@ export async function retrieveVotingSummary(
 ): Promise<RetrieveVotingSummaryResponse> {
   const { votingId } = request
   return Promise.allSettled([
-    callbacks.retrieveVoting(votingId),
-    callbacks.retrieveVotes(votingId),
+    CALLBACKS.retrieveVoting(votingId),
+    CALLBACKS.retrieveVotes(votingId),
   ]).then((results) => {
     const [votingResult, votesResult] = results
     if (votingResult.status === 'rejected') {
@@ -222,7 +242,7 @@ export async function retrieveVotingSummary(
     if (!voting) throw new Error('Voting not found')
 
     const baseStats: CandidatesStats = voting.candidates.reduce((candidatesStats, candidateId) => {
-      candidatesStats[candidateId] = { ...defaultCandidateStats }
+      candidatesStats[candidateId] = { ...DEFAULT_CANDIDATE_STATS }
       return candidatesStats
     }, {} as CandidatesStats)
     const candidatesStats = { ...baseStats, ...generateVotesStats(votes) }

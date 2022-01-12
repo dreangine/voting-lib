@@ -35,14 +35,14 @@ export const DEFAULT_MIN_VOTING_DURATION = 1000 * 60 * 5 // 5 minutes
 export const DEFAULT_MAX_VOTING_DURATION = 1000 * 60 * 60 * 24 * 7 // 1 week
 export const DEFAULT_MIN_CANDIDATES_ELECTION = 2
 export const DEFAULT_CALLBACKS: Callbacks = Object.freeze({
-  persistVoting: () => Promise.reject(new Error('Not implemented')),
-  persistVoters: () => Promise.reject(new Error('Not implemented')),
-  persistVote: () => Promise.reject(new Error('Not implemented')),
-  retrieveVoting: () => Promise.reject(new Error('Not implemented')),
-  retrieveVoter: () => Promise.reject(new Error('Not implemented')),
-  retrieveVotes: () => Promise.reject(new Error('Not implemented')),
-  checkActiveVoters: () => Promise.reject(new Error('Not implemented')),
-  countActiveVoters: () => Promise.reject(new Error('Not implemented')),
+  persistVoting: () => Promise.reject(new Error('Not implemented: persistVoting')),
+  persistVoters: () => Promise.reject(new Error('Not implemented: persistVoters')),
+  persistVote: () => Promise.reject(new Error('Not implemented: persistVote')),
+  retrieveVoting: () => Promise.reject(new Error('Not implemented: retrieveVoting')),
+  retrieveVoter: () => Promise.reject(new Error('Not implemented: retrieveVoter')),
+  retrieveVotes: () => Promise.reject(new Error('Not implemented: retrieveVotes')),
+  checkActiveVoters: () => Promise.reject(new Error('Not implemented: checkActiveVoters')),
+  countActiveVoters: () => Promise.reject(new Error('Not implemented: countActiveVoters')),
 })
 
 // Setup

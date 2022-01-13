@@ -839,6 +839,81 @@ describe('Voting summary', () => {
         }
       })
 
+      it('should retrieve voting summary - not enough votes', async () => {
+        const [firstCandidate, secondCandidate] = getCandidates()
+        const votesDistribution = [
+          [firstCandidate, votingType === 'election' ? 'elect' : 'guilty'],
+          [firstCandidate, votingType === 'election' ? 'elect' : 'guilty'],
+          [firstCandidate, votingType === 'election' ? 'pass' : 'innocent'],
+          [secondCandidate, votingType === 'election' ? 'pass' : 'innocent'],
+          [secondCandidate, votingType === 'election' ? 'pass' : 'innocent'],
+        ]
+        const votes = Promise.all(
+          votesDistribution.map(
+            async ([candidateId, vote]) =>
+              ({
+                voteId: await generateVoteId(),
+                votingId: generatedVotingId,
+                voterId: await generateVoterId(),
+                choices: [
+                  {
+                    candidateId,
+                    veredict: vote,
+                  },
+                ],
+                candidateId: candidateId,
+                createdAt: new Date(),
+              } as VoteData)
+          )
+        )
+        const retrieveVotingSpy = chai.spy(async () => ({
+          data: {
+            ...generateEndedVotingBase(),
+            votingId: generatedVotingId,
+            votingType,
+            totalVoters: 6,
+            requiredParticipationPercentage: 0.5,
+          } as VotingData,
+        }))
+        const retrieveVotesSpy = chai.spy(async () => ({
+          data: await votes,
+        }))
+
+        setCallbacks({
+          retrieveVoting: retrieveVotingSpy,
+          retrieveVotes: retrieveVotesSpy,
+        })
+
+        const result = await retrieveVotingSummary({
+          votingId: generatedVotingId,
+        })
+        const expectedStats: CandidatesStats = generateExpectedStats(
+          {
+            ...DEFAULT_CANDIDATE_STATS,
+            [votingType === 'election' ? 'elect' : 'guilty']: 2,
+            [votingType === 'election' ? 'pass' : 'innocent']: 1,
+          },
+          {
+            ...DEFAULT_CANDIDATE_STATS,
+            [votingType === 'election' ? 'pass' : 'innocent']: 2,
+          }
+        )
+        expect(retrieveVotingSpy).to.have.been.called.once
+        expect(retrieveVotingSpy).to.have.been.called.with(generatedVotingId)
+        expect(retrieveVotesSpy).to.have.been.called.once
+        expect(retrieveVotesSpy).to.have.been.called.with(generatedVotingId)
+        expect(result).to.exist
+        expect(result.candidatesStats).to.deep.equal(expectedStats)
+        expect(result.votingSummaryState).to.equal('final')
+        expect(result.finalVeredict).to.exist
+        if (result.finalVeredict) {
+          expect(result.finalVeredict[firstCandidate]).to.equal(
+            votingType === 'election' ? 'elected' : 'guilty'
+          )
+          expect(result.finalVeredict[secondCandidate]).to.equal('undecided')
+        }
+      })
+
       it('no votes - ongoing voting', async () => {
         const retrieveVotingSpy = chai.spy(async () => ({
           data: {

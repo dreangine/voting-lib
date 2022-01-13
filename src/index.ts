@@ -108,10 +108,15 @@ function generateVotesStats(votesData?: VoteData[] | VotesStats | null): Candida
       )
 }
 
-function generateFinalVeredict(candidatesStats: CandidatesStats): FinalVeredictStats {
+function generateFinalVeredict(
+  candidatesStats: CandidatesStats,
+  requiredVotes?: number
+): FinalVeredictStats {
   return Object.entries(candidatesStats).reduce(
     (finalVeredict, [candidateId, { guilty, innocent, elect, pass }]) => {
-      if (guilty > innocent) {
+      if (requiredVotes && guilty + innocent + elect + pass < requiredVotes) {
+        finalVeredict[candidateId] = 'undecided'
+      } else if (guilty > innocent) {
         finalVeredict[candidateId] = 'guilty'
       } else if (innocent > guilty) {
         finalVeredict[candidateId] = 'innocent'
@@ -262,7 +267,9 @@ export async function retrieveVotingSummary(
     const isVotingFinal = hasVotingEnded(voting)
     const votingSummaryState: VotingSummaryState = isVotingFinal ? 'final' : 'partial'
 
-    const finalVeredict = isVotingFinal && generateFinalVeredict(candidatesStats)
+    const { requiredParticipationPercentage = 0, totalVoters } = voting
+    const requiredVotes = requiredParticipationPercentage * totalVoters
+    const finalVeredict = isVotingFinal && generateFinalVeredict(candidatesStats, requiredVotes)
 
     const response = {
       voting,

@@ -61,6 +61,13 @@ function retrieveVotingFnOngoing(votingId: VotingId, votingType: VotingType) {
     })
 }
 
+function retrieveVotingFnEnded(votingId: VotingId, votingType: VotingType) {
+  return () =>
+    Promise.resolve({
+      data: { ...generateEndedVotingBase(), votingId, votingType },
+    })
+}
+
 function getStartedBy(): VoterId {
   const [startedBy] = generatedVoters
   return startedBy
@@ -417,13 +424,7 @@ describe('Vote', () => {
     describe(`Voting type: ${votingType}`, () => {
       const veredict = votingType === 'election' ? 'elect' : 'guilty'
       it('should add a vote', async () => {
-        const retrieveVotingSpy = chai.spy(async () => ({
-          data: {
-            ...generateOngoingVotingBase(),
-            votingId: generatedVotingId,
-            votingType,
-          } as VotingData,
-        }))
+        const retrieveVotingSpy = chai.spy(retrieveVotingFnOngoing(generatedVotingId, votingType))
         const persistVoteSpy = chai.spy(() =>
           Promise.resolve({
             inserts: 1,
@@ -459,13 +460,7 @@ describe('Vote', () => {
 
       it('should add a vote - by userId', async () => {
         const userId = 'U1ASDF'
-        const retrieveVotingSpy = chai.spy(async () => ({
-          data: {
-            ...generateOngoingVotingBase(),
-            votingId: generatedVotingId,
-            votingType,
-          } as VotingData,
-        }))
+        const retrieveVotingSpy = chai.spy(retrieveVotingFnOngoing(generatedVotingId, votingType))
         const persistVoteSpy = chai.spy(() =>
           Promise.resolve({
             inserts: 1,
@@ -529,13 +524,7 @@ describe('Vote', () => {
       })
 
       it('cannot vote after voting has ended', async () => {
-        const retrieveVotingSpy = chai.spy(async () => ({
-          data: {
-            ...generateEndedVotingBase(),
-            votingId: generatedVotingId,
-            votingType,
-          } as VotingData,
-        }))
+        const retrieveVotingSpy = chai.spy(retrieveVotingFnEnded(generatedVotingId, votingType))
 
         setCallbacks({
           retrieveVoting: retrieveVotingSpy,
@@ -642,13 +631,7 @@ describe('Voting summary', () => {
               } as VoteData)
           )
         )
-        const retrieveVotingSpy = chai.spy(async () => ({
-          data: {
-            ...generateOngoingVotingBase(),
-            votingId: generatedVotingId,
-            votingType,
-          } as VotingData,
-        }))
+        const retrieveVotingSpy = chai.spy(retrieveVotingFnOngoing(generatedVotingId, votingType))
         const retrieveVotesSpy = chai.spy(async () => ({
           data: await votes,
         }))
@@ -708,13 +691,7 @@ describe('Voting summary', () => {
               } as VoteData)
           )
         )
-        const retrieveVotingSpy = chai.spy(async () => ({
-          data: {
-            ...generateOngoingVotingBase(),
-            votingId: generatedVotingId,
-            votingType,
-          } as VotingData,
-        }))
+        const retrieveVotingSpy = chai.spy(retrieveVotingFnOngoing(generatedVotingId, votingType))
         const retrieveVotesSpy = chai.spy(async () => ({
           data: await votes,
         }))
@@ -762,13 +739,7 @@ describe('Voting summary', () => {
             [votingType === 'election' ? 'pass' : 'innocent']: 2,
           },
         }
-        const retrieveVotingSpy = chai.spy(async () => ({
-          data: {
-            ...generateEndedVotingBase(),
-            votingId: generatedVotingId,
-            votingType,
-          } as VotingData,
-        }))
+        const retrieveVotingSpy = chai.spy(retrieveVotingFnEnded(generatedVotingId, votingType))
         const retrieveVotesSpy = chai.spy(async () => ({
           data: votesStats,
         }))
@@ -837,13 +808,7 @@ describe('Voting summary', () => {
               } as VoteData)
           )
         )
-        const retrieveVotingSpy = chai.spy(async () => ({
-          data: {
-            ...generateEndedVotingBase(),
-            votingId: generatedVotingId,
-            votingType,
-          } as VotingData,
-        }))
+        const retrieveVotingSpy = chai.spy(retrieveVotingFnEnded(generatedVotingId, votingType))
         const retrieveVotesSpy = chai.spy(async () => ({
           data: await votes,
         }))
@@ -958,13 +923,7 @@ describe('Voting summary', () => {
       })
 
       it('no votes - ongoing voting', async () => {
-        const retrieveVotingSpy = chai.spy(async () => ({
-          data: {
-            ...generateOngoingVotingBase(),
-            votingId: generatedVotingId,
-            votingType,
-          } as VotingData,
-        }))
+        const retrieveVotingSpy = chai.spy(retrieveVotingFnOngoing(generatedVotingId, votingType))
         const retrieveVotesSpy = chai.spy(async () => ({
           data: null,
         }))
@@ -992,13 +951,7 @@ describe('Voting summary', () => {
       })
 
       it('no votes - ended voting', async () => {
-        const retrieveVotingSpy = chai.spy(async () => ({
-          data: {
-            ...generateEndedVotingBase(),
-            votingId: generatedVotingId,
-            votingType,
-          } as VotingData,
-        }))
+        const retrieveVotingSpy = chai.spy(retrieveVotingFnEnded(generatedVotingId, votingType))
         const retrieveVotesSpy = chai.spy(async () => ({
           data: null,
         }))

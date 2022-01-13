@@ -13,6 +13,8 @@ import {
   VotesStats,
   CandidateStats,
   VotingId,
+  RegisterVotingRequest,
+  RegisterVoteRequest,
 } from './types'
 
 import {
@@ -42,6 +44,22 @@ const tomorrowDate = new Date(nowDate.getTime() + 24 * 60 * 60 * 1000)
 const votingTypes: VotingType[] = ['election', 'judgement']
 let generatedVoters: VoterId[]
 let generatedVotingId: VotingId
+
+function checkActiveVotersAllActive() {
+  return Promise.resolve({
+    ...generatedVoters.reduce((acc, candidate) => {
+      acc[candidate] = true
+      return acc
+    }, {}),
+  })
+}
+
+function retrieveVotingFnOngoing(votingId: VotingId, votingType: VotingType) {
+  return () =>
+    Promise.resolve({
+      data: { ...generateOngoingVotingBase(), votingId, votingType },
+    })
+}
 
 function getStartedBy(): VoterId {
   const [startedBy] = generatedVoters
@@ -114,26 +132,51 @@ describe('Not implemented', () => {
     ).to.be.rejectedWith(/Not implemented/)
   })
   it('registerVoting', async () => {
-    await expect(
-      registerVoting({
-        votingParams: {
-          votingDescription: {
-            'en-US': 'Test voting',
-          },
-          votingType: 'election',
-          startedBy: getStartedBy(),
-          candidates: getCandidates(),
-          endsAt: tomorrowDate,
+    const request: RegisterVotingRequest = {
+      votingParams: {
+        votingDescription: {
+          'en-US': 'Test voting',
         },
-      })
-    ).to.be.rejectedWith(/Not implemented/)
+        votingType: 'election',
+        startedBy: getStartedBy(),
+        candidates: getCandidates(),
+        endsAt: tomorrowDate,
+      },
+    }
+    await expect(registerVoting(request)).to.be.rejectedWith(/Not implemented/)
+    setCallbacks({
+      checkActiveVoters: checkActiveVotersAllActive,
+    })
+    await expect(registerVoting(request)).to.be.rejectedWith(/Not implemented/)
+    setCallbacks({
+      countActiveVoters: () => Promise.resolve(0),
+    })
+    await expect(registerVoting(request)).to.be.rejectedWith(/Not implemented/)
   })
   it('registerVote', async () => {
+    const votingId = await generateVotingId()
+    const request: RegisterVoteRequest = {
+      voteParams: {
+        votingId,
+        voterId: getStartedBy(),
+        choices: [
+          {
+            candidateId: getCandidates()[0],
+            veredict: 'guilty',
+          },
+        ],
+      },
+    }
+    await expect(registerVote(request)).to.be.rejectedWith(/Not implemented/)
+    setCallbacks({
+      retrieveVoting: retrieveVotingFnOngoing(votingId, 'election'),
+    })
+    await expect(registerVote(request)).to.be.rejectedWith(/Not implemented/)
     await expect(
-      registerVote({
+      registerVoteByUserId({
         voteParams: {
           votingId: await generateVotingId(),
-          voterId: getStartedBy(),
+          userId: 'U1ASDF',
           choices: [
             {
               candidateId: getCandidates()[0],

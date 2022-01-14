@@ -520,7 +520,7 @@ describe('Vote', () => {
               ],
             },
           })
-        ).to.be.rejectedWith('Voter cannot vote for themselves')
+        ).to.be.rejectedWith('Voter cannot vote on themselves')
       })
 
       it('cannot vote after voting has ended', async () => {

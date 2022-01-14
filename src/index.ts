@@ -199,7 +199,7 @@ async function validateRegisterVote(voteParams: VoteParamsValidate): Promise<voi
   const { votingId, voterId, choices } = voteParams
 
   const candidates = choices.map((choice) => choice.candidateId)
-  if (candidates.includes(voterId)) throw new Error('Voter cannot vote for themselves')
+  if (candidates.includes(voterId)) throw new Error('Voter cannot vote on themselves')
   const { data: voting } = await CALLBACKS.retrieveVoting(votingId)
   if (!voting) throw new Error('Voting does not exist')
   if (hasVotingEnded(voting)) throw new Error('Voting has ended')

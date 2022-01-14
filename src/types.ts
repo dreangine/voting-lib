@@ -72,6 +72,10 @@ export type Vote = {
   choices: VoteChoice[]
 }
 
+export type VoterActive = {
+  [voterId: VoterId]: boolean
+}
+
 export type Callbacks = {
   persistVoting: (voting: VotingData) => Promise<PersistResponse>
   persistVoters: (voters: VoterData[]) => Promise<PersistResponse>
@@ -79,9 +83,7 @@ export type Callbacks = {
   retrieveVoting: (votingId: VotingId) => Promise<RetrieveResponse<VotingData>>
   retrieveVoter: (userId: UserId) => Promise<RetrieveResponse<VoterData>>
   retrieveVotes: (votingId: VotingId) => Promise<RetrieveResponse<VoteData[] | VotesStats>>
-  checkActiveVoters: (votersIds: VoterId[]) => Promise<{
-    [voterId: VoterId]: boolean
-  }>
+  checkActiveVoters: (votersIds: VoterId[]) => Promise<VoterActive>
   countActiveVoters: () => Promise<number>
   hasVoted: (voterId: VoterId, votingId: VotingId) => Promise<boolean>
 }

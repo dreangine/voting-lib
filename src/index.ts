@@ -45,6 +45,7 @@ export const DEFAULT_CALLBACKS: Callbacks = Object.freeze({
   retrieveVotes: () => Promise.reject(new Error('Not implemented: retrieveVotes')),
   checkActiveVoters: () => Promise.reject(new Error('Not implemented: checkActiveVoters')),
   countActiveVoters: () => Promise.reject(new Error('Not implemented: countActiveVoters')),
+  hasVoted: () => Promise.reject(new Error('Not implemented: hasVoted')),
 })
 
 // Setup
@@ -203,6 +204,8 @@ async function validateRegisterVote(voteParams: VoteParamsValidate): Promise<voi
   const { data: voting } = await CALLBACKS.retrieveVoting(votingId)
   if (!voting) throw new Error('Voting does not exist')
   if (hasVotingEnded(voting)) throw new Error('Voting has ended')
+  const hasVoted = await CALLBACKS.hasVoted(voterId, votingId)
+  if (hasVoted) throw new Error('Voter cannot vote again')
 }
 
 export async function registerVote(request: RegisterVoteRequest): Promise<RegisterVoteResponse> {

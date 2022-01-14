@@ -54,6 +54,10 @@ This method can be called any number of times to change all or some of the callb
 
 - All participants must be registered prior to starting the voting
 - A voting cannot be started by a candidate
+- A voter cannot vote on themselves
+- A voter can only vote once
+- A voter cannot vote on a voting that has already ended
+- The vote is immutable
 
 ## Usage
 

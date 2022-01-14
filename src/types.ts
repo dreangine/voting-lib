@@ -83,6 +83,7 @@ export type Callbacks = {
     [voterId: VoterId]: boolean
   }>
   countActiveVoters: () => Promise<number>
+  hasVoted: (voterId: VoterId, votingId: VotingId) => Promise<boolean>
 }
 
 /**

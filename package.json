@@ -18,6 +18,9 @@
     "coverage": "nyc nyc --reporter=lcov npm run test",
     "prepublish": "npm run build"
   },
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dreangine/voting-lib.git"

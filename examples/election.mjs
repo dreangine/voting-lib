@@ -9,10 +9,12 @@ import { users } from './common.mjs'
 const votersResponse = await registerVoters({
   users: users,
 })
-const voters = votersResponse.voters.map((voter) => voter.voterId)
 console.log('Voters:', votersResponse)
 
-const [startedBy, ...candidates] = voters
+const { voters } = votersResponse
+const [firstVoter, ...otherVoters] = voters
+const { voterId: startedBy } = firstVoter
+const candidates = otherVoters.map(({ voterId: candidateId, alias }) => ({ candidateId, alias }))
 
 const votingResponse = await registerVoting({
   votingParams: {

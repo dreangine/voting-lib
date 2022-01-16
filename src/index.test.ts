@@ -16,6 +16,7 @@ import {
   RegisterVotingRequest,
   RegisterVoteRequest,
   UserInfo,
+  CandidateInfo,
 } from './types'
 
 import {
@@ -75,9 +76,14 @@ function getStartedBy(): VoterId {
   return startedBy
 }
 
-function getCandidates(): VoterId[] {
+function getCandidates(): CandidateInfo[] {
   const [, ...candidates] = generatedVoters
-  return candidates
+  return candidates.map((candidate) => ({ candidateId: candidate }))
+}
+
+function getFirstCandidateId(): VoterId {
+  const [firstCandidateId] = getCandidates()
+  return firstCandidateId.candidateId
 }
 
 function generateVotingBase(): Pick<
@@ -164,13 +170,15 @@ describe('Not implemented', () => {
   })
   it('registerVote', async () => {
     const votingId = await generateVotingId()
+    const [candidate] = getCandidates()
+    const { candidateId } = candidate
     const request: RegisterVoteRequest = {
       voteParams: {
         votingId,
         voterId: getStartedBy(),
         choices: [
           {
-            candidateId: getCandidates()[0],
+            candidateId,
             veredict: 'guilty',
           },
         ],
@@ -192,7 +200,7 @@ describe('Not implemented', () => {
           userId: 'U1ASDF',
           choices: [
             {
-              candidateId: getCandidates()[0],
+              candidateId,
               veredict: 'guilty',
             },
           ],
@@ -309,9 +317,9 @@ describe('Voting', () => {
         const checkActiveVotersSpy = chai.spy(() =>
           Promise.resolve({
             [getStartedBy()]: false,
-            [firstCandidate]: false,
-            ...others.reduce((acc, candidate) => {
-              acc[candidate] = true
+            [firstCandidate.candidateId]: false,
+            ...others.reduce((acc, { candidateId }) => {
+              acc[candidateId] = true
               return acc
             }, {}),
           })
@@ -333,7 +341,9 @@ describe('Voting', () => {
               endsAt: tomorrowDate,
             },
           })
-        ).to.be.rejectedWith(`Voters ${[getStartedBy(), firstCandidate].join(', ')} do not exist`)
+        ).to.be.rejectedWith(
+          `Voters ${[getStartedBy(), firstCandidate.candidateId].join(', ')} do not exist`
+        )
         expect(checkActiveVotersSpy).to.have.been.called.once
       })
 
@@ -416,7 +426,7 @@ describe('Voting', () => {
           },
           votingType: 'election',
           startedBy: getStartedBy(),
-          candidates: [getStartedBy(), ...getCandidates()],
+          candidates: [{ candidateId: getStartedBy() }, ...getCandidates()],
           endsAt: tomorrowDate,
         },
       })
@@ -449,7 +459,7 @@ describe('Vote', () => {
             voterId: getStartedBy(),
             choices: [
               {
-                candidateId: getCandidates()[0],
+                candidateId: getFirstCandidateId(),
                 veredict,
               },
             ],
@@ -498,7 +508,7 @@ describe('Vote', () => {
             userId,
             choices: [
               {
-                candidateId: getCandidates()[0],
+                candidateId: getFirstCandidateId(),
                 veredict,
               },
             ],
@@ -552,7 +562,7 @@ describe('Vote', () => {
               voterId: getStartedBy(),
               choices: [
                 {
-                  candidateId: getCandidates()[0],
+                  candidateId: getFirstCandidateId(),
                   veredict,
                 },
               ],
@@ -577,7 +587,7 @@ describe('Vote', () => {
               voterId: getStartedBy(),
               choices: [
                 {
-                  candidateId: getCandidates()[0],
+                  candidateId: getFirstCandidateId(),
                   veredict,
                 },
               ],
@@ -603,7 +613,7 @@ describe('Vote', () => {
           voterId: getStartedBy(),
           choices: [
             {
-              candidateId: getCandidates()[0],
+              candidateId: getFirstCandidateId(),
               veredict: 'pass',
             },
           ],
@@ -629,7 +639,7 @@ describe('Vote', () => {
           userId,
           choices: [
             {
-              candidateId: getCandidates()[0],
+              candidateId: getFirstCandidateId(),
               veredict: 'pass',
             },
           ],
@@ -647,11 +657,11 @@ describe('Voting summary', () => {
       it('should retrieve voting summary - ongoing voting', async () => {
         const [firstCandidate, secondCandidate] = getCandidates()
         const votesDistribution = [
-          [firstCandidate, votingType === 'election' ? 'elect' : 'guilty'],
-          [firstCandidate, votingType === 'election' ? 'elect' : 'guilty'],
-          [firstCandidate, votingType === 'election' ? 'pass' : 'innocent'],
-          [secondCandidate, votingType === 'election' ? 'elect' : 'guilty'],
-          [secondCandidate, votingType === 'election' ? 'pass' : 'innocent'],
+          [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
+          [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
+          [firstCandidate.candidateId, votingType === 'election' ? 'pass' : 'innocent'],
+          [secondCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
+          [secondCandidate.candidateId, votingType === 'election' ? 'pass' : 'innocent'],
         ]
         const votes = Promise.all(
           votesDistribution.map(
@@ -708,10 +718,11 @@ describe('Voting summary', () => {
 
       it('candidates without votes - ongoing voting', async () => {
         const [firstCandidate] = getCandidates()
+        const { candidateId: firstCandidateId } = firstCandidate
         const votesDistribution = [
-          [firstCandidate, votingType === 'election' ? 'elect' : 'guilty'],
-          [firstCandidate, votingType === 'election' ? 'elect' : 'guilty'],
-          [firstCandidate, votingType === 'election' ? 'pass' : 'innocent'],
+          [firstCandidateId, votingType === 'election' ? 'elect' : 'guilty'],
+          [firstCandidateId, votingType === 'election' ? 'elect' : 'guilty'],
+          [firstCandidateId, votingType === 'election' ? 'pass' : 'innocent'],
         ]
         const votes = Promise.all(
           votesDistribution.map(
@@ -770,11 +781,11 @@ describe('Voting summary', () => {
       it('should retrieve voting summary - ended voting', async () => {
         const [firstCandidate, secondCandidate] = getCandidates()
         const votesStats: VotesStats = {
-          [firstCandidate]: {
+          [firstCandidate.candidateId]: {
             [votingType === 'election' ? 'elect' : 'guilty']: 2,
             [votingType === 'election' ? 'pass' : 'innocent']: 1,
           },
-          [secondCandidate]: {
+          [secondCandidate.candidateId]: {
             [votingType === 'election' ? 'elect' : 'guilty']: 1,
             [votingType === 'election' ? 'pass' : 'innocent']: 2,
           },
@@ -813,10 +824,10 @@ describe('Voting summary', () => {
         expect(result.votingSummaryState).to.equal('final')
         expect(result.finalVeredict).to.exist
         if (result.finalVeredict) {
-          expect(result.finalVeredict[firstCandidate]).to.equal(
+          expect(result.finalVeredict[firstCandidate.candidateId]).to.equal(
             votingType === 'election' ? 'elected' : 'guilty'
           )
-          expect(result.finalVeredict[secondCandidate]).to.equal(
+          expect(result.finalVeredict[secondCandidate.candidateId]).to.equal(
             votingType === 'election' ? 'not elected' : 'innocent'
           )
         }
@@ -825,10 +836,10 @@ describe('Voting summary', () => {
       it('should retrieve voting summary - ended voting (undecided)', async () => {
         const [firstCandidate, secondCandidate] = getCandidates()
         const votesDistribution = [
-          [firstCandidate, votingType === 'election' ? 'elect' : 'guilty'],
-          [firstCandidate, votingType === 'election' ? 'pass' : 'innocent'],
-          [secondCandidate, votingType === 'election' ? 'elect' : 'guilty'],
-          [secondCandidate, votingType === 'election' ? 'pass' : 'innocent'],
+          [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
+          [firstCandidate.candidateId, votingType === 'election' ? 'pass' : 'innocent'],
+          [secondCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
+          [secondCandidate.candidateId, votingType === 'election' ? 'pass' : 'innocent'],
         ]
         const votes = Promise.all(
           votesDistribution.map(
@@ -882,19 +893,19 @@ describe('Voting summary', () => {
         expect(result.votingSummaryState).to.equal('final')
         expect(result.finalVeredict).to.exist
         if (result.finalVeredict) {
-          expect(result.finalVeredict[firstCandidate]).to.equal('undecided')
-          expect(result.finalVeredict[secondCandidate]).to.equal('undecided')
+          expect(result.finalVeredict[firstCandidate.candidateId]).to.equal('undecided')
+          expect(result.finalVeredict[secondCandidate.candidateId]).to.equal('undecided')
         }
       })
 
       it('should retrieve voting summary - not enough votes', async () => {
         const [firstCandidate, secondCandidate] = getCandidates()
         const votesDistribution = [
-          [firstCandidate, votingType === 'election' ? 'elect' : 'guilty'],
-          [firstCandidate, votingType === 'election' ? 'elect' : 'guilty'],
-          [firstCandidate, votingType === 'election' ? 'pass' : 'innocent'],
-          [secondCandidate, votingType === 'election' ? 'pass' : 'innocent'],
-          [secondCandidate, votingType === 'election' ? 'pass' : 'innocent'],
+          [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
+          [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
+          [firstCandidate.candidateId, votingType === 'election' ? 'pass' : 'innocent'],
+          [secondCandidate.candidateId, votingType === 'election' ? 'pass' : 'innocent'],
+          [secondCandidate.candidateId, votingType === 'election' ? 'pass' : 'innocent'],
         ]
         const votes = Promise.all(
           votesDistribution.map(
@@ -955,10 +966,10 @@ describe('Voting summary', () => {
         expect(result.votingSummaryState).to.equal('final')
         expect(result.finalVeredict).to.exist
         if (result.finalVeredict) {
-          expect(result.finalVeredict[firstCandidate]).to.equal(
+          expect(result.finalVeredict[firstCandidate.candidateId]).to.equal(
             votingType === 'election' ? 'elected' : 'guilty'
           )
-          expect(result.finalVeredict[secondCandidate]).to.equal('undecided')
+          expect(result.finalVeredict[secondCandidate.candidateId]).to.equal('undecided')
         }
       })
 
@@ -976,7 +987,7 @@ describe('Voting summary', () => {
         const result = await retrieveVotingSummary({
           votingId: generatedVotingId,
         })
-        const expectedStats = getCandidates().reduce((candidatesStats, candidateId) => {
+        const expectedStats = getCandidates().reduce((candidatesStats, { candidateId }) => {
           candidatesStats[candidateId] = DEFAULT_CANDIDATE_STATS
           return candidatesStats
         }, {} as CandidatesStats)
@@ -1004,7 +1015,7 @@ describe('Voting summary', () => {
         const result = await retrieveVotingSummary({
           votingId: generatedVotingId,
         })
-        const expectedStats = getCandidates().reduce((candidatesStats, candidateId) => {
+        const expectedStats = getCandidates().reduce((candidatesStats, { candidateId }) => {
           candidatesStats[candidateId] = DEFAULT_CANDIDATE_STATS
           return candidatesStats
         }, {} as CandidatesStats)
@@ -1016,7 +1027,7 @@ describe('Voting summary', () => {
         expect(result.candidatesStats).to.deep.equal(expectedStats)
         expect(result.votingSummaryState).to.equal('final')
         expect(result.finalVeredict).to.exist
-        getCandidates().forEach((candidateId) => {
+        getCandidates().forEach(({ candidateId }) => {
           expect(result.finalVeredict && result.finalVeredict[candidateId]).to.equal('undecided')
         })
       })

@@ -144,8 +144,9 @@ async function validateRegisterVoting(votingParams: VotingParamsValidate): Promi
   if (candidates.length < MIN_CANDIDATES_ELECTION && votingType === 'election')
     throw new Error(`Election must have at least ${MIN_CANDIDATES_ELECTION} candidates`)
 
-  if (candidates.includes(startedBy)) throw new Error('Voting cannot be started by a candidate')
-  const allVoters = [startedBy, ...candidates]
+  const candidatesIds = candidates.map(({ candidateId }) => candidateId)
+  if (candidatesIds.includes(startedBy)) throw new Error('Voting cannot be started by a candidate')
+  const allVoters = [startedBy, ...candidatesIds]
   const checkedVoters = await CALLBACKS.checkActiveVoters(allVoters)
   const notFoundVoterIds = allVoters.filter((candidate) => !checkedVoters[candidate])
   if (notFoundVoterIds.length) throw new Error(`Voters ${notFoundVoterIds.join(', ')} do not exist`)
@@ -263,10 +264,13 @@ export async function retrieveVotingSummary(
 
     if (!voting) throw new Error('Voting not found')
 
-    const baseStats: CandidatesStats = voting.candidates.reduce((candidatesStats, candidateId) => {
-      candidatesStats[candidateId] = { ...DEFAULT_CANDIDATE_STATS }
-      return candidatesStats
-    }, {} as CandidatesStats)
+    const baseStats: CandidatesStats = voting.candidates.reduce(
+      (candidatesStats, { candidateId }) => {
+        candidatesStats[candidateId] = { ...DEFAULT_CANDIDATE_STATS }
+        return candidatesStats
+      },
+      {} as CandidatesStats
+    )
     const candidatesStats = { ...baseStats, ...generateVotesStats(votes) }
     const isVotingFinal = hasVotingEnded(voting)
     const votingSummaryState: VotingSummaryState = isVotingFinal ? 'final' : 'partial'

@@ -58,12 +58,18 @@ export type Voter = {
   status: VoterStatus
 }
 
+export type CandidateInfo = {
+  candidateId: VoterId
+  alias?: string
+  speech?: string
+}
+
 export type Voting = {
   votingId: VotingId
   votingDescription: VotingDescription
   votingType: VotingType
   startedBy: VoterId
-  candidates: VoterId[]
+  candidates: CandidateInfo[]
   startsAt: Date
   endsAt: Date
   totalVoters: number

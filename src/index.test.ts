@@ -15,6 +15,7 @@ import {
   VotingId,
   RegisterVotingRequest,
   RegisterVoteRequest,
+  UserInfo,
 } from './types'
 
 import {
@@ -42,6 +43,7 @@ const yesterdayDate = new Date(nowDate.getTime() - 1000 * 60 * 60 * 24)
 const beforeYesterdayDate = new Date(yesterdayDate.getTime() - 1000 * 60 * 60 * 24)
 const tomorrowDate = new Date(nowDate.getTime() + 24 * 60 * 60 * 1000)
 const votingTypes: VotingType[] = ['election', 'judgement']
+const users: UserInfo[] = [{ userId: 'user1' }, { userId: 'user2', alias: 'someone' }]
 let generatedVoters: VoterId[]
 let generatedVotingId: VotingId
 
@@ -134,7 +136,7 @@ describe('Not implemented', () => {
   it('registerVoters', async () => {
     await expect(
       registerVoters({
-        userIds: ['U1ASDF', 'U2ASDF'],
+        users,
       })
     ).to.be.rejectedWith(/Not implemented/)
   })
@@ -208,11 +210,10 @@ describe('Not implemented', () => {
 })
 
 describe('Voter', () => {
-  const userIds = ['U1ASDF', 'U2ASDF']
   it('should add voters', async () => {
     const persistVotersSpy = chai.spy(() =>
       Promise.resolve({
-        inserts: userIds.length,
+        inserts: users.length,
       })
     )
 
@@ -221,7 +222,7 @@ describe('Voter', () => {
     })
 
     const response = await registerVoters({
-      userIds,
+      users,
     })
     const { voters: responseVoters } = response
 
@@ -237,7 +238,7 @@ describe('Voter', () => {
   it('should add voters - omit data', async () => {
     const persistVotersSpy = chai.spy(() =>
       Promise.resolve({
-        inserts: userIds.length,
+        inserts: users.length,
       })
     )
 
@@ -246,7 +247,7 @@ describe('Voter', () => {
     })
 
     const response = await registerVoters({
-      userIds,
+      users,
       omitReturnedData: true,
     })
 

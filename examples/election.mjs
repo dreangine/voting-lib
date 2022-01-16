@@ -7,7 +7,7 @@ import {
 import { users } from './common.mjs'
 
 const votersResponse = await registerVoters({
-  userIds: users,
+  users: users,
 })
 const voters = votersResponse.voters.map((voter) => voter.voterId)
 console.log('Voters:', votersResponse)

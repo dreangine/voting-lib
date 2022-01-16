@@ -3,6 +3,11 @@ export type VoterId = string // public ID of the voter
 export type VotingId = string
 export type VoteId = string
 
+export type UserInfo = {
+  userId: UserId
+  alias?: string
+}
+
 export type EvidenceType = 'text' | 'image'
 
 export type Evidence = {
@@ -49,6 +54,7 @@ export type VoterStatus = 'active' | 'inactive'
 export type Voter = {
   voterId: VoterId
   userId: UserId
+  alias?: string
   status: VoterStatus
 }
 
@@ -125,7 +131,7 @@ export type RegisterVotingRequest = {
 }
 
 export type RegisterVotersRequest = {
-  userIds: UserId[]
+  users: UserInfo[]
   omitReturnedData?: boolean
 }
 

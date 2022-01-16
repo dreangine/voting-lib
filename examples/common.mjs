@@ -1,6 +1,6 @@
 import { setCallbacks } from '../dist/index.js'
 
-export const users = ['user1', 'user2', 'user3']
+export const users = [{ userId: 'user1' }, { userId: 'user2' }, { userId: 'user3' }]
 
 const data = { voters: [], votings: [], votes: [] }
 

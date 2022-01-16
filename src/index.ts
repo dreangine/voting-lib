@@ -178,14 +178,15 @@ export async function registerVoting(
 export async function registerVoters(
   request: RegisterVotersRequest
 ): Promise<RegisterVotersResponse> {
-  const { userIds, omitReturnedData } = request
+  const { users, omitReturnedData } = request
   const now = new Date()
   const voters = await Promise.all(
-    userIds.map(
-      async (userId) =>
+    users.map(
+      async ({ userId, alias }) =>
         ({
           voterId: await generateVoterId(),
           userId,
+          alias,
           status: 'active',
           createdAt: now,
           updatedAt: now,

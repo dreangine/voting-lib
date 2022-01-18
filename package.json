@@ -14,7 +14,7 @@
     "build": "tsc",
     "start": "tsc && node dist/index.js",
     "lint": "eslint src/**/*.ts",
-    "test": "mocha -r ts-node/register 'src/**/*.test.ts'",
+    "test": "mocha -r ts-node/register 'tests/**/*.test.ts'",
     "coverage": "nyc nyc --reporter=lcov npm run test",
     "prepublish": "npm run build"
   },

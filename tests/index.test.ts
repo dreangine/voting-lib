@@ -17,7 +17,7 @@ import {
   RegisterVoteRequest,
   UserInfo,
   CandidateInfo,
-} from './types'
+} from '../src/types'
 
 import {
   DEFAULT_CALLBACKS,
@@ -33,7 +33,7 @@ import {
   registerVoting,
   retrieveVotingSummary,
   setCallbacks,
-} from './index'
+} from '../src/index'
 
 chai.use(spies)
 chai.use(chaiPromised)

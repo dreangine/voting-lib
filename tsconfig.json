@@ -16,5 +16,5 @@
       "*": ["./node_modules/*"]
     }
   },
-  "exclude": ["tests/**/*.test.ts", "dist/**/*", "examples/**/*"]
+  "exclude": ["tests/**/*", "dist/**/*", "examples/**/*"]
 }

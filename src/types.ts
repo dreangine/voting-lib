@@ -64,7 +64,7 @@ export type CandidateInfo = {
   speech?: string
 }
 
-export type Voting = {
+export type VotingBase = {
   votingId: VotingId
   votingDescription: VotingDescription
   votingType: VotingType
@@ -74,8 +74,17 @@ export type Voting = {
   endsAt: Date
   totalVoters: number
   requiredParticipationPercentage?: number
-  evidences?: Evidence[]
 }
+
+export type Election = VotingBase & {
+  maxElectedCandidates: number
+}
+
+export type Judgement = VotingBase & {
+  evidences: Evidence[]
+}
+
+export type Voting = Election | Judgement
 
 export type Vote = {
   voteId: VoteId
@@ -119,8 +128,23 @@ export type VoteData = Vote & Omit<BasicData, 'updatedAt'>
  * PARAMS
  */
 
-export type VotingParams = Partial<Pick<Voting, 'startsAt'>> &
-  Omit<Voting, 'votingId' | 'startsAt' | 'totalVoters'>
+export type VotingParams = {
+  votingDescription: VotingDescription
+  votingType: VotingType
+  startedBy: VoterId
+  candidates: CandidateInfo[]
+  startsAt?: Date
+  endsAt: Date
+  requiredParticipationPercentage?: number
+}
+
+export type ElectionParams = VotingParams & {
+  maxElectedCandidates: number
+}
+
+export type JudgementParams = VotingParams & {
+  evidences: Evidence[]
+}
 
 export type VotingParamsValidate = Omit<Voting, 'votingId' | 'totalVoters'>
 
@@ -133,7 +157,7 @@ export type VoteParamsValidate = VoteParams
  */
 
 export type RegisterVotingRequest = {
-  votingParams: VotingParams
+  votingParams: ElectionParams | JudgementParams
 }
 
 export type RegisterVotersRequest = {

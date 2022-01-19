@@ -3,38 +3,26 @@ import * as chai from 'chai'
 import * as spies from 'chai-spies'
 import * as chaiPromised from 'chai-as-promised'
 
-import { VoterId, CandidateInfo } from '../src/types'
-
 import {
   DEFAULT_CALLBACKS,
-  generateVoterId,
   MAX_VOTING_DURATION,
   MIN_VOTING_DURATION,
   registerVoting,
   setCallbacks,
 } from '../src/index'
 
-import { nowDate, tomorrowDate, votingTypes } from './common'
+import {
+  allVotersIds,
+  candidates,
+  nowDate,
+  startedBy,
+  tomorrowDate,
+  totalVoters,
+  votingTypes,
+} from './common'
 
 chai.use(spies)
 chai.use(chaiPromised)
-
-// Setup
-let generatedVoters: VoterId[]
-
-function getStartedBy(): VoterId {
-  const [startedBy] = generatedVoters
-  return startedBy
-}
-
-function getCandidates(): CandidateInfo[] {
-  const [, ...candidates] = generatedVoters
-  return candidates.map((candidate) => ({ candidateId: candidate }))
-}
-
-before(async () => {
-  generatedVoters = [await generateVoterId(), await generateVoterId(), await generateVoterId()]
-})
 
 beforeEach(async () => {
   // Reset callbacks
@@ -52,13 +40,13 @@ describe('Voting', () => {
         )
         const checkActiveVotersSpy = chai.spy(() =>
           Promise.resolve({
-            ...generatedVoters.reduce((acc, candidate) => {
+            ...allVotersIds.reduce((acc, candidate) => {
               acc[candidate] = true
               return acc
             }, {}),
           })
         )
-        const countActiveVotersSpy = chai.spy(() => Promise.resolve(generatedVoters.length))
+        const countActiveVotersSpy = chai.spy(() => Promise.resolve(totalVoters))
 
         setCallbacks({
           persistVoting: persistVotingSpy,
@@ -72,9 +60,10 @@ describe('Voting', () => {
               'en-US': 'Test voting',
             },
             votingType,
-            startedBy: getStartedBy(),
-            candidates: getCandidates(),
+            startedBy: startedBy.voterId,
+            candidates,
             endsAt: tomorrowDate,
+            ...(votingType === 'election' ? { maxElectedCandidates: 1 } : { evidences: [] }),
           },
         })
         const { voting: responseVoting } = response
@@ -82,18 +71,18 @@ describe('Voting', () => {
         expect(persistVotingSpy).to.have.been.called.once
         expect(persistVotingSpy).to.have.been.called.with(responseVoting)
         expect(checkActiveVotersSpy).to.have.been.called.once
-        expect(checkActiveVotersSpy).to.have.been.called.with(generatedVoters)
+        expect(checkActiveVotersSpy).to.have.been.called.with(allVotersIds)
         expect(countActiveVotersSpy).to.have.been.called.once
         expect(responseVoting.votingId).to.exist
         expect(responseVoting.startsAt).to.exist
-        expect(responseVoting.totalVoters).to.equal(generatedVoters.length)
+        expect(responseVoting.totalVoters).to.equal(totalVoters)
       })
 
       it('should have all voters registered', async () => {
-        const [firstCandidate, ...others] = getCandidates()
+        const [firstCandidate, ...others] = candidates
         const checkActiveVotersSpy = chai.spy(() =>
           Promise.resolve({
-            [getStartedBy()]: false,
+            [startedBy.voterId]: false,
             [firstCandidate.candidateId]: false,
             ...others.reduce((acc, { candidateId }) => {
               acc[candidateId] = true
@@ -113,13 +102,14 @@ describe('Voting', () => {
                 'en-US': 'Test voting',
               },
               votingType,
-              startedBy: getStartedBy(),
-              candidates: getCandidates(),
+              startedBy: startedBy.voterId,
+              candidates,
               endsAt: tomorrowDate,
+              ...(votingType === 'election' ? { maxElectedCandidates: 1 } : { evidences: [] }),
             },
           })
         ).to.be.rejectedWith(
-          `Voters ${[getStartedBy(), firstCandidate.candidateId].join(', ')} do not exist`
+          `Voters ${[startedBy.voterId, firstCandidate.candidateId].join(', ')} do not exist`
         )
         expect(checkActiveVotersSpy).to.have.been.called.once
       })
@@ -133,9 +123,10 @@ describe('Voting', () => {
                   'en-US': 'Test election',
                 },
                 votingType,
-                startedBy: getStartedBy(),
-                candidates: [getCandidates()[0]],
+                startedBy: startedBy.voterId,
+                candidates: [candidates[0]],
                 endsAt: tomorrowDate,
+                ...(votingType === 'election' ? { maxElectedCandidates: 1 } : { evidences: [] }),
               },
             })
           ).to.be.rejectedWith(/Election must have at least \d+ candidates/)
@@ -151,10 +142,11 @@ describe('Voting', () => {
             'en-US': 'Test voting',
           },
           votingType: 'election',
-          startedBy: getStartedBy(),
-          candidates: getCandidates(),
+          startedBy: startedBy.voterId,
+          candidates,
           startsAt: nowDate,
           endsAt: new Date(nowDate.getTime() + MIN_VOTING_DURATION - 1),
+          maxElectedCandidates: 1,
         },
       })
     ).to.be.rejectedWith('Voting duration is too short')
@@ -168,10 +160,11 @@ describe('Voting', () => {
             'en-US': 'Test voting',
           },
           votingType: 'election',
-          startedBy: getStartedBy(),
-          candidates: getCandidates(),
+          startedBy: startedBy.voterId,
+          candidates,
           startsAt: nowDate,
           endsAt: new Date(nowDate.getTime() + MAX_VOTING_DURATION + 1),
+          maxElectedCandidates: 1,
         },
       })
     ).to.be.rejectedWith('Voting duration is too long')
@@ -185,10 +178,11 @@ describe('Voting', () => {
             'en-US': 'Test voting',
           },
           votingType: 'election',
-          startedBy: getStartedBy(),
-          candidates: getCandidates(),
+          startedBy: startedBy.voterId,
+          candidates,
           startsAt: tomorrowDate,
           endsAt: new Date(tomorrowDate.getTime() - 1),
+          maxElectedCandidates: 1,
         },
       })
     ).to.be.rejectedWith(`Voting cannot end before it starts`)
@@ -202,9 +196,10 @@ describe('Voting', () => {
             'en-US': 'Test election',
           },
           votingType: 'election',
-          startedBy: getStartedBy(),
-          candidates: [{ candidateId: getStartedBy() }, ...getCandidates()],
+          startedBy: startedBy.voterId,
+          candidates: [{ candidateId: startedBy.voterId }, ...candidates],
           endsAt: tomorrowDate,
+          maxElectedCandidates: 1,
         },
       })
     ).to.be.rejectedWith('Voting cannot be started by a candidate')

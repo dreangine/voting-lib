@@ -2,20 +2,10 @@ import { expect } from 'chai'
 import * as chai from 'chai'
 import * as chaiPromised from 'chai-as-promised'
 
-import {
-  VotingData,
-  VotingType,
-  VoterId,
-  VotingId,
-  RegisterVotingRequest,
-  RegisterVoteRequest,
-  UserInfo,
-  CandidateInfo,
-} from '../src/types'
+import { RegisterVotingRequest, RegisterVoteRequest, UserInfo } from '../src/types'
 
 import {
   DEFAULT_CALLBACKS,
-  generateVoterId,
   generateVotingId,
   registerVote,
   registerVoteByUserId,
@@ -25,67 +15,18 @@ import {
   setCallbacks,
 } from '../src/index'
 
-import { tomorrowDate, yesterdayDate } from './common'
+import {
+  allVotersIds,
+  candidates,
+  retrieveVotingFnOngoing,
+  startedBy,
+  tomorrowDate,
+} from './common'
 
 chai.use(chaiPromised)
 
 // Setup
 const users: UserInfo[] = [{ userId: 'user1' }, { userId: 'user2', alias: 'someone' }]
-let generatedVoters: VoterId[]
-
-function checkActiveVotersAllActive() {
-  return Promise.resolve({
-    ...generatedVoters.reduce((acc, candidate) => {
-      acc[candidate] = true
-      return acc
-    }, {}),
-  })
-}
-
-function retrieveVotingFnOngoing(votingId: VotingId, votingType: VotingType) {
-  return () =>
-    Promise.resolve({
-      data: { ...generateOngoingVotingBase(), votingId, votingType },
-    })
-}
-
-function getStartedBy(): VoterId {
-  const [startedBy] = generatedVoters
-  return startedBy
-}
-
-function getCandidates(): CandidateInfo[] {
-  const [, ...candidates] = generatedVoters
-  return candidates.map((candidate) => ({ candidateId: candidate }))
-}
-
-function generateVotingBase(): Pick<
-  VotingData,
-  'votingDescription' | 'startedBy' | 'candidates' | 'totalVoters'
-> {
-  return {
-    votingDescription: {
-      'en-US': 'Test voting',
-    },
-    startedBy: getStartedBy(),
-    candidates: getCandidates(),
-    totalVoters: generatedVoters.length,
-  }
-}
-
-function generateOngoingVotingBase(): Omit<VotingData, 'votingId' | 'votingType'> {
-  return {
-    ...generateVotingBase(),
-    startsAt: yesterdayDate,
-    endsAt: tomorrowDate,
-    createdAt: yesterdayDate,
-    updatedAt: yesterdayDate,
-  }
-}
-
-before(async () => {
-  generatedVoters = [await generateVoterId(), await generateVoterId(), await generateVoterId()]
-})
 
 beforeEach(async () => {
   // Reset callbacks
@@ -107,14 +48,21 @@ describe('Not implemented', () => {
           'en-US': 'Test voting',
         },
         votingType: 'election',
-        startedBy: getStartedBy(),
-        candidates: getCandidates(),
+        startedBy: startedBy.voterId,
+        candidates,
         endsAt: tomorrowDate,
+        maxElectedCandidates: 1,
       },
     }
     await expect(registerVoting(request)).to.be.rejectedWith(/Not implemented/)
     setCallbacks({
-      checkActiveVoters: checkActiveVotersAllActive,
+      checkActiveVoters: () =>
+        Promise.resolve({
+          ...allVotersIds.reduce((acc, candidate) => {
+            acc[candidate] = true
+            return acc
+          }, {}),
+        }),
     })
     await expect(registerVoting(request)).to.be.rejectedWith(/Not implemented/)
     setCallbacks({
@@ -124,12 +72,12 @@ describe('Not implemented', () => {
   })
   it('registerVote', async () => {
     const votingId = await generateVotingId()
-    const [candidate] = getCandidates()
+    const [candidate] = candidates
     const { candidateId } = candidate
     const request: RegisterVoteRequest = {
       voteParams: {
         votingId,
-        voterId: getStartedBy(),
+        voterId: startedBy.voterId,
         choices: [
           {
             candidateId,

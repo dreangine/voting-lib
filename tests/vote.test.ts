@@ -3,92 +3,33 @@ import * as chai from 'chai'
 import * as spies from 'chai-spies'
 import * as chaiPromised from 'chai-as-promised'
 
-import { VoterData, VotingData, VotingType, VoterId, VotingId, CandidateInfo } from '../src/types'
+import { VoterData, VoterId, VotingId } from '../src/types'
 
 import {
   DEFAULT_CALLBACKS,
-  generateVoterId,
   generateVotingId,
   registerVote,
   registerVoteByUserId,
   setCallbacks,
 } from '../src/index'
 
-import { beforeYesterdayDate, tomorrowDate, votingTypes, yesterdayDate } from './common'
+import {
+  candidates,
+  retrieveVotingFnEnded,
+  retrieveVotingFnOngoing,
+  startedBy,
+  votingTypes,
+} from './common'
 
 chai.use(spies)
 chai.use(chaiPromised)
 
-// Setup
-let generatedVoters: VoterId[]
 let generatedVotingId: VotingId
 
-function retrieveVotingFnOngoing(votingId: VotingId, votingType: VotingType) {
-  return () =>
-    Promise.resolve({
-      data: { ...generateOngoingVotingBase(), votingId, votingType },
-    })
-}
-
-function retrieveVotingFnEnded(votingId: VotingId, votingType: VotingType) {
-  return () =>
-    Promise.resolve({
-      data: { ...generateEndedVotingBase(), votingId, votingType },
-    })
-}
-
-function getStartedBy(): VoterId {
-  const [startedBy] = generatedVoters
-  return startedBy
-}
-
-function getCandidates(): CandidateInfo[] {
-  const [, ...candidates] = generatedVoters
-  return candidates.map((candidate) => ({ candidateId: candidate }))
-}
-
 function getFirstCandidateId(): VoterId {
-  const [firstCandidateId] = getCandidates()
+  const [firstCandidateId] = candidates
   return firstCandidateId.candidateId
 }
-
-function generateVotingBase(): Pick<
-  VotingData,
-  'votingDescription' | 'startedBy' | 'candidates' | 'totalVoters'
-> {
-  return {
-    votingDescription: {
-      'en-US': 'Test voting',
-    },
-    startedBy: getStartedBy(),
-    candidates: getCandidates(),
-    totalVoters: generatedVoters.length,
-  }
-}
-
-function generateOngoingVotingBase(): Omit<VotingData, 'votingId' | 'votingType'> {
-  return {
-    ...generateVotingBase(),
-    startsAt: yesterdayDate,
-    endsAt: tomorrowDate,
-    createdAt: yesterdayDate,
-    updatedAt: yesterdayDate,
-  }
-}
-
-function generateEndedVotingBase(): Omit<VotingData, 'votingId' | 'votingType'> {
-  return {
-    ...generateVotingBase(),
-    startsAt: beforeYesterdayDate,
-    endsAt: yesterdayDate,
-    createdAt: yesterdayDate,
-    updatedAt: yesterdayDate,
-  }
-}
-
-before(async () => {
-  generatedVoters = [await generateVoterId(), await generateVoterId(), await generateVoterId()]
-})
 
 beforeEach(async () => {
   // Reset callbacks
@@ -118,7 +59,7 @@ describe('Vote', () => {
         const response = await registerVote({
           voteParams: {
             votingId: generatedVotingId,
-            voterId: getStartedBy(),
+            voterId: startedBy.voterId,
             choices: [
               {
                 candidateId: getFirstCandidateId(),
@@ -134,7 +75,7 @@ describe('Vote', () => {
         expect(persistVoteSpy).to.have.been.called.once
         expect(persistVoteSpy).to.have.been.called.with(responseVote)
         expect(hasVotedSpy).to.have.been.called.once
-        expect(hasVotedSpy).to.have.been.called.with(getStartedBy(), generatedVotingId)
+        expect(hasVotedSpy).to.have.been.called.with(startedBy.voterId, generatedVotingId)
         expect(responseVote.voteId).to.exist
         expect(responseVote.createdAt).to.exist
       })
@@ -152,7 +93,7 @@ describe('Vote', () => {
           Promise.resolve({
             data: {
               userId,
-              voterId: getStartedBy(),
+              voterId: startedBy.voterId,
             } as VoterData,
           })
         )
@@ -185,9 +126,9 @@ describe('Vote', () => {
         expect(persistVoteSpy).to.have.been.called.once
         expect(persistVoteSpy).to.have.been.called.with(responseVote)
         expect(hasVotedSpy).to.have.been.called.once
-        expect(hasVotedSpy).to.have.been.called.with(getStartedBy(), generatedVotingId)
+        expect(hasVotedSpy).to.have.been.called.with(startedBy.voterId, generatedVotingId)
         expect(responseVote.voteId).to.exist
-        expect(responseVote.voterId).to.equal(getStartedBy())
+        expect(responseVote.voterId).to.equal(startedBy.voterId)
         expect(responseVote.createdAt).to.exist
       })
 
@@ -196,10 +137,10 @@ describe('Vote', () => {
           registerVote({
             voteParams: {
               votingId: await generateVotingId(),
-              voterId: getStartedBy(),
+              voterId: startedBy.voterId,
               choices: [
                 {
-                  candidateId: getStartedBy(),
+                  candidateId: startedBy.voterId,
                   veredict,
                 },
               ],
@@ -221,7 +162,7 @@ describe('Vote', () => {
           registerVote({
             voteParams: {
               votingId: generatedVotingId,
-              voterId: getStartedBy(),
+              voterId: startedBy.voterId,
               choices: [
                 {
                   candidateId: getFirstCandidateId(),
@@ -232,7 +173,7 @@ describe('Vote', () => {
           })
         ).to.be.rejectedWith('Voter cannot vote again')
         expect(hasVotedSpy).to.have.been.called.once
-        expect(hasVotedSpy).to.have.been.called.with(getStartedBy(), generatedVotingId)
+        expect(hasVotedSpy).to.have.been.called.with(startedBy.voterId, generatedVotingId)
       })
 
       it('cannot vote after voting has ended', async () => {
@@ -246,7 +187,7 @@ describe('Vote', () => {
           registerVote({
             voteParams: {
               votingId: generatedVotingId,
-              voterId: getStartedBy(),
+              voterId: startedBy.voterId,
               choices: [
                 {
                   candidateId: getFirstCandidateId(),
@@ -272,7 +213,7 @@ describe('Vote', () => {
       registerVote({
         voteParams: {
           votingId: generatedVotingId,
-          voterId: getStartedBy(),
+          voterId: startedBy.voterId,
           choices: [
             {
               candidateId: getFirstCandidateId(),

@@ -7,12 +7,9 @@ import {
   CandidatesStats,
   VoteData,
   VotingData,
-  VotingType,
-  VoterId,
   VotesStats,
   CandidateStats,
   VotingId,
-  CandidateInfo,
 } from '../src/types'
 
 import {
@@ -25,84 +22,28 @@ import {
   setCallbacks,
 } from '../src/index'
 
-import { beforeYesterdayDate, tomorrowDate, votingTypes, yesterdayDate } from './common'
+import {
+  candidates,
+  generateVotingDataEnded,
+  retrieveVotingFnEnded,
+  retrieveVotingFnOngoing,
+  votingTypes,
+} from './common'
 
 chai.use(spies)
 chai.use(chaiPromised)
 
 // Setup
-let generatedVoters: VoterId[]
 let generatedVotingId: VotingId
 
-function retrieveVotingFnOngoing(votingId: VotingId, votingType: VotingType) {
-  return () =>
-    Promise.resolve({
-      data: { ...generateOngoingVotingBase(), votingId, votingType },
-    })
-}
-
-function retrieveVotingFnEnded(votingId: VotingId, votingType: VotingType) {
-  return () =>
-    Promise.resolve({
-      data: { ...generateEndedVotingBase(), votingId, votingType },
-    })
-}
-
-function getStartedBy(): VoterId {
-  const [startedBy] = generatedVoters
-  return startedBy
-}
-
-function getCandidates(): CandidateInfo[] {
-  const [, ...candidates] = generatedVoters
-  return candidates.map((candidate) => ({ candidateId: candidate }))
-}
-
-function generateVotingBase(): Pick<
-  VotingData,
-  'votingDescription' | 'startedBy' | 'candidates' | 'totalVoters'
-> {
-  return {
-    votingDescription: {
-      'en-US': 'Test voting',
-    },
-    startedBy: getStartedBy(),
-    candidates: getCandidates(),
-    totalVoters: generatedVoters.length,
-  }
-}
-
-function generateOngoingVotingBase(): Omit<VotingData, 'votingId' | 'votingType'> {
-  return {
-    ...generateVotingBase(),
-    startsAt: yesterdayDate,
-    endsAt: tomorrowDate,
-    createdAt: yesterdayDate,
-    updatedAt: yesterdayDate,
-  }
-}
-
-function generateEndedVotingBase(): Omit<VotingData, 'votingId' | 'votingType'> {
-  return {
-    ...generateVotingBase(),
-    startsAt: beforeYesterdayDate,
-    endsAt: yesterdayDate,
-    createdAt: yesterdayDate,
-    updatedAt: yesterdayDate,
-  }
-}
-
 function generateExpectedStats(...candidatesStats: CandidateStats[]): CandidatesStats {
-  const [, ...candidates] = generatedVoters
-  return candidates.reduce((stats, candidate, index) => {
-    stats[candidate] = candidatesStats[index]
-    return stats
-  }, {} as CandidatesStats)
+  return candidates
+    .map(({ candidateId }) => candidateId)
+    .reduce((stats, candidate, index) => {
+      stats[candidate] = candidatesStats[index]
+      return stats
+    }, {} as CandidatesStats)
 }
-
-before(async () => {
-  generatedVoters = [await generateVoterId(), await generateVoterId(), await generateVoterId()]
-})
 
 beforeEach(async () => {
   // Reset callbacks
@@ -114,7 +55,7 @@ describe('Voting summary', () => {
   votingTypes.forEach((votingType) => {
     describe(`Voting type: ${votingType}`, () => {
       it('should retrieve voting summary - ongoing voting', async () => {
-        const [firstCandidate, secondCandidate] = getCandidates()
+        const [firstCandidate, secondCandidate] = candidates
         const votesDistribution = [
           [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
           [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
@@ -176,7 +117,7 @@ describe('Voting summary', () => {
       })
 
       it('candidates without votes - ongoing voting', async () => {
-        const [firstCandidate] = getCandidates()
+        const [firstCandidate] = candidates
         const { candidateId: firstCandidateId } = firstCandidate
         const votesDistribution = [
           [firstCandidateId, votingType === 'election' ? 'elect' : 'guilty'],
@@ -238,7 +179,7 @@ describe('Voting summary', () => {
       })
 
       it('should retrieve voting summary - ended voting', async () => {
-        const [firstCandidate, secondCandidate] = getCandidates()
+        const [firstCandidate, secondCandidate] = candidates
         const votesStats: VotesStats = {
           [firstCandidate.candidateId]: {
             [votingType === 'election' ? 'elect' : 'guilty']: 2,
@@ -293,7 +234,7 @@ describe('Voting summary', () => {
       })
 
       it('should retrieve voting summary - ended voting (undecided)', async () => {
-        const [firstCandidate, secondCandidate] = getCandidates()
+        const [firstCandidate, secondCandidate] = candidates
         const votesDistribution = [
           [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
           [firstCandidate.candidateId, votingType === 'election' ? 'pass' : 'innocent'],
@@ -358,7 +299,7 @@ describe('Voting summary', () => {
       })
 
       it('should retrieve voting summary - not enough votes', async () => {
-        const [firstCandidate, secondCandidate] = getCandidates()
+        const [firstCandidate, secondCandidate] = candidates
         const votesDistribution = [
           [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
           [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
@@ -386,9 +327,7 @@ describe('Voting summary', () => {
         )
         const retrieveVotingSpy = chai.spy(async () => ({
           data: {
-            ...generateEndedVotingBase(),
-            votingId: generatedVotingId,
-            votingType,
+            ...generateVotingDataEnded(generatedVotingId, votingType),
             totalVoters: 6,
             requiredParticipationPercentage: 0.5,
           } as VotingData,
@@ -446,7 +385,7 @@ describe('Voting summary', () => {
         const result = await retrieveVotingSummary({
           votingId: generatedVotingId,
         })
-        const expectedStats = getCandidates().reduce((candidatesStats, { candidateId }) => {
+        const expectedStats = candidates.reduce((candidatesStats, { candidateId }) => {
           candidatesStats[candidateId] = DEFAULT_CANDIDATE_STATS
           return candidatesStats
         }, {} as CandidatesStats)
@@ -474,7 +413,7 @@ describe('Voting summary', () => {
         const result = await retrieveVotingSummary({
           votingId: generatedVotingId,
         })
-        const expectedStats = getCandidates().reduce((candidatesStats, { candidateId }) => {
+        const expectedStats = candidates.reduce((candidatesStats, { candidateId }) => {
           candidatesStats[candidateId] = DEFAULT_CANDIDATE_STATS
           return candidatesStats
         }, {} as CandidatesStats)
@@ -486,7 +425,7 @@ describe('Voting summary', () => {
         expect(result.candidatesStats).to.deep.equal(expectedStats)
         expect(result.votingSummaryState).to.equal('final')
         expect(result.finalVeredict).to.exist
-        getCandidates().forEach(({ candidateId }) => {
+        candidates.forEach(({ candidateId }) => {
           expect(result.finalVeredict && result.finalVeredict[candidateId]).to.equal('undecided')
         })
       })

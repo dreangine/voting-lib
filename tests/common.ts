@@ -56,7 +56,11 @@ export function retrieveVotingFnOngoing(votingId: VotingId, votingType: VotingTy
     })
 }
 
-export function generateVotingDataEnded(votingId: VotingId, votingType: VotingType): VotingData {
+export function generateVotingDataEnded(
+  votingId: VotingId,
+  votingType: VotingType,
+  maxElectedCandidates?: number
+): VotingData {
   return {
     ...generateVotingBase(),
     startsAt: beforeYesterdayDate,
@@ -65,13 +69,19 @@ export function generateVotingDataEnded(votingId: VotingId, votingType: VotingTy
     updatedAt: yesterdayDate,
     votingId,
     votingType,
-    ...(votingType === 'election' ? { maxElectedCandidates: 1 } : { evidences: [] }),
+    ...(votingType === 'election'
+      ? { maxElectedCandidates: maxElectedCandidates ?? 1 }
+      : { evidences: [] }),
   }
 }
 
-export function retrieveVotingFnEnded(votingId: VotingId, votingType: VotingType) {
+export function retrieveVotingFnEnded(
+  votingId: VotingId,
+  votingType: VotingType,
+  maxElectedCandidates?: number
+) {
   return () =>
     Promise.resolve({
-      data: generateVotingDataEnded(votingId, votingType),
+      data: generateVotingDataEnded(votingId, votingType, maxElectedCandidates),
     })
 }

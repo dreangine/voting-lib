@@ -24,6 +24,8 @@ import {
   RegisterVotingResponse,
   VotingParamsValidate,
   VoteParamsValidate,
+  VeredictFinal,
+  Election,
 } from './types'
 
 // Defaults
@@ -111,27 +113,44 @@ function generateVotesStats(votesData?: VoteData[] | VotesStats | null): Candida
 
 function generateFinalVeredict(
   candidatesStats: CandidatesStats,
-  requiredVotes?: number
+  requiredVotes?: number,
+  maxElectedCandidates?: number
 ): FinalVeredictStats {
-  return Object.entries(candidatesStats).reduce(
-    (finalVeredict, [candidateId, { guilty, innocent, elect, pass }]) => {
+  const veredicts = Object.entries(candidatesStats).map(
+    ([candidateId, { guilty, innocent, elect, pass }]) => {
       if (requiredVotes && guilty + innocent + elect + pass < requiredVotes) {
-        finalVeredict[candidateId] = 'undecided'
+        return { candidateId, veredict: 'undecided' }
       } else if (guilty > innocent) {
-        finalVeredict[candidateId] = 'guilty'
+        return { candidateId, veredict: 'guilty' }
       } else if (innocent > guilty) {
-        finalVeredict[candidateId] = 'innocent'
+        return { candidateId, veredict: 'innocent' }
       } else if (elect > pass) {
-        finalVeredict[candidateId] = 'elected'
+        if (maxElectedCandidates === 1)
+          return { candidateId, veredict: 'pending', electVotes: elect }
+        return { candidateId, veredict: 'elected' }
       } else if (pass > elect) {
-        finalVeredict[candidateId] = 'not elected'
-      } else {
-        finalVeredict[candidateId] = 'undecided'
+        return { candidateId, veredict: 'not elected' }
       }
-      return finalVeredict
-    },
-    {} as FinalVeredictStats
+      return { candidateId, veredict: 'undecided' }
+    }
   )
+
+  const pendingCandidates = veredicts
+    .filter(({ veredict }) => veredict === 'pending')
+    .sort((a, b) => (b.electVotes ?? 0) - (a.electVotes ?? 0))
+  const [firstCandidate, secondCandidate] = pendingCandidates
+  const electedCandidate =
+    firstCandidate?.electVotes === secondCandidate?.electVotes ? null : firstCandidate
+
+  return veredicts.reduce((finalVeredict, { candidateId, veredict }) => {
+    if (veredict === 'pending') {
+      finalVeredict[candidateId] =
+        electedCandidate?.candidateId === candidateId ? 'elected' : 'not elected'
+    } else {
+      finalVeredict[candidateId] = veredict as VeredictFinal
+    }
+    return finalVeredict
+  }, {} as FinalVeredictStats)
 }
 
 async function validateRegisterVoting(votingParams: VotingParamsValidate): Promise<void> {
@@ -277,7 +296,13 @@ export async function retrieveVotingSummary(
 
     const { requiredParticipationPercentage = 0, totalVoters } = voting
     const requiredVotes = requiredParticipationPercentage * totalVoters
-    const finalVeredict = isVotingFinal && generateFinalVeredict(candidatesStats, requiredVotes)
+    const finalVeredict =
+      isVotingFinal &&
+      generateFinalVeredict(
+        candidatesStats,
+        requiredVotes,
+        (voting as Election).maxElectedCandidates
+      )
 
     const response = {
       voting,

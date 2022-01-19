@@ -233,6 +233,112 @@ describe('Voting summary', () => {
         }
       })
 
+      if (votingType === 'election') {
+        it('election single - ended voting (tie)', async () => {
+          const [firstCandidate, secondCandidate] = candidates
+          const votesStats: VotesStats = {
+            [firstCandidate.candidateId]: {
+              ['elect']: 2,
+              ['pass']: 1,
+            },
+            [secondCandidate.candidateId]: {
+              ['elect']: 2,
+              ['pass']: 1,
+            },
+          }
+          const retrieveVotingSpy = chai.spy(retrieveVotingFnEnded(generatedVotingId, votingType))
+          const retrieveVotesSpy = chai.spy(async () => ({
+            data: votesStats,
+          }))
+
+          setCallbacks({
+            retrieveVoting: retrieveVotingSpy,
+            retrieveVotes: retrieveVotesSpy,
+          })
+
+          const result = await retrieveVotingSummary({
+            votingId: generatedVotingId,
+          })
+          const expectedStats: CandidatesStats = generateExpectedStats(
+            {
+              ...DEFAULT_CANDIDATE_STATS,
+              ['elect']: 2,
+              ['pass']: 1,
+            },
+            {
+              ...DEFAULT_CANDIDATE_STATS,
+              ['elect']: 2,
+              ['pass']: 1,
+            }
+          )
+          expect(retrieveVotingSpy).to.have.been.called.once
+          expect(retrieveVotingSpy).to.have.been.called.with(generatedVotingId)
+          expect(retrieveVotesSpy).to.have.been.called.once
+          expect(retrieveVotesSpy).to.have.been.called.with(generatedVotingId)
+          expect(result).to.exist
+          expect(result.candidatesStats).to.deep.equal(expectedStats)
+          expect(result.votingSummaryState).to.equal('final')
+          expect(result.finalVeredict).to.exist
+          if (result.finalVeredict) {
+            expect(result.finalVeredict[firstCandidate.candidateId]).to.equal('not elected')
+            expect(result.finalVeredict[secondCandidate.candidateId]).to.equal('not elected')
+          }
+        })
+
+        it('election multiple - ended voting (all elected)', async () => {
+          const [firstCandidate, secondCandidate] = candidates
+          const votesStats: VotesStats = {
+            [firstCandidate.candidateId]: {
+              ['elect']: 2,
+              ['pass']: 1,
+            },
+            [secondCandidate.candidateId]: {
+              ['elect']: 2,
+              ['pass']: 1,
+            },
+          }
+          const retrieveVotingSpy = chai.spy(
+            retrieveVotingFnEnded(generatedVotingId, votingType, 2)
+          )
+          const retrieveVotesSpy = chai.spy(async () => ({
+            data: votesStats,
+          }))
+
+          setCallbacks({
+            retrieveVoting: retrieveVotingSpy,
+            retrieveVotes: retrieveVotesSpy,
+          })
+
+          const result = await retrieveVotingSummary({
+            votingId: generatedVotingId,
+          })
+          const expectedStats: CandidatesStats = generateExpectedStats(
+            {
+              ...DEFAULT_CANDIDATE_STATS,
+              ['elect']: 2,
+              ['pass']: 1,
+            },
+            {
+              ...DEFAULT_CANDIDATE_STATS,
+              ['elect']: 2,
+              ['pass']: 1,
+            }
+          )
+          expect(retrieveVotingSpy).to.have.been.called.once
+          expect(retrieveVotingSpy).to.have.been.called.with(generatedVotingId)
+          expect(retrieveVotesSpy).to.have.been.called.once
+          expect(retrieveVotesSpy).to.have.been.called.with(generatedVotingId)
+          expect(result).to.exist
+          expect(result.candidatesStats).to.deep.equal(expectedStats)
+          expect(result.votingSummaryState).to.equal('final')
+          expect(result.finalVeredict).to.exist
+          if (result.finalVeredict) {
+            expect(result.finalVeredict[firstCandidate.candidateId]).to.equal('elected')
+            expect(result.finalVeredict[secondCandidate.candidateId]).to.equal('elected')
+          }
+        })
+      }
+
       it('should retrieve voting summary - ended voting (undecided)', async () => {
         const [firstCandidate, secondCandidate] = candidates
         const votesDistribution = [

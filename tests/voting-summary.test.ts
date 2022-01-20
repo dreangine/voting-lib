@@ -18,9 +18,8 @@ import {
   generateVoteId,
   generateVoterId,
   generateVotingId,
-  retrieveVotingSummary,
-  setCallbacks,
-} from '../src/index'
+} from '../src/common'
+import { retrieveVotingSummary, setCallbacks } from '../src/voting-summary'
 
 import {
   candidates,

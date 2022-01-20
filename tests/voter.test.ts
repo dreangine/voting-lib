@@ -5,7 +5,8 @@ import * as chaiPromised from 'chai-as-promised'
 
 import { UserInfo } from '../src/types'
 
-import { DEFAULT_CALLBACKS, registerVoters, setCallbacks } from '../src/index'
+import { DEFAULT_CALLBACKS } from '../src/common'
+import { registerVoters, setCallbacks } from '../src/voter'
 
 chai.use(spies)
 chai.use(chaiPromised)

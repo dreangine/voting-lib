@@ -27,6 +27,7 @@ const votingResponse = await registerVoting({
       tomorrow.setDate(tomorrow.getDate() + 1)
       return tomorrow
     })(),
+    maxElectedCandidates: 1,
   },
 })
 const { voting: votingData } = votingResponse
@@ -40,7 +41,7 @@ const voteResponse = await registerVote({
     voterId: startedBy,
     choices: [
       {
-        candidateId: candidates[0],
+        candidateId: candidates[0].candidateId,
         veredict: 'elect',
       },
     ],

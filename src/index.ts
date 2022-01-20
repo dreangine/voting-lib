@@ -118,18 +118,18 @@ function generateFinalVeredict(
 ): FinalVeredictStats {
   const veredicts = Object.entries(candidatesStats).map(
     ([candidateId, { guilty, innocent, elect, pass }]) => {
-      if (requiredVotes && guilty + innocent + elect + pass < requiredVotes) {
-        return { candidateId, veredict: 'undecided' }
-      } else if (guilty > innocent) {
-        return { candidateId, veredict: 'guilty' }
-      } else if (innocent > guilty) {
-        return { candidateId, veredict: 'innocent' }
-      } else if (elect > pass) {
-        if (maxElectedCandidates === 1)
-          return { candidateId, veredict: 'pending', electVotes: elect }
-        return { candidateId, veredict: 'elected' }
-      } else if (pass > elect) {
-        return { candidateId, veredict: 'not elected' }
+      if (!requiredVotes || guilty + innocent + elect + pass >= requiredVotes) {
+        if (guilty > innocent) {
+          return { candidateId, veredict: 'guilty' }
+        } else if (innocent > guilty) {
+          return { candidateId, veredict: 'innocent' }
+        } else if (elect > pass) {
+          if (maxElectedCandidates === 1)
+            return { candidateId, veredict: 'pending', electVotes: elect }
+          return { candidateId, veredict: 'elected' }
+        } else if (pass > elect) {
+          return { candidateId, veredict: 'not elected' }
+        }
       }
       return { candidateId, veredict: 'undecided' }
     }

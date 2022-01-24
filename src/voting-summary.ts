@@ -1,4 +1,4 @@
-import { DEFAULT_CALLBACKS, DEFAULT_CANDIDATE_STATS, hasVotingEnded } from './common'
+import { DEFAULT_CALLBACKS, getDefaultStats, hasVotingEnded } from './common'
 import {
   RetrieveVotingSummaryRequest,
   CandidatesStats,
@@ -10,6 +10,9 @@ import {
   VotesStats,
   VeredictFinal,
   Election,
+  VotingType,
+  CandidateStatsElection,
+  CandidateStatsJudgement,
 } from './types'
 
 // Setup
@@ -21,31 +24,30 @@ export function setCallbacks(newCallbacks: Partial<Callbacks>) {
   Object.assign(CALLBACKS, newCallbacks)
 }
 
-function generateVotesStats(votesData?: VoteData[] | VotesStats | null): CandidatesStats {
+function generateVotesStats(
+  votingType: VotingType,
+  votesData?: VoteData[] | VotesStats | null
+): CandidatesStats {
   if (!votesData) return {}
   return votesData instanceof Array
     ? (votesData as VoteData[]).reduce((candidatesStats, { choices }) => {
         choices.forEach(({ candidateId, veredict }) => {
           candidatesStats[candidateId] = candidatesStats[candidateId] || {
-            ...DEFAULT_CANDIDATE_STATS,
+            ...getDefaultStats(votingType),
           }
           candidatesStats[candidateId][veredict]++
         })
         return candidatesStats
       }, {} as CandidatesStats)
-    : Object.entries(votesData as VotesStats).reduce(
-        (candidatesStats, [candidateId, { guilty = 0, innocent = 0, elect = 0, pass = 0 }]) => {
-          candidatesStats[candidateId] = candidatesStats[candidateId] || {
-            ...DEFAULT_CANDIDATE_STATS,
-          }
-          candidatesStats[candidateId].guilty += guilty
-          candidatesStats[candidateId].innocent += innocent
-          candidatesStats[candidateId].elect += elect
-          candidatesStats[candidateId].pass += pass
-          return candidatesStats
-        },
-        {} as CandidatesStats
-      )
+    : Object.entries(votesData as VotesStats).reduce((candidatesStats, [candidateId, stats]) => {
+        candidatesStats[candidateId] = candidatesStats[candidateId] || {
+          ...getDefaultStats(votingType),
+        }
+        Object.keys(stats).forEach((veredict) => {
+          candidatesStats[candidateId][veredict] = stats[veredict]
+        })
+        return candidatesStats
+      }, {} as CandidatesStats)
 }
 
 function generateFinalVeredict(
@@ -53,14 +55,11 @@ function generateFinalVeredict(
   requiredVotes?: number,
   maxElectedCandidates?: number
 ): FinalVeredictStats {
-  const veredicts = Object.entries(candidatesStats).map(
-    ([candidateId, { guilty, innocent, elect, pass }]) => {
-      if (!requiredVotes || guilty + innocent + elect + pass >= requiredVotes) {
-        if (guilty > innocent) {
-          return { candidateId, veredict: 'guilty' }
-        } else if (innocent > guilty) {
-          return { candidateId, veredict: 'innocent' }
-        } else if (elect > pass) {
+  const veredicts = Object.entries(candidatesStats).map(([candidateId, stats]) => {
+    if (Object.hasOwnProperty.call(stats, 'elect')) {
+      const { elect, pass } = stats as CandidateStatsElection
+      if (!requiredVotes || elect + pass >= requiredVotes) {
+        if (elect > pass) {
           if (maxElectedCandidates === 1)
             return { candidateId, veredict: 'pending', electVotes: elect }
           return { candidateId, veredict: 'elected' }
@@ -68,9 +67,18 @@ function generateFinalVeredict(
           return { candidateId, veredict: 'not elected' }
         }
       }
-      return { candidateId, veredict: 'undecided' }
+    } else {
+      const { guilty, innocent } = stats as CandidateStatsJudgement
+      if (!requiredVotes || guilty + innocent >= requiredVotes) {
+        if (guilty > innocent) {
+          return { candidateId, veredict: 'guilty' }
+        } else if (innocent > guilty) {
+          return { candidateId, veredict: 'innocent' }
+        }
+      }
     }
-  )
+    return { candidateId, veredict: 'undecided' }
+  })
 
   const pendingCandidates = veredicts
     .filter(({ veredict }) => veredict === 'pending')
@@ -111,14 +119,18 @@ export async function retrieveVotingSummary(
 
     if (!voting) throw new Error('Voting not found')
 
+    const { votingType } = voting
+
     const baseStats: CandidatesStats = voting.candidates.reduce(
       (candidatesStats, { candidateId }) => {
-        candidatesStats[candidateId] = { ...DEFAULT_CANDIDATE_STATS }
+        candidatesStats[candidateId] = {
+          ...getDefaultStats(votingType),
+        }
         return candidatesStats
       },
       {} as CandidatesStats
     )
-    const candidatesStats = { ...baseStats, ...generateVotesStats(votes) }
+    const candidatesStats = { ...baseStats, ...generateVotesStats(votingType, votes) }
     const isVotingFinal = hasVotingEnded(voting)
     const votingSummaryState: VotingSummaryState = isVotingFinal ? 'final' : 'partial'
 

@@ -1,13 +1,25 @@
 import { nanoid } from 'nanoid/async'
 
-import { VoteId, VoterId, VotingId, Callbacks, CandidateStats, VotingData } from './types'
+import {
+  VoteId,
+  VoterId,
+  VotingId,
+  Callbacks,
+  VotingData,
+  CandidateStatsElection,
+  CandidateStatsJudgement,
+  VotingType,
+  CandidateStats,
+} from './types'
 
 // Defaults
-export const DEFAULT_CANDIDATE_STATS: CandidateStats = Object.freeze({
-  guilty: 0,
-  innocent: 0,
+export const DEFAULT_CANDIDATE_STATS_ELECTION: CandidateStatsElection = Object.freeze({
   elect: 0,
   pass: 0,
+})
+export const DEFAULT_CANDIDATE_STATS_JUDGEMENT: CandidateStatsJudgement = Object.freeze({
+  guilty: 0,
+  innocent: 0,
 })
 export const DEFAULT_MIN_VOTING_DURATION = 1000 * 60 * 5 // 5 minutes
 export const DEFAULT_MAX_VOTING_DURATION = 1000 * 60 * 60 * 24 * 7 // 1 week
@@ -45,6 +57,12 @@ export async function generateVoterId(): Promise<VoterId> {
 
 export async function generateVoteId(): Promise<VoteId> {
   return `vote-${await nanoid()}`
+}
+
+export function getDefaultStats(votingType: VotingType): CandidateStats {
+  return votingType === 'election'
+    ? DEFAULT_CANDIDATE_STATS_ELECTION
+    : DEFAULT_CANDIDATE_STATS_JUDGEMENT
 }
 
 export function hasVotingEnded(voting: VotingData): boolean {

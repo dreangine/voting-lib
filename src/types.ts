@@ -15,9 +15,14 @@ export type Evidence = {
   data: string // the actual text or an image URL
 }
 
-export type Veredict = 'elect' | 'pass' | 'innocent' | 'guilty'
+export type VeredictElection = 'elect' | 'pass'
+export type VeredictJudgement = 'innocent' | 'guilty'
+export type Veredict = VeredictElection | VeredictJudgement
 
-export type VeredictFinal = 'elected' | 'not elected' | 'innocent' | 'guilty' | 'undecided'
+export type VeredictFinalBase = 'undecided'
+export type VeredictFinalElection = 'elected' | 'not elected' | VeredictFinalBase
+export type VeredictFinalJudgement = 'innocent' | 'guilty' | VeredictFinalBase
+export type VeredictFinal = VeredictFinalElection | VeredictFinalJudgement
 
 export type VotingType = 'election' | 'judgement'
 
@@ -26,9 +31,15 @@ export type VoteChoice = {
   veredict: Veredict
 }
 
-export type CandidateStats = {
-  [veredict in Veredict]: number
+export type CandidateStatsElection = {
+  [veredict in VeredictElection]: number
 }
+
+export type CandidateStatsJudgement = {
+  [veredict in VeredictJudgement]: number
+}
+
+export type CandidateStats = CandidateStatsElection | CandidateStatsJudgement
 
 export type VotesStats = {
   [candidateId: VoterId]: Partial<CandidateStats>
@@ -38,9 +49,15 @@ export type CandidatesStats = {
   [candidateId: VoterId]: CandidateStats
 }
 
-export type FinalVeredictStats = {
-  [candidateId: VoterId]: VeredictFinal
+export type FinalVeredictStatsElection = {
+  [candidateId: VoterId]: VeredictFinalElection
 }
+
+export type FinalVeredictStatsJudgement = {
+  [candidateId: VoterId]: VeredictFinalJudgement
+}
+
+export type FinalVeredictStats = FinalVeredictStatsElection | FinalVeredictStatsJudgement
 
 export type VotingSummaryState = 'partial' | 'final'
 
@@ -209,5 +226,5 @@ export type RetrieveVotingSummaryResponse = {
   voting: VotingData
   candidatesStats: CandidatesStats
   votingSummaryState: VotingSummaryState
-  finalVeredict?: FinalVeredictStats
+  finalVeredict?: FinalVeredictStatsElection | FinalVeredictStatsJudgement
 }

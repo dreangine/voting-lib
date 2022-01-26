@@ -61,4 +61,4 @@ This method can be called any number of times to change all or some of the callb
 
 ## Usage
 
-See the `examples` folder for some examples of usage.
+See the [examples](examples/) folder for some examples of usage.

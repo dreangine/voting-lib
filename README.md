@@ -5,7 +5,7 @@ A library to manage voting systems, having its own voting rules and options whil
 ## Objectives
 
 - **Transparency**: to have open and traceable votes without revealing real user data
-- **Flexibility**: to support multiple voting methods, including:
+- **Flexibility**: to allow the voter to decide how their vote will be composed and to support multiple voting methods, including:
   - **Election**: each person votes for one candidate and the elected candidate is the one with the most votes
   - **Judgement**: each person votes for one or more candidates and the guilty ones are the ones with more votes for guilty than for innocent
 
@@ -43,6 +43,7 @@ This method can be called any number of times to change all or some of the callb
 - `retrieveVotes` to retrieve votes or votes stats (returning whole votes is discouraged for large data sets, use filters and counts to return stats instead)
 - `checkActiveVoters` to check if a set of voters are active
 - `countActiveVoters` to count the number of active voters
+- `hasVoted` to check if a voter has already submited a vote for a given voting
 
 ### Environment variables
 

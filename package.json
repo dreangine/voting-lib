@@ -39,7 +39,7 @@
     "dist"
   ],
   "dependencies": {
-    "nanoid": "3.1.30"
+    "nanoid": "3.1.31"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "1.0.2",

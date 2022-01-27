@@ -1,9 +1,9 @@
 import {
   CALLBACKS,
-  DEFAULT_MAX_VOTING_DURATION,
-  DEFAULT_MIN_CANDIDATES_ELECTION,
-  DEFAULT_MIN_VOTING_DURATION,
   generateVotingId,
+  MAX_VOTING_DURATION,
+  MIN_CANDIDATES_ELECTION,
+  MIN_VOTING_DURATION,
 } from './common'
 import {
   VotingData,
@@ -11,17 +11,6 @@ import {
   RegisterVotingResponse,
   VotingParamsValidate,
 } from './types'
-
-// Setup
-export const MIN_VOTING_DURATION: number = +(
-  process.env.MIN_VOTING_DURATION ?? DEFAULT_MIN_VOTING_DURATION
-)
-export const MAX_VOTING_DURATION: number = +(
-  process.env.MAX_VOTING_DURATION ?? DEFAULT_MAX_VOTING_DURATION
-)
-export const MIN_CANDIDATES_ELECTION: number = +(
-  process.env.MIN_CANDIDATES_ELECTION ?? DEFAULT_MIN_CANDIDATES_ELECTION
-)
 
 async function validateRegisterVoting(votingParams: VotingParamsValidate): Promise<void> {
   const { startedBy, candidates, startsAt, endsAt, votingType } = votingParams

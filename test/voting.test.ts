@@ -3,8 +3,13 @@ import * as chai from 'chai'
 import * as spies from 'chai-spies'
 import * as chaiPromised from 'chai-as-promised'
 
-import { DEFAULT_CALLBACKS, setCallbacks } from '../src/common'
-import { MAX_VOTING_DURATION, MIN_VOTING_DURATION, registerVoting } from '../src/voting'
+import {
+  DEFAULT_CALLBACKS,
+  MAX_VOTING_DURATION,
+  MIN_VOTING_DURATION,
+  setCallbacks,
+} from '../src/common'
+import { registerVoting } from '../src/voting'
 
 import {
   allVotersIds,

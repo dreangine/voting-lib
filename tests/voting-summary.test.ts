@@ -14,13 +14,12 @@ import {
 
 import {
   DEFAULT_CALLBACKS,
-  DEFAULT_CANDIDATE_STATS,
   generateVoteId,
   generateVoterId,
   generateVotingId,
-  retrieveVotingSummary,
-  setCallbacks,
-} from '../src/index'
+  getDefaultStats,
+} from '../src/common'
+import { retrieveVotingSummary, setCallbacks } from '../src/voting-summary'
 
 import {
   candidates,
@@ -96,12 +95,12 @@ describe('Voting summary', () => {
         })
         const expectedStats: CandidatesStats = generateExpectedStats(
           {
-            ...DEFAULT_CANDIDATE_STATS,
+            ...getDefaultStats(votingType),
             [votingType === 'election' ? 'elect' : 'guilty']: 2,
             [votingType === 'election' ? 'pass' : 'innocent']: 1,
           },
           {
-            ...DEFAULT_CANDIDATE_STATS,
+            ...getDefaultStats(votingType),
             [votingType === 'election' ? 'elect' : 'guilty']: 1,
             [votingType === 'election' ? 'pass' : 'innocent']: 1,
           }
@@ -157,15 +156,12 @@ describe('Voting summary', () => {
         })
         const expectedStats: CandidatesStats = generateExpectedStats(
           {
-            ...DEFAULT_CANDIDATE_STATS,
+            ...getDefaultStats(votingType),
             [votingType === 'election' ? 'elect' : 'guilty']: 2,
             [votingType === 'election' ? 'pass' : 'innocent']: 1,
           },
           {
-            guilty: 0,
-            innocent: 0,
-            elect: 0,
-            pass: 0,
+            ...getDefaultStats(votingType),
           }
         )
         expect(retrieveVotingSpy).to.have.been.called.once
@@ -205,12 +201,12 @@ describe('Voting summary', () => {
         })
         const expectedStats: CandidatesStats = generateExpectedStats(
           {
-            ...DEFAULT_CANDIDATE_STATS,
+            ...getDefaultStats(votingType),
             [votingType === 'election' ? 'elect' : 'guilty']: 2,
             [votingType === 'election' ? 'pass' : 'innocent']: 1,
           },
           {
-            ...DEFAULT_CANDIDATE_STATS,
+            ...getDefaultStats(votingType),
             [votingType === 'election' ? 'elect' : 'guilty']: 1,
             [votingType === 'election' ? 'pass' : 'innocent']: 2,
           }
@@ -261,12 +257,12 @@ describe('Voting summary', () => {
           })
           const expectedStats: CandidatesStats = generateExpectedStats(
             {
-              ...DEFAULT_CANDIDATE_STATS,
+              ...getDefaultStats(votingType),
               ['elect']: 2,
               ['pass']: 1,
             },
             {
-              ...DEFAULT_CANDIDATE_STATS,
+              ...getDefaultStats(votingType),
               ['elect']: 2,
               ['pass']: 1,
             }
@@ -314,12 +310,12 @@ describe('Voting summary', () => {
           })
           const expectedStats: CandidatesStats = generateExpectedStats(
             {
-              ...DEFAULT_CANDIDATE_STATS,
+              ...getDefaultStats(votingType),
               ['elect']: 2,
               ['pass']: 1,
             },
             {
-              ...DEFAULT_CANDIDATE_STATS,
+              ...getDefaultStats(votingType),
               ['elect']: 2,
               ['pass']: 1,
             }
@@ -339,7 +335,7 @@ describe('Voting summary', () => {
         })
       }
 
-      it('should retrieve voting summary - ended voting (undecided)', async () => {
+      it('should retrieve voting summary - ended voting (undecided/not elected)', async () => {
         const [firstCandidate, secondCandidate] = candidates
         const votesDistribution = [
           [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
@@ -380,12 +376,12 @@ describe('Voting summary', () => {
         })
         const expectedStats: CandidatesStats = generateExpectedStats(
           {
-            ...DEFAULT_CANDIDATE_STATS,
+            ...getDefaultStats(votingType),
             [votingType === 'election' ? 'elect' : 'guilty']: 1,
             [votingType === 'election' ? 'pass' : 'innocent']: 1,
           },
           {
-            ...DEFAULT_CANDIDATE_STATS,
+            ...getDefaultStats(votingType),
             [votingType === 'election' ? 'elect' : 'guilty']: 1,
             [votingType === 'election' ? 'pass' : 'innocent']: 1,
           }
@@ -399,8 +395,9 @@ describe('Voting summary', () => {
         expect(result.votingSummaryState).to.equal('final')
         expect(result.finalVeredict).to.exist
         if (result.finalVeredict) {
-          expect(result.finalVeredict[firstCandidate.candidateId]).to.equal('undecided')
-          expect(result.finalVeredict[secondCandidate.candidateId]).to.equal('undecided')
+          const expectedVeredict = votingType === 'election' ? 'not elected' : 'undecided'
+          expect(result.finalVeredict[firstCandidate.candidateId]).to.equal(expectedVeredict)
+          expect(result.finalVeredict[secondCandidate.candidateId]).to.equal(expectedVeredict)
         }
       })
 
@@ -409,10 +406,13 @@ describe('Voting summary', () => {
         const votesDistribution = [
           [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
           [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
-          [firstCandidate.candidateId, votingType === 'election' ? 'pass' : 'innocent'],
+          [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'innocent'],
           [secondCandidate.candidateId, votingType === 'election' ? 'pass' : 'innocent'],
           [secondCandidate.candidateId, votingType === 'election' ? 'pass' : 'innocent'],
         ]
+        if (votingType === 'election')
+          votesDistribution.push([secondCandidate.candidateId, 'elect'])
+
         const votes = Promise.all(
           votesDistribution.map(
             async ([candidateId, vote]) =>
@@ -452,13 +452,12 @@ describe('Voting summary', () => {
         })
         const expectedStats: CandidatesStats = generateExpectedStats(
           {
-            ...DEFAULT_CANDIDATE_STATS,
-            [votingType === 'election' ? 'elect' : 'guilty']: 2,
-            [votingType === 'election' ? 'pass' : 'innocent']: 1,
+            ...getDefaultStats(votingType),
+            ...(votingType === 'election' ? { elect: 3 } : { guilty: 2, innocent: 1 }),
           },
           {
-            ...DEFAULT_CANDIDATE_STATS,
-            [votingType === 'election' ? 'pass' : 'innocent']: 2,
+            ...getDefaultStats(votingType),
+            ...(votingType === 'election' ? { elect: 1, pass: 2 } : { innocent: 2 }),
           }
         )
         expect(retrieveVotingSpy).to.have.been.called.once
@@ -473,7 +472,9 @@ describe('Voting summary', () => {
           expect(result.finalVeredict[firstCandidate.candidateId]).to.equal(
             votingType === 'election' ? 'elected' : 'guilty'
           )
-          expect(result.finalVeredict[secondCandidate.candidateId]).to.equal('undecided')
+          expect(result.finalVeredict[secondCandidate.candidateId]).to.equal(
+            votingType === 'election' ? 'not elected' : 'undecided'
+          )
         }
       })
 
@@ -492,7 +493,7 @@ describe('Voting summary', () => {
           votingId: generatedVotingId,
         })
         const expectedStats = candidates.reduce((candidatesStats, { candidateId }) => {
-          candidatesStats[candidateId] = DEFAULT_CANDIDATE_STATS
+          candidatesStats[candidateId] = getDefaultStats(votingType)
           return candidatesStats
         }, {} as CandidatesStats)
         expect(retrieveVotingSpy).to.have.been.called.once
@@ -520,7 +521,7 @@ describe('Voting summary', () => {
           votingId: generatedVotingId,
         })
         const expectedStats = candidates.reduce((candidatesStats, { candidateId }) => {
-          candidatesStats[candidateId] = DEFAULT_CANDIDATE_STATS
+          candidatesStats[candidateId] = getDefaultStats(votingType)
           return candidatesStats
         }, {} as CandidatesStats)
         expect(retrieveVotingSpy).to.have.been.called.once
@@ -532,7 +533,9 @@ describe('Voting summary', () => {
         expect(result.votingSummaryState).to.equal('final')
         expect(result.finalVeredict).to.exist
         candidates.forEach(({ candidateId }) => {
-          expect(result.finalVeredict && result.finalVeredict[candidateId]).to.equal('undecided')
+          expect(result.finalVeredict && result.finalVeredict[candidateId]).to.equal(
+            votingType === 'election' ? 'not elected' : 'undecided'
+          )
         })
       })
     })

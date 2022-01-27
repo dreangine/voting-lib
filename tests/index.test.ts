@@ -4,9 +4,8 @@ import * as chaiPromised from 'chai-as-promised'
 
 import { RegisterVotingRequest, RegisterVoteRequest, UserInfo } from '../src/types'
 
+import { DEFAULT_CALLBACKS, generateVotingId } from '../src/common'
 import {
-  DEFAULT_CALLBACKS,
-  generateVotingId,
   registerVote,
   registerVoteByUserId,
   registerVoters,

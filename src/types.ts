@@ -23,6 +23,7 @@ export type VeredictFinalBase = 'undecided'
 export type VeredictFinalElection = 'elected' | 'not elected' | VeredictFinalBase
 export type VeredictFinalJudgement = 'innocent' | 'guilty' | VeredictFinalBase
 export type VeredictFinal = VeredictFinalElection | VeredictFinalJudgement
+export type VeredictPartial = VeredictFinal | 'pending'
 
 export type VotingType = 'election' | 'judgement'
 
@@ -47,6 +48,12 @@ export type VotesStats = {
 
 export type CandidatesStats = {
   [candidateId: VoterId]: CandidateStats
+}
+
+export type PartialVeredict = {
+  candidateId: VoterId
+  veredict: VeredictPartial
+  electVotes?: number
 }
 
 export type FinalVeredictStatsElection = {

@@ -13,6 +13,8 @@ import {
   VotingType,
   CandidateStatsElection,
   CandidateStatsJudgement,
+  PartialVeredict,
+  VoterId,
 } from './types'
 
 // Setup
@@ -50,13 +52,13 @@ function generateVotesStats(
       }, {} as CandidatesStats)
 }
 
-function generateFinalVeredict(
+function generatePartialVeredicts(
   candidatesStats: CandidatesStats,
   requiredVotes?: number,
   maxElectedCandidates?: number
-): FinalVeredictStats {
-  const veredicts = Object.entries(candidatesStats).map(([candidateId, stats]) => {
-    if (Object.hasOwnProperty.call(stats, 'elect')) {
+): PartialVeredict[] {
+  return Object.entries(candidatesStats).map(([candidateId, stats]) => {
+    if (Object.prototype.hasOwnProperty.call(stats, 'elect')) {
       const { elect, pass } = stats as CandidateStatsElection
       if (!requiredVotes || elect + pass >= requiredVotes) {
         if (elect > pass) {
@@ -79,23 +81,43 @@ function generateFinalVeredict(
     }
     return { candidateId, veredict: 'undecided' }
   })
+}
 
-  const pendingCandidates = veredicts
+function findElectedCandidateId(partialVeredicts: PartialVeredict[]): VoterId | null {
+  const pendingCandidates = partialVeredicts
     .filter(({ veredict }) => veredict === 'pending')
-    .sort((a, b) => (b.electVotes ?? 0) - (a.electVotes ?? 0))
+    .map((veredict) => veredict as Required<PartialVeredict>)
+    .sort(({ electVotes: aElectVotes }, { electVotes: bElectVotes }) => bElectVotes - aElectVotes)
   const [firstCandidate, secondCandidate] = pendingCandidates
-  const electedCandidate =
-    firstCandidate?.electVotes === secondCandidate?.electVotes ? null : firstCandidate
+  return firstCandidate?.electVotes === secondCandidate?.electVotes
+    ? null
+    : firstCandidate.candidateId
+}
 
-  return veredicts.reduce((finalVeredict, { candidateId, veredict }) => {
+function generateFinalVeredict(
+  partialVeredicts: PartialVeredict[],
+  electedCandidateId: VoterId | null
+): FinalVeredictStats {
+  return partialVeredicts.reduce((finalVeredict, { candidateId, veredict }) => {
     if (veredict === 'pending') {
-      finalVeredict[candidateId] =
-        electedCandidate?.candidateId === candidateId ? 'elected' : 'not elected'
+      finalVeredict[candidateId] = electedCandidateId === candidateId ? 'elected' : 'not elected'
     } else {
       finalVeredict[candidateId] = veredict as VeredictFinal
     }
     return finalVeredict
   }, {} as FinalVeredictStats)
+}
+
+function processCandidatesStats(
+  candidatesStats: CandidatesStats,
+  requiredVotes?: number,
+  maxElectedCandidates?: number
+): FinalVeredictStats {
+  const veredicts = generatePartialVeredicts(candidatesStats, requiredVotes, maxElectedCandidates)
+  const electedCandidate = findElectedCandidateId(veredicts)
+  const finalVeredict = generateFinalVeredict(veredicts, electedCandidate)
+
+  return finalVeredict
 }
 
 export async function retrieveVotingSummary(
@@ -138,7 +160,7 @@ export async function retrieveVotingSummary(
     const requiredVotes = requiredParticipationPercentage * totalVoters
     const finalVeredict =
       isVotingFinal &&
-      generateFinalVeredict(
+      processCandidatesStats(
         candidatesStats,
         requiredVotes,
         (voting as Election).maxElectedCandidates

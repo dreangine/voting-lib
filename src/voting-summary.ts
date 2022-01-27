@@ -60,7 +60,7 @@ function generatePartialVeredicts(
   return Object.entries(candidatesStats).map(([candidateId, stats]) => {
     if (Object.prototype.hasOwnProperty.call(stats, 'elect')) {
       const { elect, pass } = stats as CandidateStatsElection
-      if (!requiredVotes || elect + pass >= requiredVotes) {
+      if (!requiredVotes || elect >= requiredVotes) {
         if (elect > pass) {
           if (maxElectedCandidates === 1)
             return { candidateId, veredict: 'pending', electVotes: elect }
@@ -69,6 +69,7 @@ function generatePartialVeredicts(
           return { candidateId, veredict: 'not elected' }
         }
       }
+      return { candidateId, veredict: 'not elected' }
     } else {
       const { guilty, innocent } = stats as CandidateStatsJudgement
       if (!requiredVotes || guilty + innocent >= requiredVotes) {

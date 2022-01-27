@@ -1,21 +1,11 @@
-import { DEFAULT_CALLBACKS, generateVoteId, hasVotingEnded } from './common'
+import { CALLBACKS, generateVoteId, hasVotingEnded } from './common'
 import {
   RegisterVoteByUserIdRequest,
   RegisterVoteRequest,
   RegisterVoteResponse,
-  Callbacks,
   VoteData,
   VoteParamsValidate,
 } from './types'
-
-// Setup
-const CALLBACKS: Callbacks = {
-  ...DEFAULT_CALLBACKS,
-}
-
-export function setCallbacks(newCallbacks: Partial<Callbacks>) {
-  Object.assign(CALLBACKS, newCallbacks)
-}
 
 async function validateRegisterVote(voteParams: VoteParamsValidate): Promise<void> {
   const { votingId, voterId, choices } = voteParams

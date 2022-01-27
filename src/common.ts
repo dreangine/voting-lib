@@ -46,6 +46,13 @@ export const MAX_VOTING_DURATION: number = +(
 export const MIN_CANDIDATES_ELECTION: number = +(
   process.env.MIN_CANDIDATES_ELECTION ?? DEFAULT_MIN_CANDIDATES_ELECTION
 )
+export const CALLBACKS: Callbacks = {
+  ...DEFAULT_CALLBACKS,
+}
+
+export function setCallbacks(newCallbacks: Partial<Callbacks>) {
+  Object.assign(CALLBACKS, newCallbacks)
+}
 
 export async function generateVotingId(): Promise<VotingId> {
   return `voting-${await nanoid()}`

@@ -1,5 +1,5 @@
 import {
-  DEFAULT_CALLBACKS,
+  CALLBACKS,
   DEFAULT_MAX_VOTING_DURATION,
   DEFAULT_MIN_CANDIDATES_ELECTION,
   DEFAULT_MIN_VOTING_DURATION,
@@ -7,7 +7,6 @@ import {
 } from './common'
 import {
   VotingData,
-  Callbacks,
   RegisterVotingRequest,
   RegisterVotingResponse,
   VotingParamsValidate,
@@ -23,13 +22,6 @@ export const MAX_VOTING_DURATION: number = +(
 export const MIN_CANDIDATES_ELECTION: number = +(
   process.env.MIN_CANDIDATES_ELECTION ?? DEFAULT_MIN_CANDIDATES_ELECTION
 )
-const CALLBACKS: Callbacks = {
-  ...DEFAULT_CALLBACKS,
-}
-
-export function setCallbacks(newCallbacks: Partial<Callbacks>) {
-  Object.assign(CALLBACKS, newCallbacks)
-}
 
 async function validateRegisterVoting(votingParams: VotingParamsValidate): Promise<void> {
   const { startedBy, candidates, startsAt, endsAt, votingType } = votingParams

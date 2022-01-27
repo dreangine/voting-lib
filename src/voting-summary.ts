@@ -1,11 +1,10 @@
-import { DEFAULT_CALLBACKS, getDefaultStats, hasVotingEnded } from './common'
+import { CALLBACKS, getDefaultStats, hasVotingEnded } from './common'
 import {
   RetrieveVotingSummaryRequest,
   CandidatesStats,
   RetrieveVotingSummaryResponse,
   VotingSummaryState,
   FinalVeredictStats,
-  Callbacks,
   VoteData,
   VotesStats,
   VeredictFinal,
@@ -16,15 +15,6 @@ import {
   PartialVeredict,
   VoterId,
 } from './types'
-
-// Setup
-const CALLBACKS: Callbacks = {
-  ...DEFAULT_CALLBACKS,
-}
-
-export function setCallbacks(newCallbacks: Partial<Callbacks>) {
-  Object.assign(CALLBACKS, newCallbacks)
-}
 
 function generateVotesStats(
   votingType: VotingType,

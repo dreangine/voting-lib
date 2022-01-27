@@ -1,14 +1,5 @@
-import { DEFAULT_CALLBACKS, generateVoterId } from './common'
-import { RegisterVotersRequest, RegisterVotersResponse, Callbacks, VoterData } from './types'
-
-// Setup
-const CALLBACKS: Callbacks = {
-  ...DEFAULT_CALLBACKS,
-}
-
-export function setCallbacks(newCallbacks: Partial<Callbacks>) {
-  Object.assign(CALLBACKS, newCallbacks)
-}
+import { CALLBACKS, generateVoterId } from './common'
+import { RegisterVotersRequest, RegisterVotersResponse, VoterData } from './types'
 
 export async function registerVoters(
   request: RegisterVotersRequest

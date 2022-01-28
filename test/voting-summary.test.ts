@@ -54,7 +54,7 @@ beforeEach(async () => {
 describe('Voting summary', () => {
   votingTypes.forEach((votingType) => {
     describe(`Voting type: ${votingType}`, () => {
-      it('should retrieve voting summary - ongoing voting', async () => {
+      it('partial veredict', async () => {
         const [firstCandidate, secondCandidate] = candidates
         const votesDistribution = [
           [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
@@ -116,7 +116,7 @@ describe('Voting summary', () => {
         expect(result.finalVeredict).to.not.exist
       })
 
-      it('candidates without votes - ongoing voting', async () => {
+      it('partial veredict - candidates without votes', async () => {
         const [firstCandidate] = candidates
         const { candidateId: firstCandidateId } = firstCandidate
         const votesDistribution = [
@@ -175,7 +175,7 @@ describe('Voting summary', () => {
         expect(result.finalVeredict).to.not.exist
       })
 
-      it('should retrieve voting summary - ended voting', async () => {
+      it('final veredict', async () => {
         const [firstCandidate, secondCandidate] = candidates
         const votesStats: VotesStats = {
           [firstCandidate.candidateId]: {
@@ -231,7 +231,7 @@ describe('Voting summary', () => {
       })
 
       if (votingType === 'election') {
-        it('election single - ended voting (tie)', async () => {
+        it('final veredict - election single (tie)', async () => {
           const [firstCandidate, secondCandidate] = candidates
           const votesStats: VotesStats = {
             [firstCandidate.candidateId]: {
@@ -282,7 +282,7 @@ describe('Voting summary', () => {
           }
         })
 
-        it('election multiple - ended voting (all elected)', async () => {
+        it('final veredict - election multiple (all elected)', async () => {
           const [firstCandidate, secondCandidate] = candidates
           const votesStats: VotesStats = {
             [firstCandidate.candidateId]: {
@@ -336,7 +336,7 @@ describe('Voting summary', () => {
         })
       }
 
-      it('should retrieve voting summary - ended voting (undecided/not elected)', async () => {
+      it('final veredict - undecided/not elected', async () => {
         const [firstCandidate, secondCandidate] = candidates
         const votesDistribution = [
           [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
@@ -402,7 +402,7 @@ describe('Voting summary', () => {
         }
       })
 
-      it('should retrieve voting summary - not enough votes', async () => {
+      it('final veredict - not enough votes', async () => {
         const [firstCandidate, secondCandidate] = candidates
         const votesDistribution = [
           [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
@@ -479,7 +479,7 @@ describe('Voting summary', () => {
         }
       })
 
-      it('no votes - ongoing voting', async () => {
+      it('final veredict - no votes', async () => {
         const retrieveVotingSpy = chai.spy(retrieveVotingFnOngoing(generatedVotingId, votingType))
         const retrieveVotesSpy = chai.spy(async () => ({
           data: null,
@@ -507,7 +507,7 @@ describe('Voting summary', () => {
         expect(result.finalVeredict).to.not.exist
       })
 
-      it('no votes - ended voting', async () => {
+      it('final veredict - no votes', async () => {
         const retrieveVotingSpy = chai.spy(retrieveVotingFnEnded(generatedVotingId, votingType))
         const retrieveVotesSpy = chai.spy(async () => ({
           data: null,

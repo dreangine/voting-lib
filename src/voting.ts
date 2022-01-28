@@ -12,7 +12,7 @@ import {
   VotingParamsValidate,
 } from './types'
 
-async function validateRegisterVoting(votingParams: VotingParamsValidate): Promise<void> {
+export async function validateRegisterVoting(votingParams: VotingParamsValidate): Promise<void> {
   const { startedBy, candidates, startsAt, endsAt, votingType } = votingParams
 
   if (endsAt < startsAt) throw new Error('Voting cannot end before it starts')

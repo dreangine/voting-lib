@@ -7,7 +7,7 @@ import {
   VoteParamsValidate,
 } from './types'
 
-async function validateRegisterVote(voteParams: VoteParamsValidate): Promise<void> {
+export async function validateRegisterVote(voteParams: VoteParamsValidate): Promise<void> {
   const { votingId, voterId, choices } = voteParams
 
   const candidates = choices.map((choice) => choice.candidateId)

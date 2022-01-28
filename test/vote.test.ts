@@ -6,7 +6,7 @@ import * as chaiPromised from 'chai-as-promised'
 import { VoterData, VoterId, VotingId } from '../src/types'
 
 import { DEFAULT_CALLBACKS, generateVotingId, setCallbacks } from '../src/common'
-import { registerVote, registerVoteByUserId } from '../src/vote'
+import { registerVote, registerVoteByUserId, validateRegisterVote } from '../src/vote'
 
 import {
   candidates,
@@ -129,17 +129,15 @@ describe('Vote', () => {
 
       it('cannot vote on yourself', async () => {
         await expect(
-          registerVote({
-            voteParams: {
-              votingId: await generateVotingId(),
-              voterId: startedBy.voterId,
-              choices: [
-                {
-                  candidateId: startedBy.voterId,
-                  veredict,
-                },
-              ],
-            },
+          validateRegisterVote({
+            votingId: await generateVotingId(),
+            voterId: startedBy.voterId,
+            choices: [
+              {
+                candidateId: startedBy.voterId,
+                veredict,
+              },
+            ],
           })
         ).to.be.rejectedWith('Voter cannot vote on themselves')
       })

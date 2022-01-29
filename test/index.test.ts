@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import * as chai from 'chai'
 import * as chaiPromised from 'chai-as-promised'
 
-import { RegisterVotingRequest, RegisterVoteRequest, UserInfo } from '../src/types'
+import { Callbacks, RegisterVotingRequest, RegisterVoteRequest, UserInfo } from '../src/types'
 
 import { DEFAULT_CALLBACKS, generateVotingId } from '../src/common'
 import {
@@ -21,7 +21,6 @@ import {
   startedBy,
   tomorrowDate,
 } from './common'
-import { Callbacks } from '../dist/types'
 
 chai.use(chaiPromised)
 

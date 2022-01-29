@@ -1,9 +1,11 @@
 import {
-  CALLBACKS,
+  checkActiveVoters,
+  countActiveVoters,
   generateVotingId,
   MAX_VOTING_DURATION,
   MIN_CANDIDATES_ELECTION,
   MIN_VOTING_DURATION,
+  persistVoting,
 } from './common'
 import {
   VotingData,
@@ -25,7 +27,7 @@ export async function validateRegisterVoting(votingParams: VotingParamsValidate)
   const candidatesIds = candidates.map(({ candidateId }) => candidateId)
   if (candidatesIds.includes(startedBy)) throw new Error('Voting cannot be started by a candidate')
   const allVoters = [startedBy, ...candidatesIds]
-  const checkedVoters = await CALLBACKS.checkActiveVoters(allVoters)
+  const checkedVoters = await checkActiveVoters(allVoters)
   const notFoundVoterIds = allVoters.filter((candidate) => !checkedVoters[candidate])
   if (notFoundVoterIds.length) throw new Error(`Voters ${notFoundVoterIds.join(', ')} do not exist`)
 }
@@ -40,7 +42,7 @@ export async function registerVoting(
   await validateRegisterVoting({ ...votingParams, startsAt })
 
   // Get the total amount of active voters when voting starts
-  const totalVoters = await CALLBACKS.countActiveVoters()
+  const totalVoters = await countActiveVoters()
 
   const voting: VotingData = {
     ...votingParams,
@@ -50,6 +52,6 @@ export async function registerVoting(
     createdAt: now,
     updatedAt: now,
   }
-  await CALLBACKS.persistVoting(voting)
+  await persistVoting(voting)
   return { voting }
 }

@@ -1,4 +1,4 @@
-import { CALLBACKS, getDefaultStats, hasVotingEnded } from './common'
+import { getDefaultStats, hasVotingEnded, retrieveVotes, retrieveVoting } from './common'
 import {
   RetrieveVotingSummaryRequest,
   CandidatesStats,
@@ -115,10 +115,7 @@ export async function retrieveVotingSummary(
   request: RetrieveVotingSummaryRequest
 ): Promise<RetrieveVotingSummaryResponse> {
   const { votingId } = request
-  return Promise.allSettled([
-    CALLBACKS.retrieveVoting(votingId),
-    CALLBACKS.retrieveVotes(votingId),
-  ]).then((results) => {
+  return Promise.allSettled([retrieveVoting(votingId), retrieveVotes(votingId)]).then((results) => {
     const [votingResult, votesResult] = results
     if (votingResult.status === 'rejected') {
       throw new Error(`Unable to retrieve voting: ${votingResult.reason}`)

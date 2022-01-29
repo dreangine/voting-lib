@@ -1,4 +1,4 @@
-import { CALLBACKS, generateVoterId } from './common'
+import { generateVoterId, persistVoters } from './common'
 import { RegisterVotersRequest, RegisterVotersResponse, VoterData } from './types'
 
 export async function registerVoters(
@@ -19,6 +19,6 @@ export async function registerVoters(
         } as VoterData)
     )
   )
-  await CALLBACKS.persistVoters(voters)
+  await persistVoters(voters)
   return { voters: omitReturnedData ? undefined : voters }
 }

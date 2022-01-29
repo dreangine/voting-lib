@@ -1,4 +1,11 @@
-import { CALLBACKS, generateVoteId, hasVotingEnded } from './common'
+import {
+  generateVoteId,
+  hasVoted,
+  hasVotingEnded,
+  persistVote,
+  retrieveVoter,
+  retrieveVoting,
+} from './common'
 import {
   RegisterVoteByUserIdRequest,
   RegisterVoteRequest,
@@ -12,11 +19,11 @@ export async function validateRegisterVote(voteParams: VoteParamsValidate): Prom
 
   const candidates = choices.map((choice) => choice.candidateId)
   if (candidates.includes(voterId)) throw new Error('Voter cannot vote on themselves')
-  const { data: voting } = await CALLBACKS.retrieveVoting(votingId)
+  const { data: voting } = await retrieveVoting(votingId)
   if (!voting) throw new Error('Voting does not exist')
   if (hasVotingEnded(voting)) throw new Error('Voting has ended')
-  const hasVoted = await CALLBACKS.hasVoted(voterId, votingId)
-  if (hasVoted) throw new Error('Voter cannot vote again')
+  const hasVotedResult = await hasVoted(voterId, votingId)
+  if (hasVotedResult) throw new Error('Voter cannot vote again')
 }
 
 export async function registerVote(request: RegisterVoteRequest): Promise<RegisterVoteResponse> {
@@ -30,7 +37,7 @@ export async function registerVote(request: RegisterVoteRequest): Promise<Regist
     voteId: await generateVoteId(),
     createdAt: now,
   }
-  await CALLBACKS.persistVote(vote)
+  await persistVote(vote)
   return { vote }
 }
 
@@ -38,7 +45,7 @@ export async function registerVoteByUserId(
   request: RegisterVoteByUserIdRequest
 ): Promise<RegisterVoteResponse> {
   const { voteParams } = request
-  const { data: voter } = await CALLBACKS.retrieveVoter(voteParams.userId)
+  const { data: voter } = await retrieveVoter(voteParams.userId)
 
   // Validate
   if (!voter) throw new Error('Voter not registered')

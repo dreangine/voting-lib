@@ -10,6 +10,13 @@ import {
   CandidateStatsJudgement,
   VotingType,
   CandidateStats,
+  PersistResponse,
+  RetrieveResponse,
+  VoteData,
+  VotesStats,
+  UserId,
+  VoterData,
+  VoterActive,
 } from './types'
 
 // Defaults
@@ -46,8 +53,82 @@ export const MAX_VOTING_DURATION: number = +(
 export const MIN_CANDIDATES_ELECTION: number = +(
   process.env.MIN_CANDIDATES_ELECTION ?? DEFAULT_MIN_CANDIDATES_ELECTION
 )
-export const CALLBACKS: Callbacks = {
+const CALLBACKS: Callbacks = {
   ...DEFAULT_CALLBACKS,
+}
+
+export function persistVoting(voting: VotingData): Promise<PersistResponse> {
+  try {
+    return CALLBACKS.persistVoting(voting)
+  } catch (error) {
+    return Promise.reject(`Thrown error: ${error.message}`)
+  }
+}
+
+export function persistVoters(voters: VoterData[]): Promise<PersistResponse> {
+  try {
+    return CALLBACKS.persistVoters(voters)
+  } catch (error) {
+    return Promise.reject(`Thrown error: ${error.message}`)
+  }
+}
+
+export function persistVote(vote: VoteData): Promise<PersistResponse> {
+  try {
+    return CALLBACKS.persistVote(vote)
+  } catch (error) {
+    return Promise.reject(`Thrown error: ${error.message}`)
+  }
+}
+
+export function retrieveVoting(votingId: VotingId): Promise<RetrieveResponse<VotingData>> {
+  try {
+    return CALLBACKS.retrieveVoting(votingId)
+  } catch (error) {
+    return Promise.reject(`Thrown error: ${error.message}`)
+  }
+}
+
+export function retrieveVoter(userId: UserId): Promise<RetrieveResponse<VoterData>> {
+  try {
+    return CALLBACKS.retrieveVoter(userId)
+  } catch (error) {
+    return Promise.reject(`Thrown error: ${error.message}`)
+  }
+}
+
+export function retrieveVotes(
+  votingId: VotingId
+): Promise<RetrieveResponse<VoteData[] | VotesStats>> {
+  try {
+    return CALLBACKS.retrieveVotes(votingId)
+  } catch (error) {
+    return Promise.reject(`Thrown error: ${error.message}`)
+  }
+}
+
+export function checkActiveVoters(votersIds: VoterId[]): Promise<VoterActive> {
+  try {
+    return CALLBACKS.checkActiveVoters(votersIds)
+  } catch (error) {
+    return Promise.reject(`Thrown error: ${error.message}`)
+  }
+}
+
+export function countActiveVoters(): Promise<number> {
+  try {
+    return CALLBACKS.countActiveVoters()
+  } catch (error) {
+    return Promise.reject(`Thrown error: ${error.message}`)
+  }
+}
+
+export function hasVoted(voterId: VoterId, votingId: VotingId): Promise<boolean> {
+  try {
+    return CALLBACKS.hasVoted(voterId, votingId)
+  } catch (error) {
+    return Promise.reject(`Thrown error: ${error.message}`)
+  }
 }
 
 export function setCallbacks(newCallbacks: Partial<Callbacks>) {

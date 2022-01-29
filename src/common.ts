@@ -7,7 +7,7 @@ import {
   Callbacks,
   VotingData,
   CandidateStatsElection,
-  CandidateStatsJudgement,
+  CandidateStatsJudgment,
   VotingType,
   CandidateStats,
   PersistResponse,
@@ -24,7 +24,7 @@ export const DEFAULT_CANDIDATE_STATS_ELECTION: CandidateStatsElection = Object.f
   elect: 0,
   pass: 0,
 })
-export const DEFAULT_CANDIDATE_STATS_JUDGEMENT: CandidateStatsJudgement = Object.freeze({
+export const DEFAULT_CANDIDATE_STATS_JUDGMENT: CandidateStatsJudgment = Object.freeze({
   guilty: 0,
   innocent: 0,
 })
@@ -150,7 +150,7 @@ export async function generateVoteId(): Promise<VoteId> {
 export function getDefaultStats(votingType: VotingType): CandidateStats {
   return votingType === 'election'
     ? DEFAULT_CANDIDATE_STATS_ELECTION
-    : DEFAULT_CANDIDATE_STATS_JUDGEMENT
+    : DEFAULT_CANDIDATE_STATS_JUDGMENT
 }
 
 export function hasVotingEnded(voting: VotingData): boolean {

@@ -7,7 +7,7 @@ A library to manage voting systems, having its own voting rules and options whil
 - **Transparency**: to have open and traceable votes without revealing real user data
 - **Flexibility**: to allow the voter to decide how their vote will be composed and to support multiple voting methods, including:
   - **Election**: each person votes for one candidate and the elected candidate is the one with the most votes
-  - **Judgement**: each person votes for one or more candidates and the guilty ones are the ones with more votes for guilty than for innocent
+  - **Judgment**: each person votes for one or more candidates and the guilty ones are the ones with more votes for guilty than for innocent
 
 ## Installation
 

@@ -18,7 +18,7 @@
     "coverage": "nyc nyc --reporter=lcov npm run test",
     "prepublish": "npm run build",
     "examples:election": "npm run build && node examples/election.mjs",
-    "examples:judgement": "npm run build && node examples/judgement.mjs"
+    "examples:judgment": "npm run build && node examples/judgment.mjs"
   },
   "engines": {
     "node": ">=14.0.0"

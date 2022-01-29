@@ -11,7 +11,7 @@ import {
   Election,
   VotingType,
   CandidateStatsElection,
-  CandidateStatsJudgement,
+  CandidateStatsJudgment,
   PartialVeredict,
   VoterId,
 } from './types'
@@ -61,7 +61,7 @@ function generatePartialVeredicts(
       }
       return { candidateId, veredict: 'not elected' }
     } else {
-      const { guilty, innocent } = stats as CandidateStatsJudgement
+      const { guilty, innocent } = stats as CandidateStatsJudgment
       if (!requiredVotes || guilty + innocent >= requiredVotes) {
         if (guilty > innocent) {
           return { candidateId, veredict: 'guilty' }

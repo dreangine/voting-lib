@@ -16,16 +16,16 @@ export type Evidence = {
 }
 
 export type VeredictElection = 'elect' | 'pass'
-export type VeredictJudgement = 'innocent' | 'guilty'
-export type Veredict = VeredictElection | VeredictJudgement
+export type VeredictJudgment = 'innocent' | 'guilty'
+export type Veredict = VeredictElection | VeredictJudgment
 
 export type VeredictFinalBase = 'undecided'
 export type VeredictFinalElection = 'elected' | 'not elected' | VeredictFinalBase
-export type VeredictFinalJudgement = 'innocent' | 'guilty' | VeredictFinalBase
-export type VeredictFinal = VeredictFinalElection | VeredictFinalJudgement
+export type VeredictFinalJudgment = 'innocent' | 'guilty' | VeredictFinalBase
+export type VeredictFinal = VeredictFinalElection | VeredictFinalJudgment
 export type VeredictPartial = VeredictFinal | 'pending'
 
-export type VotingType = 'election' | 'judgement'
+export type VotingType = 'election' | 'judgment'
 
 export type VoteChoice = {
   candidateId: VoterId
@@ -36,11 +36,11 @@ export type CandidateStatsElection = {
   [veredict in VeredictElection]: number
 }
 
-export type CandidateStatsJudgement = {
-  [veredict in VeredictJudgement]: number
+export type CandidateStatsJudgment = {
+  [veredict in VeredictJudgment]: number
 }
 
-export type CandidateStats = CandidateStatsElection | CandidateStatsJudgement
+export type CandidateStats = CandidateStatsElection | CandidateStatsJudgment
 
 export type VotesStats = {
   [candidateId: VoterId]: Partial<CandidateStats>
@@ -60,11 +60,11 @@ export type FinalVeredictStatsElection = {
   [candidateId: VoterId]: VeredictFinalElection
 }
 
-export type FinalVeredictStatsJudgement = {
-  [candidateId: VoterId]: VeredictFinalJudgement
+export type FinalVeredictStatsJudgment = {
+  [candidateId: VoterId]: VeredictFinalJudgment
 }
 
-export type FinalVeredictStats = FinalVeredictStatsElection | FinalVeredictStatsJudgement
+export type FinalVeredictStats = FinalVeredictStatsElection | FinalVeredictStatsJudgment
 
 export type VotingSummaryState = 'partial' | 'final'
 
@@ -104,11 +104,11 @@ export type Election = VotingBase & {
   maxElectedCandidates: number
 }
 
-export type Judgement = VotingBase & {
+export type Judgment = VotingBase & {
   evidences: Evidence[]
 }
 
-export type Voting = Election | Judgement
+export type Voting = Election | Judgment
 
 export type Vote = {
   voteId: VoteId
@@ -166,7 +166,7 @@ export type ElectionParams = VotingParams & {
   maxElectedCandidates: number
 }
 
-export type JudgementParams = VotingParams & {
+export type JudgmentParams = VotingParams & {
   evidences: Evidence[]
 }
 
@@ -181,7 +181,7 @@ export type VoteParamsValidate = VoteParams
  */
 
 export type RegisterVotingRequest = {
-  votingParams: ElectionParams | JudgementParams
+  votingParams: ElectionParams | JudgmentParams
 }
 
 export type RegisterVotersRequest = {
@@ -233,5 +233,5 @@ export type RetrieveVotingSummaryResponse = {
   voting: VotingData
   candidatesStats: CandidatesStats
   votingSummaryState: VotingSummaryState
-  finalVeredict?: FinalVeredictStatsElection | FinalVeredictStatsJudgement
+  finalVeredict?: FinalVeredictStatsElection | FinalVeredictStatsJudgment
 }

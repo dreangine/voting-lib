@@ -6,6 +6,7 @@ import { Callbacks, RegisterVotingRequest, RegisterVoteRequest, UserInfo } from 
 
 import { DEFAULT_CALLBACKS, generateVotingId } from '../src/common'
 import {
+  checkCallbacks,
   registerVote,
   registerVoteByUserId,
   registerVoters,
@@ -52,6 +53,22 @@ const errorTests: [string, Partial<Callbacks>][] = [
     },
   ],
 ]
+
+describe('Check callbacks', () => {
+  it('no callback implemented', () => {
+    expect(checkCallbacks()).to.eventually.deep.equal({
+      persistVoting: false,
+      persistVoters: false,
+      persistVote: false,
+      retrieveVoting: false,
+      retrieveVoter: false,
+      retrieveVotes: false,
+      checkActiveVoters: false,
+      countActiveVoters: false,
+      hasVoted: false,
+    })
+  })
+})
 
 describe('Common errors', () => {
   errorTests.forEach(([errorType, callbacks]) => {

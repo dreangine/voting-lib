@@ -135,6 +135,21 @@ export function setCallbacks(newCallbacks: Partial<Callbacks>) {
   Object.assign(CALLBACKS, newCallbacks)
 }
 
+export async function checkCallbacks(): Promise<{ [functionName: string]: boolean }> {
+  return Promise.allSettled(
+    Object.entries(CALLBACKS).map(([name, callback]) => {
+      return Promise.resolve({ [name]: callback !== DEFAULT_CALLBACKS[name] })
+    })
+  ).then((results) => {
+    return results.reduce((acc, result) => {
+      return {
+        ...acc,
+        ...(result as PromiseFulfilledResult<{ [functionName: string]: boolean }>).value,
+      }
+    }, {})
+  })
+}
+
 export async function generateVotingId(): Promise<VotingId> {
   return `voting-${await nanoid()}`
 }

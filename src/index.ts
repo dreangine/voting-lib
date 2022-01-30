@@ -1,4 +1,4 @@
-export { setCallbacks } from './common'
+export { checkCallbacks, setCallbacks } from './common'
 export { registerVoters } from './voter'
 export { registerVoting } from './voting'
 export { registerVote, registerVoteByUserId } from './vote'

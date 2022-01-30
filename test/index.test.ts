@@ -32,42 +32,27 @@ beforeEach(async () => {
   setCallbacks(DEFAULT_CALLBACKS)
 })
 
-const genericError = new Error('Generic error')
+const genericFn = () => {
+  throw new Error('Generic error')
+}
 const errorTests: [string, Partial<Callbacks>][] = [
   ['Not implemented', DEFAULT_CALLBACKS],
   [
     'Thrown error',
     {
-      persistVoting: () => {
-        throw genericError
-      },
-      persistVoters: () => {
-        throw genericError
-      },
-      persistVote: () => {
-        throw genericError
-      },
-      retrieveVoting: () => {
-        throw genericError
-      },
-      retrieveVoter: () => {
-        throw genericError
-      },
-      retrieveVotes: () => {
-        throw genericError
-      },
-      checkActiveVoters: () => {
-        throw genericError
-      },
-      countActiveVoters: () => {
-        throw genericError
-      },
-      hasVoted: () => {
-        throw genericError
-      },
+      persistVoting: genericFn,
+      persistVoters: genericFn,
+      persistVote: genericFn,
+      retrieveVoting: genericFn,
+      retrieveVoter: genericFn,
+      retrieveVotes: genericFn,
+      checkActiveVoters: genericFn,
+      countActiveVoters: genericFn,
+      hasVoted: genericFn,
     },
   ],
 ]
+
 describe('Common errors', () => {
   errorTests.forEach(([errorType, callbacks]) => {
     describe(`${errorType}`, () => {

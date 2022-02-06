@@ -3,10 +3,15 @@ export type VoterId = string // public ID of the voter
 export type VotingId = string
 export type VoteId = string
 
-export type UserInfo = {
-  userId: UserId
-  alias?: string
-}
+export type UserInfo =
+  | {
+      userId: UserId
+      alias?: string
+    }
+  | {
+      userId?: UserId
+      alias: string
+    }
 
 export type EvidenceType = 'text' | 'image'
 

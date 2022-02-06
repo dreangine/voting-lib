@@ -12,7 +12,11 @@ chai.use(spies)
 chai.use(chaiPromised)
 
 // Setup
-const users: UserInfo[] = [{ userId: 'user1' }, { userId: 'user2', alias: 'someone' }]
+const users: UserInfo[] = [
+  { userId: 'user1' },
+  { userId: 'user2', alias: 'someone' },
+  { alias: 'someone else' },
+]
 
 beforeEach(async () => {
   // Reset callbacks

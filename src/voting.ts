@@ -1,37 +1,20 @@
 import {
-  DEFAULT_CALLBACKS,
-  DEFAULT_MAX_VOTING_DURATION,
-  DEFAULT_MIN_CANDIDATES_ELECTION,
-  DEFAULT_MIN_VOTING_DURATION,
+  checkActiveVoters,
+  countActiveVoters,
   generateVotingId,
+  MAX_VOTING_DURATION,
+  MIN_CANDIDATES_ELECTION,
+  MIN_VOTING_DURATION,
+  persistVoting,
 } from './common'
 import {
   VotingData,
-  Callbacks,
   RegisterVotingRequest,
   RegisterVotingResponse,
   VotingParamsValidate,
 } from './types'
 
-// Setup
-export const MIN_VOTING_DURATION: number = +(
-  process.env.MIN_VOTING_DURATION ?? DEFAULT_MIN_VOTING_DURATION
-)
-export const MAX_VOTING_DURATION: number = +(
-  process.env.MAX_VOTING_DURATION ?? DEFAULT_MAX_VOTING_DURATION
-)
-export const MIN_CANDIDATES_ELECTION: number = +(
-  process.env.MIN_CANDIDATES_ELECTION ?? DEFAULT_MIN_CANDIDATES_ELECTION
-)
-const CALLBACKS: Callbacks = {
-  ...DEFAULT_CALLBACKS,
-}
-
-export function setCallbacks(newCallbacks: Partial<Callbacks>) {
-  Object.assign(CALLBACKS, newCallbacks)
-}
-
-async function validateRegisterVoting(votingParams: VotingParamsValidate): Promise<void> {
+export async function validateRegisterVoting(votingParams: VotingParamsValidate): Promise<void> {
   const { startedBy, candidates, startsAt, endsAt, votingType } = votingParams
 
   if (endsAt < startsAt) throw new Error('Voting cannot end before it starts')
@@ -44,7 +27,7 @@ async function validateRegisterVoting(votingParams: VotingParamsValidate): Promi
   const candidatesIds = candidates.map(({ candidateId }) => candidateId)
   if (candidatesIds.includes(startedBy)) throw new Error('Voting cannot be started by a candidate')
   const allVoters = [startedBy, ...candidatesIds]
-  const checkedVoters = await CALLBACKS.checkActiveVoters(allVoters)
+  const checkedVoters = await checkActiveVoters(allVoters)
   const notFoundVoterIds = allVoters.filter((candidate) => !checkedVoters[candidate])
   if (notFoundVoterIds.length) throw new Error(`Voters ${notFoundVoterIds.join(', ')} do not exist`)
 }
@@ -59,7 +42,7 @@ export async function registerVoting(
   await validateRegisterVoting({ ...votingParams, startsAt })
 
   // Get the total amount of active voters when voting starts
-  const totalVoters = await CALLBACKS.countActiveVoters()
+  const totalVoters = await countActiveVoters()
 
   const voting: VotingData = {
     ...votingParams,
@@ -69,6 +52,6 @@ export async function registerVoting(
     createdAt: now,
     updatedAt: now,
   }
-  await CALLBACKS.persistVoting(voting)
+  await persistVoting(voting)
   return { voting }
 }

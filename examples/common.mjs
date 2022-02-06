@@ -3,7 +3,7 @@ import { setCallbacks } from '../dist/index.js'
 export const users = [
   { userId: 'user1' },
   { userId: 'user2', alias: 'newcomer' },
-  { userId: 'user3' },
+  { alias: 'veteran' },
 ]
 
 const data = { voters: [], votings: [], votes: [] }

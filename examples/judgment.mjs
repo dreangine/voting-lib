@@ -1,4 +1,5 @@
 import {
+  checkCallbacks,
   registerVoters,
   registerVoting,
   registerVote,
@@ -19,7 +20,7 @@ const candidates = otherVoters.map(({ voterId: candidateId, alias }) => ({ candi
 const votingResponse = await registerVoting({
   votingParams: {
     votingDescription: 'Just a test',
-    votingType: 'judgement',
+    votingType: 'judgment',
     startedBy,
     candidates,
     endsAt: (() => {
@@ -64,3 +65,5 @@ const votingSummaryResponse = await retrieveVotingSummary({
 })
 
 console.log('Voting summary:', votingSummaryResponse)
+
+console.log('Chcecking callbacks', await checkCallbacks())

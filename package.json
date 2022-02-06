@@ -14,9 +14,11 @@
     "build": "tsc",
     "start": "tsc && node dist/index.js",
     "lint": "eslint src/**/*.ts",
-    "test": "mocha -r ts-node/register 'tests/**/*.test.ts'",
+    "test": "mocha -r ts-node/register 'test/**/*.test.ts'",
     "coverage": "nyc nyc --reporter=lcov npm run test",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "examples:election": "npm run build && node examples/election.mjs",
+    "examples:judgment": "npm run build && node examples/judgment.mjs"
   },
   "engines": {
     "node": ">=14.0.0"

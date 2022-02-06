@@ -1,4 +1,5 @@
 import {
+  checkCallbacks,
   registerVoters,
   registerVoting,
   registerVote,
@@ -55,3 +56,5 @@ const votingSummaryResponse = await retrieveVotingSummary({
 })
 
 console.log('Voting summary:', votingSummaryResponse)
+
+console.log('Chcecking callbacks', await checkCallbacks())

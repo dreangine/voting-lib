@@ -1,30 +1,20 @@
-import { DEFAULT_CALLBACKS, getDefaultStats, hasVotingEnded } from './common'
+import { getDefaultStats, hasVotingEnded, retrieveVotes, retrieveVoting } from './common'
 import {
   RetrieveVotingSummaryRequest,
   CandidatesStats,
   RetrieveVotingSummaryResponse,
   VotingSummaryState,
   FinalVeredictStats,
-  Callbacks,
   VoteData,
   VotesStats,
   VeredictFinal,
   Election,
   VotingType,
   CandidateStatsElection,
-  CandidateStatsJudgement,
+  CandidateStatsJudgment,
   PartialVeredict,
   VoterId,
 } from './types'
-
-// Setup
-const CALLBACKS: Callbacks = {
-  ...DEFAULT_CALLBACKS,
-}
-
-export function setCallbacks(newCallbacks: Partial<Callbacks>) {
-  Object.assign(CALLBACKS, newCallbacks)
-}
 
 function generateVotesStats(
   votingType: VotingType,
@@ -71,7 +61,7 @@ function generatePartialVeredicts(
       }
       return { candidateId, veredict: 'not elected' }
     } else {
-      const { guilty, innocent } = stats as CandidateStatsJudgement
+      const { guilty, innocent } = stats as CandidateStatsJudgment
       if (!requiredVotes || guilty + innocent >= requiredVotes) {
         if (guilty > innocent) {
           return { candidateId, veredict: 'guilty' }
@@ -125,10 +115,7 @@ export async function retrieveVotingSummary(
   request: RetrieveVotingSummaryRequest
 ): Promise<RetrieveVotingSummaryResponse> {
   const { votingId } = request
-  return Promise.allSettled([
-    CALLBACKS.retrieveVoting(votingId),
-    CALLBACKS.retrieveVotes(votingId),
-  ]).then((results) => {
+  return Promise.allSettled([retrieveVoting(votingId), retrieveVotes(votingId)]).then((results) => {
     const [votingResult, votesResult] = results
     if (votingResult.status === 'rejected') {
       throw new Error(`Unable to retrieve voting: ${votingResult.reason}`)

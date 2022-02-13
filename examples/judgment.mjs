@@ -52,7 +52,7 @@ const voteResponse = await registerVote({
     choices: [
       {
         candidateId: candidates[0].candidateId,
-        veredict: 'guilty',
+        verdict: 'guilty',
       },
     ],
   },

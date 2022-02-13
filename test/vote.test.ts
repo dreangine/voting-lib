@@ -35,7 +35,7 @@ beforeEach(async () => {
 describe('Vote', () => {
   votingTypes.forEach((votingType) => {
     describe(`Voting type: ${votingType}`, () => {
-      const veredict = votingType === 'election' ? 'elect' : 'guilty'
+      const verdict = votingType === 'election' ? 'elect' : 'guilty'
       describe('validateRegisterVote', () => {
         it('cannot vote on yourself', async () => {
           await expect(
@@ -45,7 +45,7 @@ describe('Vote', () => {
               choices: [
                 {
                   candidateId: startedBy.voterId,
-                  veredict,
+                  verdict,
                 },
               ],
             })
@@ -75,7 +75,7 @@ describe('Vote', () => {
               choices: [
                 {
                   candidateId: getFirstCandidateId(),
-                  veredict,
+                  verdict,
                 },
               ],
             },
@@ -124,7 +124,7 @@ describe('Vote', () => {
               choices: [
                 {
                   candidateId: getFirstCandidateId(),
-                  veredict,
+                  verdict,
                 },
               ],
             },
@@ -161,7 +161,7 @@ describe('Vote', () => {
                 choices: [
                   {
                     candidateId: getFirstCandidateId(),
-                    veredict,
+                    verdict,
                   },
                 ],
               },
@@ -186,7 +186,7 @@ describe('Vote', () => {
                 choices: [
                   {
                     candidateId: getFirstCandidateId(),
-                    veredict,
+                    verdict,
                   },
                 ],
               },
@@ -213,7 +213,7 @@ describe('Vote', () => {
           choices: [
             {
               candidateId: getFirstCandidateId(),
-              veredict: 'pass',
+              verdict: 'pass',
             },
           ],
         },
@@ -239,7 +239,7 @@ describe('Vote', () => {
           choices: [
             {
               candidateId: getFirstCandidateId(),
-              veredict: 'pass',
+              verdict: 'pass',
             },
           ],
         },

@@ -123,7 +123,7 @@ describe('Common errors', () => {
             choices: [
               {
                 candidateId,
-                veredict: 'guilty',
+                verdict: 'guilty',
               },
             ],
           },
@@ -145,7 +145,7 @@ describe('Common errors', () => {
               choices: [
                 {
                   candidateId,
-                  veredict: 'guilty',
+                  verdict: 'guilty',
                 },
               ],
             },

@@ -20,29 +20,29 @@ export type Evidence = {
   data: string // the actual text or an image URL
 }
 
-export type VeredictElection = 'elect' | 'pass'
-export type VeredictJudgment = 'innocent' | 'guilty'
-export type Veredict = VeredictElection | VeredictJudgment
+export type VerdictElection = 'elect' | 'pass'
+export type VerdictJudgment = 'innocent' | 'guilty'
+export type Verdict = VerdictElection | VerdictJudgment
 
-export type VeredictFinalBase = 'undecided'
-export type VeredictFinalElection = 'elected' | 'not elected' | VeredictFinalBase
-export type VeredictFinalJudgment = 'innocent' | 'guilty' | VeredictFinalBase
-export type VeredictFinal = VeredictFinalElection | VeredictFinalJudgment
-export type VeredictPartial = VeredictFinal | 'pending'
+export type VerdictFinalBase = 'undecided'
+export type VerdictFinalElection = 'elected' | 'not elected' | VerdictFinalBase
+export type VerdictFinalJudgment = 'innocent' | 'guilty' | VerdictFinalBase
+export type VerdictFinal = VerdictFinalElection | VerdictFinalJudgment
+export type VerdictPartial = VerdictFinal | 'pending'
 
 export type VotingType = 'election' | 'judgment'
 
 export type VoteChoice = {
   candidateId: VoterId
-  veredict: Veredict
+  verdict: Verdict
 }
 
 export type CandidateStatsElection = {
-  [veredict in VeredictElection]: number
+  [verdict in VerdictElection]: number
 }
 
 export type CandidateStatsJudgment = {
-  [veredict in VeredictJudgment]: number
+  [verdict in VerdictJudgment]: number
 }
 
 export type CandidateStats = CandidateStatsElection | CandidateStatsJudgment
@@ -55,21 +55,21 @@ export type CandidatesStats = {
   [candidateId: VoterId]: CandidateStats
 }
 
-export type PartialVeredict = {
+export type PartialVerdict = {
   candidateId: VoterId
-  veredict: VeredictPartial
+  verdict: VerdictPartial
   electVotes?: number
 }
 
-export type FinalVeredictStatsElection = {
-  [candidateId: VoterId]: VeredictFinalElection
+export type FinalVerdictStatsElection = {
+  [candidateId: VoterId]: VerdictFinalElection
 }
 
-export type FinalVeredictStatsJudgment = {
-  [candidateId: VoterId]: VeredictFinalJudgment
+export type FinalVerdictStatsJudgment = {
+  [candidateId: VoterId]: VerdictFinalJudgment
 }
 
-export type FinalVeredictStats = FinalVeredictStatsElection | FinalVeredictStatsJudgment
+export type FinalVerdictStats = FinalVerdictStatsElection | FinalVerdictStatsJudgment
 
 export type VotingSummaryState = 'partial' | 'final'
 
@@ -238,5 +238,5 @@ export type RetrieveVotingSummaryResponse = {
   voting: VotingData
   candidatesStats: CandidatesStats
   votingSummaryState: VotingSummaryState
-  finalVeredict?: FinalVeredictStatsElection | FinalVeredictStatsJudgment
+  finalVerdict?: FinalVerdictStatsElection | FinalVerdictStatsJudgment
 }

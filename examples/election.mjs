@@ -43,7 +43,7 @@ const voteResponse = await registerVote({
     choices: [
       {
         candidateId: candidates[0].candidateId,
-        veredict: 'elect',
+        verdict: 'elect',
       },
     ],
   },

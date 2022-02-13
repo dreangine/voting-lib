@@ -4,15 +4,15 @@ import {
   CandidatesStats,
   RetrieveVotingSummaryResponse,
   VotingSummaryState,
-  FinalVeredictStats,
+  FinalVerdictStats,
   VoteData,
   VotesStats,
-  VeredictFinal,
+  VerdictFinal,
   Election,
   VotingType,
   CandidateStatsElection,
   CandidateStatsJudgment,
-  PartialVeredict,
+  PartialVerdict,
   VoterId,
 } from './types'
 
@@ -23,11 +23,11 @@ function generateVotesStats(
   if (!votesData) return {}
   return votesData instanceof Array
     ? (votesData as VoteData[]).reduce((candidatesStats, { choices }) => {
-        choices.forEach(({ candidateId, veredict }) => {
+        choices.forEach(({ candidateId, verdict }) => {
           candidatesStats[candidateId] = candidatesStats[candidateId] || {
             ...getDefaultStats(votingType),
           }
-          candidatesStats[candidateId][veredict]++
+          candidatesStats[candidateId][verdict]++
         })
         return candidatesStats
       }, {} as CandidatesStats)
@@ -35,49 +35,49 @@ function generateVotesStats(
         candidatesStats[candidateId] = candidatesStats[candidateId] || {
           ...getDefaultStats(votingType),
         }
-        Object.keys(stats).forEach((veredict) => {
-          candidatesStats[candidateId][veredict] = stats[veredict]
+        Object.keys(stats).forEach((verdict) => {
+          candidatesStats[candidateId][verdict] = stats[verdict]
         })
         return candidatesStats
       }, {} as CandidatesStats)
 }
 
-function generatePartialVeredicts(
+function generatePartialVerdicts(
   candidatesStats: CandidatesStats,
   requiredVotes?: number,
   maxElectedCandidates?: number
-): PartialVeredict[] {
+): PartialVerdict[] {
   return Object.entries(candidatesStats).map(([candidateId, stats]) => {
     if (Object.prototype.hasOwnProperty.call(stats, 'elect')) {
       const { elect, pass } = stats as CandidateStatsElection
       if (!requiredVotes || elect >= requiredVotes) {
         if (elect > pass) {
           if (maxElectedCandidates === 1)
-            return { candidateId, veredict: 'pending', electVotes: elect }
-          return { candidateId, veredict: 'elected' }
+            return { candidateId, verdict: 'pending', electVotes: elect }
+          return { candidateId, verdict: 'elected' }
         } else if (pass > elect) {
-          return { candidateId, veredict: 'not elected' }
+          return { candidateId, verdict: 'not elected' }
         }
       }
-      return { candidateId, veredict: 'not elected' }
+      return { candidateId, verdict: 'not elected' }
     } else {
       const { guilty, innocent } = stats as CandidateStatsJudgment
       if (!requiredVotes || guilty + innocent >= requiredVotes) {
         if (guilty > innocent) {
-          return { candidateId, veredict: 'guilty' }
+          return { candidateId, verdict: 'guilty' }
         } else if (innocent > guilty) {
-          return { candidateId, veredict: 'innocent' }
+          return { candidateId, verdict: 'innocent' }
         }
       }
     }
-    return { candidateId, veredict: 'undecided' }
+    return { candidateId, verdict: 'undecided' }
   })
 }
 
-function findElectedCandidateId(partialVeredicts: PartialVeredict[]): VoterId | null {
-  const pendingCandidates = partialVeredicts
-    .filter(({ veredict }) => veredict === 'pending')
-    .map((veredict) => veredict as Required<PartialVeredict>)
+function findElectedCandidateId(partialVerdicts: PartialVerdict[]): VoterId | null {
+  const pendingCandidates = partialVerdicts
+    .filter(({ verdict }) => verdict === 'pending')
+    .map((verdict) => verdict as Required<PartialVerdict>)
     .sort(({ electVotes: aElectVotes }, { electVotes: bElectVotes }) => bElectVotes - aElectVotes)
   const [firstCandidate, secondCandidate] = pendingCandidates
   return firstCandidate?.electVotes === secondCandidate?.electVotes
@@ -85,30 +85,30 @@ function findElectedCandidateId(partialVeredicts: PartialVeredict[]): VoterId | 
     : firstCandidate.candidateId
 }
 
-function generateFinalVeredict(
-  partialVeredicts: PartialVeredict[],
+function generateFinalVerdict(
+  partialVerdicts: PartialVerdict[],
   electedCandidateId: VoterId | null
-): FinalVeredictStats {
-  return partialVeredicts.reduce((finalVeredict, { candidateId, veredict }) => {
-    if (veredict === 'pending') {
-      finalVeredict[candidateId] = electedCandidateId === candidateId ? 'elected' : 'not elected'
+): FinalVerdictStats {
+  return partialVerdicts.reduce((finalVerdict, { candidateId, verdict }) => {
+    if (verdict === 'pending') {
+      finalVerdict[candidateId] = electedCandidateId === candidateId ? 'elected' : 'not elected'
     } else {
-      finalVeredict[candidateId] = veredict as VeredictFinal
+      finalVerdict[candidateId] = verdict as VerdictFinal
     }
-    return finalVeredict
-  }, {} as FinalVeredictStats)
+    return finalVerdict
+  }, {} as FinalVerdictStats)
 }
 
 function processCandidatesStats(
   candidatesStats: CandidatesStats,
   requiredVotes?: number,
   maxElectedCandidates?: number
-): FinalVeredictStats {
-  const veredicts = generatePartialVeredicts(candidatesStats, requiredVotes, maxElectedCandidates)
-  const electedCandidate = findElectedCandidateId(veredicts)
-  const finalVeredict = generateFinalVeredict(veredicts, electedCandidate)
+): FinalVerdictStats {
+  const verdicts = generatePartialVerdicts(candidatesStats, requiredVotes, maxElectedCandidates)
+  const electedCandidate = findElectedCandidateId(verdicts)
+  const finalVerdict = generateFinalVerdict(verdicts, electedCandidate)
 
-  return finalVeredict
+  return finalVerdict
 }
 
 export async function retrieveVotingSummary(
@@ -146,7 +146,7 @@ export async function retrieveVotingSummary(
 
     const { requiredParticipationPercentage = 0, totalVoters } = voting
     const requiredVotes = requiredParticipationPercentage * totalVoters
-    const finalVeredict =
+    const finalVerdict =
       isVotingFinal &&
       processCandidatesStats(
         candidatesStats,
@@ -158,7 +158,7 @@ export async function retrieveVotingSummary(
       voting,
       candidatesStats,
       votingSummaryState,
-      ...(finalVeredict && { finalVeredict }),
+      ...(finalVerdict && { finalVerdict }),
     }
     return response
   })

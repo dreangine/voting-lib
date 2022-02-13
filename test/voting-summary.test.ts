@@ -54,7 +54,7 @@ beforeEach(async () => {
 describe('Voting summary', () => {
   votingTypes.forEach((votingType) => {
     describe(`Voting type: ${votingType}`, () => {
-      it('partial veredict', async () => {
+      it('partial verdict', async () => {
         const [firstCandidate, secondCandidate] = candidates
         const votesDistribution = [
           [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
@@ -73,7 +73,7 @@ describe('Voting summary', () => {
                 choices: [
                   {
                     candidateId,
-                    veredict: vote,
+                    verdict: vote,
                   },
                 ],
                 candidateId: candidateId,
@@ -113,10 +113,10 @@ describe('Voting summary', () => {
         expect(result).to.exist
         expect(result.candidatesStats).to.deep.equal(expectedStats)
         expect(result.votingSummaryState).to.equal('partial')
-        expect(result.finalVeredict).to.not.exist
+        expect(result.finalVerdict).to.not.exist
       })
 
-      it('partial veredict - candidates without votes', async () => {
+      it('partial verdict - candidates without votes', async () => {
         const [firstCandidate] = candidates
         const { candidateId: firstCandidateId } = firstCandidate
         const votesDistribution = [
@@ -134,7 +134,7 @@ describe('Voting summary', () => {
                 choices: [
                   {
                     candidateId,
-                    veredict: vote,
+                    verdict: vote,
                   },
                 ],
                 candidateId: candidateId,
@@ -172,10 +172,10 @@ describe('Voting summary', () => {
         expect(result).to.exist
         expect(result.candidatesStats).to.deep.equal(expectedStats)
         expect(result.votingSummaryState).to.equal('partial')
-        expect(result.finalVeredict).to.not.exist
+        expect(result.finalVerdict).to.not.exist
       })
 
-      it('final veredict', async () => {
+      it('final verdict', async () => {
         const [firstCandidate, secondCandidate] = candidates
         const votesStats: VotesStats = {
           [firstCandidate.candidateId]: {
@@ -219,19 +219,19 @@ describe('Voting summary', () => {
         expect(result).to.exist
         expect(result.candidatesStats).to.deep.equal(expectedStats)
         expect(result.votingSummaryState).to.equal('final')
-        expect(result.finalVeredict).to.exist
-        if (result.finalVeredict) {
-          expect(result.finalVeredict[firstCandidate.candidateId]).to.equal(
+        expect(result.finalVerdict).to.exist
+        if (result.finalVerdict) {
+          expect(result.finalVerdict[firstCandidate.candidateId]).to.equal(
             votingType === 'election' ? 'elected' : 'guilty'
           )
-          expect(result.finalVeredict[secondCandidate.candidateId]).to.equal(
+          expect(result.finalVerdict[secondCandidate.candidateId]).to.equal(
             votingType === 'election' ? 'not elected' : 'innocent'
           )
         }
       })
 
       if (votingType === 'election') {
-        it('final veredict - election single (tie)', async () => {
+        it('final verdict - election single (tie)', async () => {
           const [firstCandidate, secondCandidate] = candidates
           const votesStats: VotesStats = {
             [firstCandidate.candidateId]: {
@@ -275,14 +275,14 @@ describe('Voting summary', () => {
           expect(result).to.exist
           expect(result.candidatesStats).to.deep.equal(expectedStats)
           expect(result.votingSummaryState).to.equal('final')
-          expect(result.finalVeredict).to.exist
-          if (result.finalVeredict) {
-            expect(result.finalVeredict[firstCandidate.candidateId]).to.equal('not elected')
-            expect(result.finalVeredict[secondCandidate.candidateId]).to.equal('not elected')
+          expect(result.finalVerdict).to.exist
+          if (result.finalVerdict) {
+            expect(result.finalVerdict[firstCandidate.candidateId]).to.equal('not elected')
+            expect(result.finalVerdict[secondCandidate.candidateId]).to.equal('not elected')
           }
         })
 
-        it('final veredict - election multiple (all elected)', async () => {
+        it('final verdict - election multiple (all elected)', async () => {
           const [firstCandidate, secondCandidate] = candidates
           const votesStats: VotesStats = {
             [firstCandidate.candidateId]: {
@@ -328,15 +328,15 @@ describe('Voting summary', () => {
           expect(result).to.exist
           expect(result.candidatesStats).to.deep.equal(expectedStats)
           expect(result.votingSummaryState).to.equal('final')
-          expect(result.finalVeredict).to.exist
-          if (result.finalVeredict) {
-            expect(result.finalVeredict[firstCandidate.candidateId]).to.equal('elected')
-            expect(result.finalVeredict[secondCandidate.candidateId]).to.equal('elected')
+          expect(result.finalVerdict).to.exist
+          if (result.finalVerdict) {
+            expect(result.finalVerdict[firstCandidate.candidateId]).to.equal('elected')
+            expect(result.finalVerdict[secondCandidate.candidateId]).to.equal('elected')
           }
         })
       }
 
-      it('final veredict - undecided/not elected', async () => {
+      it('final verdict - undecided/not elected', async () => {
         const [firstCandidate, secondCandidate] = candidates
         const votesDistribution = [
           [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
@@ -354,7 +354,7 @@ describe('Voting summary', () => {
                 choices: [
                   {
                     candidateId,
-                    veredict: vote,
+                    verdict: vote,
                   },
                 ],
                 candidateId: candidateId,
@@ -394,15 +394,15 @@ describe('Voting summary', () => {
         expect(result).to.exist
         expect(result.candidatesStats).to.deep.equal(expectedStats)
         expect(result.votingSummaryState).to.equal('final')
-        expect(result.finalVeredict).to.exist
-        if (result.finalVeredict) {
-          const expectedVeredict = votingType === 'election' ? 'not elected' : 'undecided'
-          expect(result.finalVeredict[firstCandidate.candidateId]).to.equal(expectedVeredict)
-          expect(result.finalVeredict[secondCandidate.candidateId]).to.equal(expectedVeredict)
+        expect(result.finalVerdict).to.exist
+        if (result.finalVerdict) {
+          const expectedVerdict = votingType === 'election' ? 'not elected' : 'undecided'
+          expect(result.finalVerdict[firstCandidate.candidateId]).to.equal(expectedVerdict)
+          expect(result.finalVerdict[secondCandidate.candidateId]).to.equal(expectedVerdict)
         }
       })
 
-      it('final veredict - not enough votes', async () => {
+      it('final verdict - not enough votes', async () => {
         const [firstCandidate, secondCandidate] = candidates
         const votesDistribution = [
           [firstCandidate.candidateId, votingType === 'election' ? 'elect' : 'guilty'],
@@ -424,7 +424,7 @@ describe('Voting summary', () => {
                 choices: [
                   {
                     candidateId,
-                    veredict: vote,
+                    verdict: vote,
                   },
                 ],
                 candidateId: candidateId,
@@ -468,18 +468,18 @@ describe('Voting summary', () => {
         expect(result).to.exist
         expect(result.candidatesStats).to.deep.equal(expectedStats)
         expect(result.votingSummaryState).to.equal('final')
-        expect(result.finalVeredict).to.exist
-        if (result.finalVeredict) {
-          expect(result.finalVeredict[firstCandidate.candidateId]).to.equal(
+        expect(result.finalVerdict).to.exist
+        if (result.finalVerdict) {
+          expect(result.finalVerdict[firstCandidate.candidateId]).to.equal(
             votingType === 'election' ? 'elected' : 'guilty'
           )
-          expect(result.finalVeredict[secondCandidate.candidateId]).to.equal(
+          expect(result.finalVerdict[secondCandidate.candidateId]).to.equal(
             votingType === 'election' ? 'not elected' : 'undecided'
           )
         }
       })
 
-      it('final veredict - no votes', async () => {
+      it('final verdict - no votes', async () => {
         const retrieveVotingSpy = chai.spy(retrieveVotingFnOngoing(generatedVotingId, votingType))
         const retrieveVotesSpy = chai.spy(async () => ({
           data: null,
@@ -504,10 +504,10 @@ describe('Voting summary', () => {
         expect(result).to.exist
         expect(result.candidatesStats).to.deep.equal(expectedStats)
         expect(result.votingSummaryState).to.equal('partial')
-        expect(result.finalVeredict).to.not.exist
+        expect(result.finalVerdict).to.not.exist
       })
 
-      it('final veredict - no votes', async () => {
+      it('final verdict - no votes', async () => {
         const retrieveVotingSpy = chai.spy(retrieveVotingFnEnded(generatedVotingId, votingType))
         const retrieveVotesSpy = chai.spy(async () => ({
           data: null,
@@ -532,9 +532,9 @@ describe('Voting summary', () => {
         expect(result).to.exist
         expect(result.candidatesStats).to.deep.equal(expectedStats)
         expect(result.votingSummaryState).to.equal('final')
-        expect(result.finalVeredict).to.exist
+        expect(result.finalVerdict).to.exist
         candidates.forEach(({ candidateId }) => {
-          expect(result.finalVeredict && result.finalVeredict[candidateId]).to.equal(
+          expect(result.finalVerdict && result.finalVerdict[candidateId]).to.equal(
             votingType === 'election' ? 'not elected' : 'undecided'
           )
         })

@@ -22,32 +22,32 @@ function generateVotesStats(
 ): CandidatesStats {
   if (!votesData) return {}
   return votesData instanceof Array
-    ? (votesData as VoteData[]).reduce((candidatesStats, { choices }) => {
+    ? (votesData as VoteData[]).reduce((votingStats, { choices }) => {
         choices.forEach(({ candidateId, verdict }) => {
-          candidatesStats[candidateId] = candidatesStats[candidateId] || {
+          votingStats[candidateId] = votingStats[candidateId] || {
             ...getDefaultStats(votingType),
           }
-          candidatesStats[candidateId][verdict]++
+          votingStats[candidateId][verdict]++
         })
-        return candidatesStats
+        return votingStats
       }, {} as CandidatesStats)
-    : Object.entries(votesData as VotesStats).reduce((candidatesStats, [candidateId, stats]) => {
-        candidatesStats[candidateId] = candidatesStats[candidateId] || {
+    : Object.entries(votesData as VotesStats).reduce((votingStats, [candidateId, stats]) => {
+        votingStats[candidateId] = votingStats[candidateId] || {
           ...getDefaultStats(votingType),
         }
         Object.keys(stats).forEach((verdict) => {
-          candidatesStats[candidateId][verdict] = stats[verdict]
+          votingStats[candidateId][verdict] = stats[verdict]
         })
-        return candidatesStats
+        return votingStats
       }, {} as CandidatesStats)
 }
 
 function generatePartialVerdicts(
-  candidatesStats: CandidatesStats,
+  votingStats: CandidatesStats,
   requiredVotes?: number,
   maxElectedCandidates?: number
 ): PartialVerdict[] {
-  return Object.entries(candidatesStats).map(([candidateId, stats]) => {
+  return Object.entries(votingStats).map(([candidateId, stats]) => {
     if (Object.prototype.hasOwnProperty.call(stats, 'elect')) {
       const { elect, pass } = stats as CandidateStatsElection
       if (!requiredVotes || elect >= requiredVotes) {
@@ -100,11 +100,11 @@ function generateFinalVerdict(
 }
 
 function processCandidatesStats(
-  candidatesStats: CandidatesStats,
+  votingStats: CandidatesStats,
   requiredVotes?: number,
   maxElectedCandidates?: number
 ): FinalVerdictStats {
-  const verdicts = generatePartialVerdicts(candidatesStats, requiredVotes, maxElectedCandidates)
+  const verdicts = generatePartialVerdicts(votingStats, requiredVotes, maxElectedCandidates)
   const electedCandidate = findElectedCandidateId(verdicts)
   const finalVerdict = generateFinalVerdict(verdicts, electedCandidate)
 
@@ -131,16 +131,13 @@ export async function retrieveVotingSummary(
 
     const { votingType } = voting
 
-    const baseStats: CandidatesStats = voting.candidates.reduce(
-      (candidatesStats, { candidateId }) => {
-        candidatesStats[candidateId] = {
-          ...getDefaultStats(votingType),
-        }
-        return candidatesStats
-      },
-      {} as CandidatesStats
-    )
-    const candidatesStats = { ...baseStats, ...generateVotesStats(votingType, votes) }
+    const baseStats: CandidatesStats = voting.candidates.reduce((votingStats, { candidateId }) => {
+      votingStats[candidateId] = {
+        ...getDefaultStats(votingType),
+      }
+      return votingStats
+    }, {} as CandidatesStats)
+    const votingStats = { ...baseStats, ...generateVotesStats(votingType, votes) }
     const isVotingFinal = hasVotingEnded(voting)
     const votingSummaryState: VotingSummaryState = isVotingFinal ? 'final' : 'partial'
 
@@ -148,15 +145,11 @@ export async function retrieveVotingSummary(
     const requiredVotes = requiredParticipationPercentage * totalVoters
     const finalVerdict =
       isVotingFinal &&
-      processCandidatesStats(
-        candidatesStats,
-        requiredVotes,
-        (voting as Election).maxElectedCandidates
-      )
+      processCandidatesStats(votingStats, requiredVotes, (voting as Election).maxElectedCandidates)
 
     const response = {
       voting,
-      candidatesStats,
+      votingStats,
       votingSummaryState,
       ...(finalVerdict && { finalVerdict }),
     }

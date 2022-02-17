@@ -15,7 +15,7 @@ export type UserInfo =
 
 export type EvidenceType = 'text' | 'image'
 
-export type Evidence = {
+export interface Evidence {
   type: EvidenceType
   data: string // the actual text or an image URL
 }
@@ -24,7 +24,7 @@ export type VerdictElection = 'elect' | 'pass'
 export type VerdictJudgment = 'innocent' | 'guilty'
 export type Verdict = VerdictElection | VerdictJudgment
 
-export type VerdictFinalBase = 'undecided'
+type VerdictFinalBase = 'undecided'
 export type VerdictFinalElection = 'elected' | 'not elected' | VerdictFinalBase
 export type VerdictFinalJudgment = 'innocent' | 'guilty' | VerdictFinalBase
 export type VerdictFinal = VerdictFinalElection | VerdictFinalJudgment
@@ -32,7 +32,7 @@ export type VerdictPartial = VerdictFinal | 'pending'
 
 export type VotingType = 'election' | 'judgment'
 
-export type VoteChoice = {
+export interface VoteChoice {
   candidateId: VoterId
   verdict: Verdict
 }
@@ -80,42 +80,45 @@ export type VotingDescription = {
 export type VoterStatus = 'active' | 'inactive'
 
 // Anyone can see how the voter voted but its user information isn't public
-export type Voter = {
+export interface Voter {
   voterId: VoterId
   userId: UserId
   alias?: string
   status: VoterStatus
 }
 
-export type CandidateInfo = {
+export interface CandidateInfo {
   candidateId: VoterId
   alias?: string
   speech?: string
 }
 
-export type VotingBase = {
+interface VotingBase {
   votingId: VotingId
   votingDescription: VotingDescription
   votingType: VotingType
   startedBy: VoterId
-  candidates: CandidateInfo[]
   startsAt: Date
   endsAt: Date
   totalVoters: number
   requiredParticipationPercentage?: number
 }
 
-export type Election = VotingBase & {
+interface CandidateBasedVoting extends VotingBase {
+  candidates: CandidateInfo[]
+}
+
+export interface Election extends CandidateBasedVoting {
   maxElectedCandidates: number
 }
 
-export type Judgment = VotingBase & {
+export interface Judgment extends CandidateBasedVoting {
   evidences: Evidence[]
 }
 
 export type Voting = Election | Judgment
 
-export type Vote = {
+export interface Vote {
   voteId: VoteId
   votingId: VotingId
   voterId: VoterId
@@ -142,7 +145,7 @@ export type Callbacks = {
  * DATA
  */
 
-type BasicData = {
+interface BasicData {
   createdAt: Date
   updatedAt: Date
 }
@@ -157,21 +160,24 @@ export type VoteData = Vote & Omit<BasicData, 'updatedAt'>
  * PARAMS
  */
 
-export type VotingParams = {
+interface VotingParams {
   votingDescription: VotingDescription
   votingType: VotingType
   startedBy: VoterId
-  candidates: CandidateInfo[]
   startsAt?: Date
   endsAt: Date
   requiredParticipationPercentage?: number
 }
 
-export type ElectionParams = VotingParams & {
+interface CandidateBasedVotingParams extends VotingParams {
+  candidates: CandidateInfo[]
+}
+
+export interface ElectionParams extends CandidateBasedVotingParams {
   maxElectedCandidates: number
 }
 
-export type JudgmentParams = VotingParams & {
+export interface JudgmentParams extends CandidateBasedVotingParams {
   evidences: Evidence[]
 }
 
@@ -222,21 +228,21 @@ export type RetrieveResponse<T> = {
   data: T | null
 }
 
-export type RegisterVotingResponse = {
+export interface RegisterVotingResponse {
   voting: VotingData
 }
 
-export type RegisterVotersResponse = {
+export interface RegisterVotersResponse {
   voters?: VoterData[]
 }
 
-export type RegisterVoteResponse = {
+export interface RegisterVoteResponse {
   vote: VoteData
 }
 
-export type RetrieveVotingSummaryResponse = {
+export interface RetrieveVotingSummaryResponse {
   voting: VotingData
-  candidatesStats: CandidatesStats
+  votingStats: CandidatesStats
   votingSummaryState: VotingSummaryState
   finalVerdict?: FinalVerdictStatsElection | FinalVerdictStatsJudgment
 }

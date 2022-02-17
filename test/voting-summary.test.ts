@@ -111,7 +111,7 @@ describe('Voting summary', () => {
         expect(retrieveVotesSpy).to.have.been.called.once
         expect(retrieveVotesSpy).to.have.been.called.with(generatedVotingId)
         expect(result).to.exist
-        expect(result.candidatesStats).to.deep.equal(expectedStats)
+        expect(result.votingStats).to.deep.equal(expectedStats)
         expect(result.votingSummaryState).to.equal('partial')
         expect(result.finalVerdict).to.not.exist
       })
@@ -170,7 +170,7 @@ describe('Voting summary', () => {
         expect(retrieveVotesSpy).to.have.been.called.once
         expect(retrieveVotesSpy).to.have.been.called.with(generatedVotingId)
         expect(result).to.exist
-        expect(result.candidatesStats).to.deep.equal(expectedStats)
+        expect(result.votingStats).to.deep.equal(expectedStats)
         expect(result.votingSummaryState).to.equal('partial')
         expect(result.finalVerdict).to.not.exist
       })
@@ -217,7 +217,7 @@ describe('Voting summary', () => {
         expect(retrieveVotesSpy).to.have.been.called.once
         expect(retrieveVotesSpy).to.have.been.called.with(generatedVotingId)
         expect(result).to.exist
-        expect(result.candidatesStats).to.deep.equal(expectedStats)
+        expect(result.votingStats).to.deep.equal(expectedStats)
         expect(result.votingSummaryState).to.equal('final')
         expect(result.finalVerdict).to.exist
         if (result.finalVerdict) {
@@ -273,7 +273,7 @@ describe('Voting summary', () => {
           expect(retrieveVotesSpy).to.have.been.called.once
           expect(retrieveVotesSpy).to.have.been.called.with(generatedVotingId)
           expect(result).to.exist
-          expect(result.candidatesStats).to.deep.equal(expectedStats)
+          expect(result.votingStats).to.deep.equal(expectedStats)
           expect(result.votingSummaryState).to.equal('final')
           expect(result.finalVerdict).to.exist
           if (result.finalVerdict) {
@@ -326,7 +326,7 @@ describe('Voting summary', () => {
           expect(retrieveVotesSpy).to.have.been.called.once
           expect(retrieveVotesSpy).to.have.been.called.with(generatedVotingId)
           expect(result).to.exist
-          expect(result.candidatesStats).to.deep.equal(expectedStats)
+          expect(result.votingStats).to.deep.equal(expectedStats)
           expect(result.votingSummaryState).to.equal('final')
           expect(result.finalVerdict).to.exist
           if (result.finalVerdict) {
@@ -392,7 +392,7 @@ describe('Voting summary', () => {
         expect(retrieveVotesSpy).to.have.been.called.once
         expect(retrieveVotesSpy).to.have.been.called.with(generatedVotingId)
         expect(result).to.exist
-        expect(result.candidatesStats).to.deep.equal(expectedStats)
+        expect(result.votingStats).to.deep.equal(expectedStats)
         expect(result.votingSummaryState).to.equal('final')
         expect(result.finalVerdict).to.exist
         if (result.finalVerdict) {
@@ -466,7 +466,7 @@ describe('Voting summary', () => {
         expect(retrieveVotesSpy).to.have.been.called.once
         expect(retrieveVotesSpy).to.have.been.called.with(generatedVotingId)
         expect(result).to.exist
-        expect(result.candidatesStats).to.deep.equal(expectedStats)
+        expect(result.votingStats).to.deep.equal(expectedStats)
         expect(result.votingSummaryState).to.equal('final')
         expect(result.finalVerdict).to.exist
         if (result.finalVerdict) {
@@ -502,7 +502,7 @@ describe('Voting summary', () => {
         expect(retrieveVotesSpy).to.have.been.called.once
         expect(retrieveVotesSpy).to.have.been.called.with(generatedVotingId)
         expect(result).to.exist
-        expect(result.candidatesStats).to.deep.equal(expectedStats)
+        expect(result.votingStats).to.deep.equal(expectedStats)
         expect(result.votingSummaryState).to.equal('partial')
         expect(result.finalVerdict).to.not.exist
       })
@@ -530,7 +530,7 @@ describe('Voting summary', () => {
         expect(retrieveVotesSpy).to.have.been.called.once
         expect(retrieveVotesSpy).to.have.been.called.with(generatedVotingId)
         expect(result).to.exist
-        expect(result.candidatesStats).to.deep.equal(expectedStats)
+        expect(result.votingStats).to.deep.equal(expectedStats)
         expect(result.votingSummaryState).to.equal('final')
         expect(result.finalVerdict).to.exist
         candidates.forEach(({ candidateId }) => {

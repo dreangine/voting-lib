@@ -1,4 +1,11 @@
-import { getDefaultStats, hasVotingEnded, retrieveVotes, retrieveVoting } from './common'
+import {
+  getDefaultStats,
+  hasVotingEnded,
+  isCandidateBasedVotingType,
+  isOptionBasedVotingType,
+  retrieveVotes,
+  retrieveVoting,
+} from './common'
 import {
   RetrieveVotingSummaryRequest,
   CandidatesStats,
@@ -14,13 +21,20 @@ import {
   CandidateStatsJudgment,
   PartialVerdict,
   VoterId,
+  VotingData,
+  OptionsStats,
 } from './types'
+
+function generateVotingSummaryState(isVotingFinal: boolean): VotingSummaryState {
+  return isVotingFinal ? 'final' : 'partial'
+}
 
 function generateVotesStats(
   votingType: VotingType,
   votesData?: VoteData[] | VotesStats | null
-): CandidatesStats {
+): CandidatesStats | OptionsStats {
   if (!votesData) return {}
+  if (isOptionBasedVotingType(votingType)) return votesData as OptionsStats
   return votesData instanceof Array
     ? (votesData as VoteData[]).reduce((votingStats, { choices }) => {
         choices.forEach(({ candidateId, verdict }) => {
@@ -111,6 +125,58 @@ function processCandidatesStats(
   return finalVerdict
 }
 
+async function processCandidatesVoting(
+  voting: VotingData,
+  votes: VoteData[] | VotesStats | null
+): Promise<RetrieveVotingSummaryResponse> {
+  if ('candidates' in voting) {
+    const { votingType } = voting
+    const baseStats: CandidatesStats = voting.candidates.reduce((votingStats, { candidateId }) => {
+      votingStats[candidateId] = {
+        ...getDefaultStats(votingType),
+      }
+      return votingStats
+    }, {} as CandidatesStats)
+    const votingStats = {
+      ...baseStats,
+      ...(generateVotesStats(votingType, votes) as CandidatesStats),
+    }
+    const isVotingFinal = hasVotingEnded(voting)
+
+    const { requiredParticipationPercentage = 0, totalVoters } = voting
+    const requiredVotes = requiredParticipationPercentage * totalVoters
+    const finalVerdict =
+      isVotingFinal &&
+      processCandidatesStats(
+        votingStats as CandidatesStats,
+        requiredVotes,
+        (voting as Election).maxElectedCandidates
+      )
+
+    return {
+      voting,
+      votingStats,
+      votingSummaryState: generateVotingSummaryState(isVotingFinal),
+      ...(finalVerdict && { finalVerdict }),
+    } as RetrieveVotingSummaryResponse
+  }
+  throw new Error('Voting has no candidates')
+}
+
+async function processOptionsVoting(
+  voting: VotingData,
+  votes: VoteData[] | VotesStats | null
+): Promise<RetrieveVotingSummaryResponse> {
+  if ('options' in voting) {
+    return {
+      voting,
+      votingStats: generateVotesStats(voting.votingType, votes) as OptionsStats,
+      votingSummaryState: generateVotingSummaryState(hasVotingEnded(voting)),
+    } as RetrieveVotingSummaryResponse
+  }
+  throw new Error('Voting has no options')
+}
+
 export async function retrieveVotingSummary(
   request: RetrieveVotingSummaryRequest
 ): Promise<RetrieveVotingSummaryResponse> {
@@ -131,28 +197,7 @@ export async function retrieveVotingSummary(
 
     const { votingType } = voting
 
-    const baseStats: CandidatesStats = voting.candidates.reduce((votingStats, { candidateId }) => {
-      votingStats[candidateId] = {
-        ...getDefaultStats(votingType),
-      }
-      return votingStats
-    }, {} as CandidatesStats)
-    const votingStats = { ...baseStats, ...generateVotesStats(votingType, votes) }
-    const isVotingFinal = hasVotingEnded(voting)
-    const votingSummaryState: VotingSummaryState = isVotingFinal ? 'final' : 'partial'
-
-    const { requiredParticipationPercentage = 0, totalVoters } = voting
-    const requiredVotes = requiredParticipationPercentage * totalVoters
-    const finalVerdict =
-      isVotingFinal &&
-      processCandidatesStats(votingStats, requiredVotes, (voting as Election).maxElectedCandidates)
-
-    const response = {
-      voting,
-      votingStats,
-      votingSummaryState,
-      ...(finalVerdict && { finalVerdict }),
-    }
-    return response
+    if (isCandidateBasedVotingType(votingType)) return processCandidatesVoting(voting, votes)
+    return processOptionsVoting(voting, votes)
   })
 }

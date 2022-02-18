@@ -30,7 +30,9 @@ export type VerdictFinalJudgment = 'innocent' | 'guilty' | VerdictFinalBase
 export type VerdictFinal = VerdictFinalElection | VerdictFinalJudgment
 export type VerdictPartial = VerdictFinal | 'pending'
 
-export type VotingType = 'election' | 'judgment'
+export type CandidateBasedVotingType = 'election' | 'judgment'
+export type OptionBasedVotingType = 'open' | 'selection'
+export type VotingType = CandidateBasedVotingType | OptionBasedVotingType
 
 export interface VoteChoice {
   candidateId: VoterId
@@ -47,12 +49,17 @@ export type CandidateStatsJudgment = {
 
 export type CandidateStats = CandidateStatsElection | CandidateStatsJudgment
 
-export type VotesStats = {
+export type CandidateBasedVotesStats = {
   [candidateId: VoterId]: Partial<CandidateStats>
 }
+export type VotesStats = CandidateBasedVotesStats | OptionsStats
 
 export type CandidatesStats = {
   [candidateId: VoterId]: CandidateStats
+}
+
+export type OptionsStats = {
+  [option: string]: number
 }
 
 export type PartialVerdict = {
@@ -104,7 +111,7 @@ interface VotingBase {
   requiredParticipationPercentage?: number
 }
 
-interface CandidateBasedVoting extends VotingBase {
+export interface CandidateBasedVoting extends VotingBase {
   candidates: CandidateInfo[]
 }
 
@@ -116,7 +123,13 @@ export interface Judgment extends CandidateBasedVoting {
   evidences: Evidence[]
 }
 
-export type Voting = Election | Judgment
+export type OpenVoting = VotingBase
+
+export interface Selection extends VotingBase {
+  options: string[]
+}
+
+export type Voting = Election | Judgment | OpenVoting | Selection
 
 export interface Vote {
   voteId: VoteId
@@ -181,7 +194,20 @@ export interface JudgmentParams extends CandidateBasedVotingParams {
   evidences: Evidence[]
 }
 
-export type VotingParamsValidate = Omit<Voting, 'votingId' | 'totalVoters'>
+export type OpenVotingParams = VotingParams
+
+export interface SelectionParams extends VotingParams {
+  options: string[]
+}
+
+export type VotingParamsValidate = (
+  | ElectionParams
+  | JudgmentParams
+  | OpenVotingParams
+  | SelectionParams
+) & {
+  startsAt: Date
+}
 
 export type VoteParams = Omit<Vote, 'voteId'>
 
@@ -192,7 +218,7 @@ export type VoteParamsValidate = VoteParams
  */
 
 export type RegisterVotingRequest = {
-  votingParams: ElectionParams | JudgmentParams
+  votingParams: ElectionParams | JudgmentParams | OpenVotingParams | SelectionParams
 }
 
 export type RegisterVotersRequest = {
@@ -242,7 +268,7 @@ export interface RegisterVoteResponse {
 
 export interface RetrieveVotingSummaryResponse {
   voting: VotingData
-  votingStats: CandidatesStats
+  votingStats: CandidatesStats | OptionsStats
   votingSummaryState: VotingSummaryState
   finalVerdict?: FinalVerdictStatsElection | FinalVerdictStatsJudgment
 }

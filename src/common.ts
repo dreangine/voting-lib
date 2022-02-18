@@ -57,6 +57,14 @@ const CALLBACKS: Callbacks = {
   ...DEFAULT_CALLBACKS,
 }
 
+export function isCandidateBasedVotingType(votingType: VotingType): boolean {
+  return ['election', 'judgment'].includes(votingType)
+}
+
+export function isOptionBasedVotingType(votingType: VotingType): boolean {
+  return ['open', 'selection'].includes(votingType)
+}
+
 export function persistVoting(voting: VotingData): Promise<PersistResponse> {
   try {
     return CALLBACKS.persistVoting(voting)

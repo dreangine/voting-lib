@@ -1,4 +1,13 @@
-import { CandidateInfo, Voter, VoterId, VotingData, VotingId, VotingType } from '../src/types'
+import { isCandidateBasedVotingType } from '../src/common'
+import {
+  CandidateBasedVoting,
+  CandidateInfo,
+  Voter,
+  VoterId,
+  VotingData,
+  VotingId,
+  VotingType,
+} from '../src/types'
 
 // Setup
 export const nowDate = new Date()
@@ -22,8 +31,17 @@ export const allVotersIds: VoterId[] = [
   ...candidates.map(({ candidateId }) => candidateId),
 ]
 
-function generateVotingBase(): Pick<
-  VotingData,
+function generateVotingBase(): Pick<VotingData, 'votingDescription' | 'startedBy' | 'totalVoters'> {
+  return {
+    votingDescription: {
+      'en-US': 'Test voting',
+    },
+    startedBy: startedBy.voterId,
+    totalVoters: candidates.length + 1,
+  }
+}
+function generateCandidateBasedVotingBase(): Pick<
+  CandidateBasedVoting,
   'votingDescription' | 'startedBy' | 'candidates' | 'totalVoters'
 > {
   return {
@@ -38,7 +56,9 @@ function generateVotingBase(): Pick<
 
 export function generateVotingDataOngoing(votingId: VotingId, votingType: VotingType): VotingData {
   return {
-    ...generateVotingBase(),
+    ...(isCandidateBasedVotingType(votingType)
+      ? generateCandidateBasedVotingBase()
+      : generateVotingBase()),
     startsAt: yesterdayDate,
     endsAt: tomorrowDate,
     createdAt: yesterdayDate,
@@ -62,7 +82,9 @@ export function generateVotingDataEnded(
   maxElectedCandidates?: number
 ): VotingData {
   return {
-    ...generateVotingBase(),
+    ...(isCandidateBasedVotingType(votingType)
+      ? generateCandidateBasedVotingBase()
+      : generateVotingBase()),
     startsAt: beforeYesterdayDate,
     endsAt: yesterdayDate,
     createdAt: yesterdayDate,

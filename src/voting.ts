@@ -53,7 +53,7 @@ export async function registerVoting(
   const voting: VotingData = {
     ...votingParams,
     startsAt,
-    votingId: await generateVotingId(),
+    votingId: generateVotingId(),
     totalVoters,
     createdAt: now,
     updatedAt: now,

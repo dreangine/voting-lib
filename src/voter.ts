@@ -10,7 +10,7 @@ export async function registerVoters(
     users.map(
       async ({ userId, alias }) =>
         ({
-          voterId: await generateVoterId(),
+          voterId: generateVoterId(),
           userId,
           alias,
           status: 'active',

@@ -34,7 +34,7 @@ export async function registerVote(request: RegisterVoteRequest): Promise<Regist
 
   const vote: VoteData = {
     ...voteParams,
-    voteId: await generateVoteId(),
+    voteId: generateVoteId(),
     createdAt: now,
   }
   await persistVote(vote)

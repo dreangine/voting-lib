@@ -29,7 +29,7 @@ function getFirstCandidateId(): VoterId {
 beforeEach(async () => {
   // Reset callbacks
   setCallbacks(DEFAULT_CALLBACKS)
-  generatedVotingId = await generateVotingId()
+  generatedVotingId = generateVotingId()
 })
 
 describe('Vote', () => {
@@ -40,7 +40,7 @@ describe('Vote', () => {
         it('cannot vote on yourself', async () => {
           await expect(
             validateRegisterVote({
-              votingId: await generateVotingId(),
+              votingId: generateVotingId(),
               voterId: startedBy.voterId,
               choices: [
                 {

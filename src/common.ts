@@ -158,16 +158,16 @@ export async function checkCallbacks(): Promise<{ [functionName: string]: boolea
   })
 }
 
-export async function generateVotingId(): Promise<VotingId> {
-  return `voting-${await randomUUID()}`
+export function generateVotingId(): VotingId {
+  return `voting-${randomUUID()}`
 }
 
-export async function generateVoterId(): Promise<VoterId> {
-  return `voter-${await randomUUID()}`
+export function generateVoterId(): VoterId {
+  return `voter-${randomUUID()}`
 }
 
-export async function generateVoteId(): Promise<VoteId> {
-  return `vote-${await randomUUID()}`
+export function generateVoteId(): VoteId {
+  return `vote-${randomUUID()}`
 }
 
 export function getDefaultStats(votingType: VotingType): CandidateStats {

@@ -113,7 +113,7 @@ describe('Common errors', () => {
         await expect(registerVoting(request)).to.be.rejectedWith(new RegExp(errorType))
       })
       it('registerVote', async () => {
-        const votingId = await generateVotingId()
+        const votingId = generateVotingId()
         const [candidate] = candidates
         const { candidateId } = candidate
         const request: RegisterVoteRequest = {
@@ -140,7 +140,7 @@ describe('Common errors', () => {
         await expect(
           registerVoteByUserId({
             voteParams: {
-              votingId: await generateVotingId(),
+              votingId: generateVotingId(),
               userId: 'U1ASDF',
               choices: [
                 {
@@ -155,7 +155,7 @@ describe('Common errors', () => {
       it('retrieveVotingSummary', async () => {
         await expect(
           retrieveVotingSummary({
-            votingId: await generateVotingId(),
+            votingId: generateVotingId(),
           })
         ).to.be.rejectedWith(new RegExp(errorType))
       })

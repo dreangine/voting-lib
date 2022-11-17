@@ -48,7 +48,7 @@ function generateExpectedStats(...candidatesStats: CandidateStats[]): Candidates
 beforeEach(async () => {
   // Reset callbacks
   setCallbacks(DEFAULT_CALLBACKS)
-  generatedVotingId = await generateVotingId()
+  generatedVotingId = generateVotingId()
 })
 
 describe('Voting summary', () => {
@@ -67,9 +67,9 @@ describe('Voting summary', () => {
           votesDistribution.map(
             async ([candidateId, vote]) =>
               ({
-                voteId: await generateVoteId(),
+                voteId: generateVoteId(),
                 votingId: generatedVotingId,
-                voterId: await generateVoterId(),
+                voterId: generateVoterId(),
                 choices: [
                   {
                     candidateId,
@@ -128,9 +128,9 @@ describe('Voting summary', () => {
           votesDistribution.map(
             async ([candidateId, vote]) =>
               ({
-                voteId: await generateVoteId(),
+                voteId: generateVoteId(),
                 votingId: generatedVotingId,
-                voterId: await generateVoterId(),
+                voterId: generateVoterId(),
                 choices: [
                   {
                     candidateId,
@@ -348,9 +348,9 @@ describe('Voting summary', () => {
           votesDistribution.map(
             async ([candidateId, vote]) =>
               ({
-                voteId: await generateVoteId(),
+                voteId: generateVoteId(),
                 votingId: generatedVotingId,
-                voterId: await generateVoterId(),
+                voterId: generateVoterId(),
                 choices: [
                   {
                     candidateId,
@@ -418,9 +418,9 @@ describe('Voting summary', () => {
           votesDistribution.map(
             async ([candidateId, vote]) =>
               ({
-                voteId: await generateVoteId(),
+                voteId: generateVoteId(),
                 votingId: generatedVotingId,
-                voterId: await generateVoterId(),
+                voterId: generateVoterId(),
                 choices: [
                   {
                     candidateId,

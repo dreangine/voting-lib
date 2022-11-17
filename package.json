@@ -21,7 +21,7 @@
     "examples:judgment": "npm run build && node examples/judgment.mjs"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=14.17.0"
   },
   "repository": {
     "type": "git",
@@ -49,6 +49,7 @@
     "@types/chai-as-promised": "7.1.4",
     "@types/chai-spies": "1.0.3",
     "@types/mocha": "9.0.0",
+    "@types/node": "18.11.9",
     "@typescript-eslint/eslint-plugin": "5.7.0",
     "@typescript-eslint/parser": "5.7.0",
     "chai": "4.3.4",

@@ -1,4 +1,4 @@
-import { nanoid } from 'nanoid/async'
+import { randomUUID } from 'crypto'
 
 import {
   VoteId,
@@ -159,15 +159,15 @@ export async function checkCallbacks(): Promise<{ [functionName: string]: boolea
 }
 
 export async function generateVotingId(): Promise<VotingId> {
-  return `voting-${await nanoid()}`
+  return `voting-${await randomUUID()}`
 }
 
 export async function generateVoterId(): Promise<VoterId> {
-  return `voter-${await nanoid()}`
+  return `voter-${await randomUUID()}`
 }
 
 export async function generateVoteId(): Promise<VoteId> {
-  return `vote-${await nanoid()}`
+  return `vote-${await randomUUID()}`
 }
 
 export function getDefaultStats(votingType: VotingType): CandidateStats {

@@ -1,6 +1,6 @@
 # voting-lib
 
-A library to manage voting systems, having its own voting rules and options while giving its consumer the choice on how to store the data and manage user security.
+A library to manage voting systems, having its own voting rules and options while giving its consumer the choice on how to store the data and manage user security. No dependencies.
 
 ## Objectives
 

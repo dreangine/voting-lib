@@ -130,8 +130,8 @@ async function processCandidatesVoting(
   votes: VoteData[] | VotesStats | null
 ): Promise<RetrieveVotingSummaryResponse> {
   if ('candidates' in voting) {
-    const { votingType } = voting
-    const baseStats: CandidatesStats = voting.candidates.reduce((votingStats, { candidateId }) => {
+    const { votingType, candidates } = voting
+    const baseStats: CandidatesStats = candidates.reduce((votingStats, { candidateId }) => {
       votingStats[candidateId] = {
         ...getDefaultStats(votingType),
       }
@@ -144,7 +144,9 @@ async function processCandidatesVoting(
     const isVotingFinal = hasVotingEnded(voting)
 
     const { requiredParticipationPercentage = 0, totalVoters } = voting
-    const requiredVotes = requiredParticipationPercentage * totalVoters
+    const requiredVotes = Math.ceil(
+      (requiredParticipationPercentage * totalVoters) / candidates.length
+    )
     const finalVerdict =
       isVotingFinal &&
       processCandidatesStats(

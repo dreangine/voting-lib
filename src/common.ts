@@ -29,6 +29,10 @@ export const DEFAULT_CANDIDATE_STATS_JUDGMENT: CandidateStatsJudgment = Object.f
   guilty: 0,
   innocent: 0,
 })
+const DEFAULT_STATS = Object.freeze({
+  ['election']: DEFAULT_CANDIDATE_STATS_ELECTION,
+  ['judgment']: DEFAULT_CANDIDATE_STATS_JUDGMENT,
+})
 export const DEFAULT_MIN_VOTING_DURATION = 1000 * 60 * 5 // 5 minutes
 export const DEFAULT_MAX_VOTING_DURATION = 1000 * 60 * 60 * 24 * 7 // 1 week
 export const DEFAULT_MIN_CANDIDATES_ELECTION = 2
@@ -183,9 +187,7 @@ export function generateVoteId(): VoteId {
 }
 
 export function getDefaultStats(votingType: VotingType): CandidateStats {
-  return votingType === 'election'
-    ? DEFAULT_CANDIDATE_STATS_ELECTION
-    : DEFAULT_CANDIDATE_STATS_JUDGMENT
+  return DEFAULT_STATS[votingType]
 }
 
 export function hasVotingEnded(voting: VotingData): boolean {

@@ -11,10 +11,10 @@ import {
   RetrieveVotingSummaryResponse,
 } from '../src/types'
 
-import { DEFAULT_CALLBACKS, generateVotingId, setCallbacks } from '../src/common'
+import { DEFAULT_CALLBACKS, generateVotingId, setCallbacks, setHelpers } from '../src/common'
 import { retrieveVotingSummary } from '../src/voting-summary'
 
-import { getScenarios, votingTypes } from './common'
+import { generateVotingDataEnded, getScenarios, votingTypes } from './common'
 
 chai.use(spies)
 chai.use(chaiPromised)
@@ -33,7 +33,8 @@ describe('Voting summary', () => {
     describe(`Voting type: ${votingType}`, () => {
       getScenarios(votingType).forEach((scenario) => {
         it(scenario.description, async () => {
-          const { votingId } = scenario.voting
+          const { currentDate, voting } = scenario
+          const { votingId } = voting
 
           const retrieveVotingSpy = chai.spy(() =>
             Promise.resolve({
@@ -45,10 +46,14 @@ describe('Voting summary', () => {
               data: scenario.votes,
             } as RetrieveResponse<VoteData[]>)
           )
+          const getCurrentDateSpy = chai.spy(() => new Date(currentDate))
 
           setCallbacks({
             retrieveVoting: retrieveVotingSpy,
             retrieveVotes: retrieveVotesSpy,
+          })
+          setHelpers({
+            getCurrentDate: getCurrentDateSpy,
           })
 
           const result = await retrieveVotingSummary({
@@ -58,6 +63,7 @@ describe('Voting summary', () => {
           expect(retrieveVotingSpy).to.have.been.called.with(votingId)
           expect(retrieveVotesSpy).to.have.been.called.once
           expect(retrieveVotesSpy).to.have.been.called.with(votingId)
+          expect(getCurrentDateSpy).to.have.been.called.once
           expect(result).to.exist
           expect(result).to.deep.equal({
             voting: scenario.voting,
@@ -66,6 +72,34 @@ describe('Voting summary', () => {
         })
       })
     })
+  })
+
+  it('voting has no candidates (candidate based voting)', async () => {
+    const retrieveVotingSpy = chai.spy(() =>
+      Promise.resolve({
+        data: { ...generateVotingDataEnded(generatedVotingId, 'election'), candidates: [] },
+      })
+    )
+    const retrieveVotesSpy = chai.spy(() =>
+      Promise.resolve({
+        data: [],
+      } as RetrieveResponse<VoteData[]>)
+    )
+
+    setCallbacks({
+      retrieveVoting: retrieveVotingSpy,
+      retrieveVotes: retrieveVotesSpy,
+    })
+
+    await expect(
+      retrieveVotingSummary({
+        votingId: generatedVotingId,
+      })
+    ).to.be.rejectedWith('Voting has no candidates')
+    expect(retrieveVotingSpy).to.have.been.called.once
+    expect(retrieveVotingSpy).to.have.been.called.with(generatedVotingId)
+    expect(retrieveVotesSpy).to.have.been.called.once
+    expect(retrieveVotesSpy).to.have.been.called.with(generatedVotingId)
   })
 
   it('voting not found', async () => {

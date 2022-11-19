@@ -154,6 +154,10 @@ export type Callbacks = {
   hasVoted: (voterId: VoterId, votingId: VotingId) => Promise<boolean>
 }
 
+export type Helpers = {
+  getCurrentDate: () => Date
+}
+
 /**
  * DATA
  */

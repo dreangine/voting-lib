@@ -17,6 +17,7 @@ import {
   UserId,
   VoterData,
   VoterActive,
+  Helpers,
 } from './types'
 
 // Defaults
@@ -42,6 +43,9 @@ export const DEFAULT_CALLBACKS: Callbacks = Object.freeze({
   countActiveVoters: () => Promise.reject(new Error('Not implemented: countActiveVoters')),
   hasVoted: () => Promise.reject(new Error('Not implemented: hasVoted')),
 })
+export const DEFAULT_HELPERS: Helpers = Object.freeze({
+  getCurrentDate: () => new Date(),
+})
 
 // Setup
 export const MIN_VOTING_DURATION: number = +(
@@ -55,6 +59,10 @@ export const MIN_CANDIDATES_ELECTION: number = +(
 )
 const CALLBACKS: Callbacks = {
   ...DEFAULT_CALLBACKS,
+}
+
+const HELPERS: Helpers = {
+  ...DEFAULT_HELPERS,
 }
 
 export function isCandidateBasedVotingType(votingType: VotingType): boolean {
@@ -158,6 +166,10 @@ export async function checkCallbacks(): Promise<{ [functionName: string]: boolea
   })
 }
 
+export function setHelpers(newHelpers: Partial<Helpers>) {
+  Object.assign(HELPERS, newHelpers)
+}
+
 export function generateVotingId(): VotingId {
   return `voting-${randomUUID()}`
 }
@@ -177,5 +189,5 @@ export function getDefaultStats(votingType: VotingType): CandidateStats {
 }
 
 export function hasVotingEnded(voting: VotingData): boolean {
-  return voting.endsAt < new Date()
+  return voting.endsAt < HELPERS.getCurrentDate()
 }

@@ -130,36 +130,38 @@ async function processCandidatesVoting(
 ): Promise<RetrieveVotingSummaryResponse> {
   if ('candidates' in voting) {
     const { votingType, candidates } = voting
-    const baseStats: CandidatesStats = candidates.reduce((votingStats, { candidateId }) => {
-      votingStats[candidateId] = {
-        ...getDefaultStats(votingType),
+    if (candidates.length) {
+      const baseStats: CandidatesStats = candidates.reduce((votingStats, { candidateId }) => {
+        votingStats[candidateId] = {
+          ...getDefaultStats(votingType),
+        }
+        return votingStats
+      }, {} as CandidatesStats)
+      const votingStats = {
+        ...baseStats,
+        ...(generateVotesStats(votingType, votes) as CandidatesStats),
       }
-      return votingStats
-    }, {} as CandidatesStats)
-    const votingStats = {
-      ...baseStats,
-      ...(generateVotesStats(votingType, votes) as CandidatesStats),
-    }
-    const isVotingFinal = hasVotingEnded(voting)
+      const isVotingFinal = hasVotingEnded(voting)
 
-    const { requiredParticipationPercentage = 0, totalVoters } = voting
-    const requiredVotes = Math.ceil(
-      (requiredParticipationPercentage * totalVoters) / candidates.length
-    )
-    const finalVerdict =
-      isVotingFinal &&
-      processCandidatesStats(
-        votingStats as CandidatesStats,
-        requiredVotes,
-        (voting as Election).onlyOneElectedCandidate
+      const { requiredParticipationPercentage = 0, totalVoters } = voting
+      const requiredVotes = Math.ceil(
+        (requiredParticipationPercentage * totalVoters) / candidates.length
       )
+      const finalVerdict =
+        isVotingFinal &&
+        processCandidatesStats(
+          votingStats as CandidatesStats,
+          requiredVotes,
+          (voting as Election).onlyOneElectedCandidate
+        )
 
-    return {
-      voting,
-      votingStats,
-      votingSummaryState: generateVotingSummaryState(isVotingFinal),
-      ...(finalVerdict && { finalVerdict }),
-    } as RetrieveVotingSummaryResponse
+      return {
+        voting,
+        votingStats,
+        votingSummaryState: generateVotingSummaryState(isVotingFinal),
+        ...(finalVerdict && { finalVerdict }),
+      } as RetrieveVotingSummaryResponse
+    }
   }
   throw new Error('Voting has no candidates')
 }

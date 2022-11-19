@@ -1,0 +1,9 @@
+[
+  {
+    "voterId": "voter-111111",
+    "userId": "user-111111",
+    "alias": "Jack Bummer",
+    "status": "active"
+  },
+  { "voterId": "voter-222222", "userId": "user-222222", "alias": "Claire Corn", "status": "active" }
+]

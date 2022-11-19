@@ -7,16 +7,13 @@ import { UserInfo } from '../src/types'
 
 import { DEFAULT_CALLBACKS, setCallbacks } from '../src/common'
 import { registerVoters } from '../src/voter'
+import { getUsers } from './common'
 
 chai.use(spies)
 chai.use(chaiPromised)
 
 // Setup
-const users: UserInfo[] = [
-  { userId: 'user1' },
-  { userId: 'user2', alias: 'someone' },
-  { alias: 'someone else' },
-]
+const users: UserInfo[] = getUsers()
 
 beforeEach(async () => {
   // Reset callbacks

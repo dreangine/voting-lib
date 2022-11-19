@@ -116,7 +116,7 @@ export interface CandidateBasedVoting extends VotingBase {
 }
 
 export interface Election extends CandidateBasedVoting {
-  maxElectedCandidates: number
+  onlyOneElectedCandidate: boolean
 }
 
 export interface Judgment extends CandidateBasedVoting {
@@ -187,7 +187,7 @@ interface CandidateBasedVotingParams extends VotingParams {
 }
 
 export interface ElectionParams extends CandidateBasedVotingParams {
-  maxElectedCandidates: number
+  onlyOneElectedCandidate: boolean
 }
 
 export interface JudgmentParams extends CandidateBasedVotingParams {

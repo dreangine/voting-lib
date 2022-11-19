@@ -59,15 +59,14 @@ function generateVotesStats(
 function generatePartialVerdicts(
   votingStats: CandidatesStats,
   requiredVotes?: number,
-  maxElectedCandidates?: number
+  onlyOneElectedCandidate?: boolean
 ): PartialVerdict[] {
   return Object.entries(votingStats).map(([candidateId, stats]) => {
     if (Object.prototype.hasOwnProperty.call(stats, 'elect')) {
       const { elect, pass } = stats as CandidateStatsElection
       if (!requiredVotes || elect >= requiredVotes) {
         if (elect > pass) {
-          if (maxElectedCandidates === 1)
-            return { candidateId, verdict: 'pending', electVotes: elect }
+          if (onlyOneElectedCandidate) return { candidateId, verdict: 'pending', electVotes: elect }
           return { candidateId, verdict: 'elected' }
         } else if (pass > elect) {
           return { candidateId, verdict: 'not elected' }
@@ -116,9 +115,9 @@ function generateFinalVerdict(
 function processCandidatesStats(
   votingStats: CandidatesStats,
   requiredVotes?: number,
-  maxElectedCandidates?: number
+  onlyOneElectedCandidate?: boolean
 ): FinalVerdictStats {
-  const verdicts = generatePartialVerdicts(votingStats, requiredVotes, maxElectedCandidates)
+  const verdicts = generatePartialVerdicts(votingStats, requiredVotes, onlyOneElectedCandidate)
   const electedCandidate = findElectedCandidateId(verdicts)
   const finalVerdict = generateFinalVerdict(verdicts, electedCandidate)
 
@@ -152,7 +151,7 @@ async function processCandidatesVoting(
       processCandidatesStats(
         votingStats as CandidatesStats,
         requiredVotes,
-        (voting as Election).maxElectedCandidates
+        (voting as Election).onlyOneElectedCandidate
       )
 
     return {

@@ -200,7 +200,7 @@ async function processOptionsVoting(
   votes: VoteData[] | VotesStats | null
 ): Promise<RetrieveVotingSummaryResponse> {
   if ('options' in voting && votes instanceof Array)
-    removeInvalidOptionsVotes(votes, voting.options)
+    removeInvalidOptionsVotes(votes, voting.options || [])
   const isVotingFinal = hasVotingEnded(voting)
   const {
     requiredParticipationPercentage = 0,

@@ -1,0 +1,109 @@
+{
+  "description": "final verdict - open (one selected)",
+  "currentDate": "2019-02-01T00:00:00.000Z",
+  "voters": [
+    {
+      "voterId": "voter1",
+      "userId": "user1",
+      "alias": "John Doe",
+      "status": "active"
+    },
+    {
+      "voterId": "voter2",
+      "userId": "user2",
+      "alias": "Jane Doe",
+      "status": "active"
+    },
+    {
+      "voterId": "voter3",
+      "userId": "user3",
+      "alias": "John Smith",
+      "status": "active"
+    },
+    {
+      "voterId": "voter4",
+      "userId": "user4",
+      "alias": "Jane Smith",
+      "status": "active"
+    },
+    {
+      "voterId": "voter5",
+      "userId": "user5",
+      "alias": "John Black",
+      "status": "active"
+    },
+    {
+      "voterId": "voter6",
+      "userId": "user6",
+      "alias": "Jane Black",
+      "status": "active"
+    }
+  ],
+  "voting": {
+    "votingId": "open1",
+    "votingDescription": "What shall the name of the city be?",
+    "votingType": "open",
+    "startedBy": "voter1",
+    "startsAt": "2019-01-01T00:00:00.000Z",
+    "endsAt": "2019-01-08T00:00:00.000Z",
+    "totalVoters": 6,
+    "requiredParticipationPercentage": 0.5,
+    "requiredVotesPercentage": 0.5
+  },
+  "votes": [
+    {
+      "voteId": "vote1",
+      "votingId": "open1",
+      "voterId": "voter1",
+      "choices": [
+        {
+          "value": "New York"
+        },
+        {
+          "value": "London"
+        }
+      ],
+      "createdAt": "2019-01-02T01:00:00.000Z"
+    },
+    {
+      "voteId": "vote2",
+      "votingId": "open1",
+      "voterId": "voter2",
+      "choices": [
+        {
+          "value": "Porto"
+        }
+      ],
+      "createdAt": "2019-01-02T02:00:00.000Z"
+    },
+    {
+      "voteId": "vote3",
+      "votingId": "open1",
+      "voterId": "voter3",
+      "choices": [
+        {
+          "value": "Helsinki"
+        },
+        {
+          "value": "New York"
+        }
+      ],
+      "createdAt": "2019-01-02T03:00:00.000Z"
+    }
+  ],
+  "expected": {
+    "votingStats": {
+      "New York": 2,
+      "London": 1,
+      "Porto": 1,
+      "Helsinki": 1
+    },
+    "votingSummaryState": "final",
+    "finalVerdict": {
+      "New York": "selected",
+      "London": "rejected",
+      "Porto": "rejected",
+      "Helsinki": "rejected"
+    }
+  }
+}

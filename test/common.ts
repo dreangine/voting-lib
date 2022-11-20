@@ -17,7 +17,7 @@ export const nowDate = new Date()
 export const yesterdayDate = new Date(nowDate.getTime() - 1000 * 60 * 60 * 24)
 export const beforeYesterdayDate = new Date(yesterdayDate.getTime() - 1000 * 60 * 60 * 24)
 export const tomorrowDate = new Date(nowDate.getTime() + 24 * 60 * 60 * 1000)
-export const votingTypes: VotingType[] = ['election', 'judgment', 'open', 'selection']
+export const votingTypes: VotingType[] = ['election', 'judgment', 'option']
 export const startedBy: Voter = {
   voterId: 'voter-123456',
   userId: 'user-123456',

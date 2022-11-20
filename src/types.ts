@@ -32,7 +32,7 @@ export type VerdictFinal = VerdictFinalElection | VerdictFinalJudgment | Verdict
 export type VerdictPartial = VerdictFinal | 'pending elected' | 'pending selected'
 
 export type CandidateBasedVotingType = 'election' | 'judgment'
-export type OptionBasedVotingType = 'open' | 'selection'
+export type OptionBasedVotingType = 'option'
 export type VotingType = CandidateBasedVotingType | OptionBasedVotingType
 
 export interface VoteChoiceCandidateBased {
@@ -139,13 +139,11 @@ export interface Judgment extends CandidateBasedVoting {
   evidences: Evidence[]
 }
 
-export type OpenVoting = VotingBase
-
-export interface Selection extends VotingBase {
-  options: string[]
+export interface OptionBasedVoting extends VotingBase {
+  options?: string[]
 }
 
-export type Voting = Election | Judgment | OpenVoting | Selection
+export type Voting = Election | Judgment | OptionBasedVoting
 
 export interface Vote {
   voteId: VoteId

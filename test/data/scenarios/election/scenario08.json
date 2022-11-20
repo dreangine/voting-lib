@@ -76,8 +76,8 @@
     },
     "votingSummaryState": "final",
     "finalVerdict": {
-      "voter5": "not elected",
-      "voter6": "not elected"
+      "voter5": "undecided",
+      "voter6": "undecided"
     }
   }
 }

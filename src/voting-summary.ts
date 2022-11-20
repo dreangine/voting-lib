@@ -71,36 +71,59 @@ function generateVotesStats(
     : generateVotesStatsFromStats(votingType, votesData)
 }
 
-function generatePartialVerdicts(
-  votingStats: VotingStats,
-  requiredVotes = 0,
-  onlyOneSelected = false
-): PartialVerdict[] {
-  return Object.entries(votingStats).map(([statsKey, stats]) => {
+function calculateParticipation(votingStats: VotingStats): number {
+  const calculatedParticipation = Object.values(votingStats).reduce((total, stats) => {
     if (Number.isInteger(stats)) {
-      if (!requiredVotes || stats >= requiredVotes)
-        return { statsKey, verdict: 'pending selected', electVotes: stats }
-      return { statsKey, verdict: 'rejected' }
+      return total + stats
     }
     if ('elect' in stats) {
       const { elect, pass } = stats as CandidateStatsElection
-      if (!requiredVotes || elect >= requiredVotes) {
-        if (elect > pass) {
-          if (onlyOneSelected) return { statsKey, verdict: 'pending elected', electVotes: elect }
-          return { statsKey, verdict: 'elected' }
-        } else if (pass > elect) {
-          return { statsKey, verdict: 'not elected' }
-        }
-      }
-      return { statsKey, verdict: 'not elected' }
+      return total + elect + pass
     }
     if ('guilty' in stats) {
       const { guilty, innocent } = stats as CandidateStatsJudgment
-      if (!requiredVotes || guilty + innocent >= requiredVotes) {
-        if (guilty > innocent) {
-          return { statsKey, verdict: 'guilty' }
-        } else if (innocent > guilty) {
-          return { statsKey, verdict: 'innocent' }
+      return total + guilty + innocent
+    }
+    return total
+  }, 0)
+  return calculatedParticipation
+}
+
+function generatePartialVerdicts(
+  votingStats: VotingStats,
+  requiredParticipation = 0,
+  requiredVotes = 0,
+  onlyOneSelected = false
+): PartialVerdict[] {
+  const hasEnoughVotes =
+    !requiredParticipation || calculateParticipation(votingStats) >= requiredParticipation
+  return Object.entries(votingStats).map(([statsKey, stats]) => {
+    if (hasEnoughVotes) {
+      if (Number.isInteger(stats)) {
+        if (!requiredVotes || stats >= requiredVotes)
+          return { statsKey, verdict: 'pending selected', electVotes: stats }
+        return { statsKey, verdict: 'rejected' }
+      }
+      if ('elect' in stats) {
+        const { elect, pass } = stats as CandidateStatsElection
+        if (!requiredVotes || elect >= requiredVotes) {
+          if (elect > pass) {
+            if (onlyOneSelected) return { statsKey, verdict: 'pending elected', electVotes: elect }
+            return { statsKey, verdict: 'elected' }
+          } else if (pass > elect) {
+            return { statsKey, verdict: 'not elected' }
+          }
+        }
+        return { statsKey, verdict: 'not elected' }
+      }
+      if ('guilty' in stats) {
+        const { guilty, innocent } = stats as CandidateStatsJudgment
+        if (!requiredVotes || guilty + innocent >= requiredVotes) {
+          if (guilty > innocent) {
+            return { statsKey, verdict: 'guilty' }
+          } else if (innocent > guilty) {
+            return { statsKey, verdict: 'innocent' }
+          }
         }
       }
     }
@@ -135,10 +158,16 @@ function generateFinalVerdict(
 
 function processVotingStats(
   votingStats: VotingStats,
+  requiredParticipation = 0,
   requiredVotes = 0,
   onlyOneSelected = false
 ): FinalVerdictStats {
-  const verdicts = generatePartialVerdicts(votingStats, requiredVotes, onlyOneSelected)
+  const verdicts = generatePartialVerdicts(
+    votingStats,
+    requiredParticipation,
+    requiredVotes,
+    onlyOneSelected
+  )
   const electedId = findElectedId(verdicts)
   const finalVerdict = generateFinalVerdict(verdicts, electedId)
 
@@ -164,14 +193,18 @@ async function processCandidatesVoting(
       }
       const isVotingFinal = hasVotingEnded(voting)
 
-      const { requiredParticipationPercentage = 0, totalVoters } = voting
-      const requiredVotes = Math.ceil(
-        (requiredParticipationPercentage * totalVoters) / candidates.length
-      )
+      const {
+        requiredParticipationPercentage = 0,
+        requiredVotesPercentage = 0,
+        totalVoters,
+      } = voting
+      const requiredParticipation = Math.ceil(requiredParticipationPercentage * totalVoters)
+      const requiredVotes = Math.ceil(requiredVotesPercentage * requiredParticipation)
       const finalVerdict =
         isVotingFinal &&
         processVotingStats(
           votingStats as VotingStats,
+          requiredParticipation,
           requiredVotes,
           (voting as Election).onlyOneSelected
         )
@@ -208,14 +241,15 @@ async function processOptionsVoting(
     onlyOneSelected = false,
     totalVoters,
   } = voting
-  const requiredVotes = Math.ceil(requiredParticipationPercentage * totalVoters)
-  const requiredIndividualVotes = Math.ceil(requiredVotesPercentage * requiredVotes)
+  const requiredParticipation = Math.ceil(requiredParticipationPercentage * totalVoters)
+  const requiredVotes = Math.ceil(requiredVotesPercentage * requiredParticipation)
   const votingStats = generateVotesStats(voting.votingType, votes) as OptionsStats
   const finalVerdict =
-    isVotingFinal && processVotingStats(votingStats, requiredIndividualVotes, onlyOneSelected)
+    isVotingFinal &&
+    processVotingStats(votingStats, requiredParticipation, requiredVotes, onlyOneSelected)
   return {
     voting,
-    votingStats: generateVotesStats(voting.votingType, votes) as OptionsStats,
+    votingStats,
     votingSummaryState: generateVotingSummaryState(isVotingFinal),
     ...(finalVerdict && { finalVerdict }),
   } as RetrieveVotingSummaryResponse

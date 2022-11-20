@@ -48,7 +48,7 @@
     "endsAt": "2019-01-08T00:00:00.000Z",
     "totalVoters": 6,
     "requiredParticipationPercentage": 0.5,
-    "onlyOneElectedCandidate": true,
+    "onlyOneSelected": true,
     "candidates": [
       {
         "candidateId": "voter5",

@@ -27,17 +27,24 @@ export type Verdict = VerdictElection | VerdictJudgment
 type VerdictFinalBase = 'undecided'
 export type VerdictFinalElection = 'elected' | 'not elected' | VerdictFinalBase
 export type VerdictFinalJudgment = 'innocent' | 'guilty' | VerdictFinalBase
-export type VerdictFinal = VerdictFinalElection | VerdictFinalJudgment
-export type VerdictPartial = VerdictFinal | 'pending'
+export type VerdictFinalOption = 'selected' | 'rejected' | VerdictFinalBase
+export type VerdictFinal = VerdictFinalElection | VerdictFinalJudgment | VerdictFinalOption
+export type VerdictPartial = VerdictFinal | 'pending elected' | 'pending selected'
 
 export type CandidateBasedVotingType = 'election' | 'judgment'
 export type OptionBasedVotingType = 'open' | 'selection'
 export type VotingType = CandidateBasedVotingType | OptionBasedVotingType
 
-export interface VoteChoice {
+export interface VoteChoiceCandidateBased {
   candidateId: VoterId
   verdict: Verdict
 }
+
+export interface VoteChoiceOptionBased {
+  value: string
+}
+
+export type VoteChoice = VoteChoiceCandidateBased | VoteChoiceOptionBased
 
 export type CandidateStatsElection = {
   [verdict in VerdictElection]: number
@@ -62,8 +69,10 @@ export type OptionsStats = {
   [option: string]: number
 }
 
+export type VotingStats = CandidatesStats | OptionsStats
+
 export type PartialVerdict = {
-  candidateId: VoterId
+  statsKey: VoterId | string
   verdict: VerdictPartial
   electVotes?: number
 }
@@ -76,7 +85,14 @@ export type FinalVerdictStatsJudgment = {
   [candidateId: VoterId]: VerdictFinalJudgment
 }
 
-export type FinalVerdictStats = FinalVerdictStatsElection | FinalVerdictStatsJudgment
+export type FinalVerdictStatsOption = {
+  [option: string]: VerdictFinalOption
+}
+
+export type FinalVerdictStats =
+  | FinalVerdictStatsElection
+  | FinalVerdictStatsJudgment
+  | FinalVerdictStatsOption
 
 export type VotingSummaryState = 'partial' | 'final'
 
@@ -109,15 +125,15 @@ interface VotingBase {
   endsAt: Date
   totalVoters: number
   requiredParticipationPercentage?: number
+  requiredVotesPercentage?: number
+  onlyOneSelected?: boolean
 }
 
 export interface CandidateBasedVoting extends VotingBase {
   candidates: CandidateInfo[]
 }
 
-export interface Election extends CandidateBasedVoting {
-  onlyOneElectedCandidate: boolean
-}
+export type Election = CandidateBasedVoting
 
 export interface Judgment extends CandidateBasedVoting {
   evidences: Evidence[]
@@ -191,7 +207,7 @@ interface CandidateBasedVotingParams extends VotingParams {
 }
 
 export interface ElectionParams extends CandidateBasedVotingParams {
-  onlyOneElectedCandidate: boolean
+  onlyOneSelected: boolean
 }
 
 export interface JudgmentParams extends CandidateBasedVotingParams {
@@ -272,7 +288,7 @@ export interface RegisterVoteResponse {
 
 export interface RetrieveVotingSummaryResponse {
   voting: VotingData
-  votingStats: CandidatesStats | OptionsStats
+  votingStats: VotingStats
   votingSummaryState: VotingSummaryState
-  finalVerdict?: FinalVerdictStatsElection | FinalVerdictStatsJudgment
+  finalVerdict?: FinalVerdictStats
 }

@@ -17,7 +17,7 @@ export const nowDate = new Date()
 export const yesterdayDate = new Date(nowDate.getTime() - 1000 * 60 * 60 * 24)
 export const beforeYesterdayDate = new Date(yesterdayDate.getTime() - 1000 * 60 * 60 * 24)
 export const tomorrowDate = new Date(nowDate.getTime() + 24 * 60 * 60 * 1000)
-export const votingTypes: VotingType[] = ['election', 'judgment']
+export const votingTypes: VotingType[] = ['election', 'judgment', 'open', 'selection']
 export const startedBy: Voter = {
   voterId: 'voter-123456',
   userId: 'user-123456',
@@ -57,11 +57,14 @@ export function getUsers(): UserInfo[] {
 }
 
 export function getScenarios(votingType: VotingType): Scenario[] {
-  return fs
-    .readdirSync(`test/data/scenarios/${votingType}`)
-    .map((file) =>
-      JSON.parse(fs.readFileSync(`test/data/scenarios/${votingType}/${file}`, 'utf8'), dateReviver)
+  return fs.readdirSync(`test/data/scenarios/${votingType}`).map((file) => {
+    const scenarioData: Scenario = JSON.parse(
+      fs.readFileSync(`test/data/scenarios/${votingType}/${file}`, 'utf8'),
+      dateReviver
     )
+    scenarioData.description = `${scenarioData.description} >> ${file}`
+    return scenarioData
+  })
 }
 
 function generateVotingBase(): Pick<VotingData, 'votingDescription' | 'startedBy' | 'totalVoters'> {
@@ -98,7 +101,7 @@ export function generateVotingDataOngoing(votingId: VotingId, votingType: Voting
     updatedAt: yesterdayDate,
     votingId,
     votingType,
-    ...(votingType === 'election' ? { onlyOneElectedCandidate: 1 } : { evidences: [] }),
+    ...(votingType === 'election' ? { onlyOneSelected: true } : { evidences: [] }),
   }
 }
 
@@ -112,7 +115,7 @@ export function retrieveVotingFnOngoing(votingId: VotingId, votingType: VotingTy
 export function generateVotingDataEnded(
   votingId: VotingId,
   votingType: VotingType,
-  onlyOneElectedCandidate?: boolean
+  onlyOneSelected = false
 ): VotingData {
   return {
     ...(isCandidateBasedVotingType(votingType)
@@ -124,19 +127,17 @@ export function generateVotingDataEnded(
     updatedAt: yesterdayDate,
     votingId,
     votingType,
-    ...(votingType === 'election'
-      ? { onlyOneElectedCandidate: onlyOneElectedCandidate ?? true }
-      : { evidences: [] }),
+    ...(votingType === 'election' ? { onlyOneSelected } : { evidences: [] }),
   }
 }
 
 export function retrieveVotingFnEnded(
   votingId: VotingId,
   votingType: VotingType,
-  onlyOneElectedCandidate?: boolean
+  onlyOneSelected?: boolean
 ) {
   return () =>
     Promise.resolve({
-      data: generateVotingDataEnded(votingId, votingType, onlyOneElectedCandidate),
+      data: generateVotingDataEnded(votingId, votingType, onlyOneSelected),
     })
 }

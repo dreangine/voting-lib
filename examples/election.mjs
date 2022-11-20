@@ -28,7 +28,7 @@ const votingResponse = await registerVoting({
       tomorrow.setDate(tomorrow.getDate() + 1)
       return tomorrow
     })(),
-    onlyOneElectedCandidate: true,
+    onlyOneSelected: true,
   },
 })
 const { voting: votingData } = votingResponse

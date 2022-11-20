@@ -66,4 +66,4 @@ const votingSummaryResponse = await retrieveVotingSummary({
 
 console.log('Voting summary:', votingSummaryResponse)
 
-console.log('Chcecking callbacks', await checkCallbacks())
+console.log('Checking callbacks', await checkCallbacks())

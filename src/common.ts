@@ -17,6 +17,7 @@ import {
   UserId,
   VoterData,
   VoterActive,
+  Helpers,
 } from './types'
 
 // Defaults
@@ -27,6 +28,10 @@ export const DEFAULT_CANDIDATE_STATS_ELECTION: CandidateStatsElection = Object.f
 export const DEFAULT_CANDIDATE_STATS_JUDGMENT: CandidateStatsJudgment = Object.freeze({
   guilty: 0,
   innocent: 0,
+})
+const DEFAULT_STATS = Object.freeze({
+  ['election']: DEFAULT_CANDIDATE_STATS_ELECTION,
+  ['judgment']: DEFAULT_CANDIDATE_STATS_JUDGMENT,
 })
 export const DEFAULT_MIN_VOTING_DURATION = 1000 * 60 * 5 // 5 minutes
 export const DEFAULT_MAX_VOTING_DURATION = 1000 * 60 * 60 * 24 * 7 // 1 week
@@ -42,6 +47,9 @@ export const DEFAULT_CALLBACKS: Callbacks = Object.freeze({
   countActiveVoters: () => Promise.reject(new Error('Not implemented: countActiveVoters')),
   hasVoted: () => Promise.reject(new Error('Not implemented: hasVoted')),
 })
+export const DEFAULT_HELPERS: Helpers = Object.freeze({
+  getCurrentDate: () => new Date(),
+})
 
 // Setup
 export const MIN_VOTING_DURATION: number = +(
@@ -55,6 +63,10 @@ export const MIN_CANDIDATES_ELECTION: number = +(
 )
 const CALLBACKS: Callbacks = {
   ...DEFAULT_CALLBACKS,
+}
+
+const HELPERS: Helpers = {
+  ...DEFAULT_HELPERS,
 }
 
 export function isCandidateBasedVotingType(votingType: VotingType): boolean {
@@ -158,6 +170,10 @@ export async function checkCallbacks(): Promise<{ [functionName: string]: boolea
   })
 }
 
+export function setHelpers(newHelpers: Partial<Helpers>) {
+  Object.assign(HELPERS, newHelpers)
+}
+
 export function generateVotingId(): VotingId {
   return `voting-${randomUUID()}`
 }
@@ -171,11 +187,9 @@ export function generateVoteId(): VoteId {
 }
 
 export function getDefaultStats(votingType: VotingType): CandidateStats {
-  return votingType === 'election'
-    ? DEFAULT_CANDIDATE_STATS_ELECTION
-    : DEFAULT_CANDIDATE_STATS_JUDGMENT
+  return DEFAULT_STATS[votingType]
 }
 
 export function hasVotingEnded(voting: VotingData): boolean {
-  return voting.endsAt < new Date()
+  return voting.endsAt < HELPERS.getCurrentDate()
 }

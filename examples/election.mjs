@@ -28,7 +28,7 @@ const votingResponse = await registerVoting({
       tomorrow.setDate(tomorrow.getDate() + 1)
       return tomorrow
     })(),
-    maxElectedCandidates: 1,
+    onlyOneSelected: true,
   },
 })
 const { voting: votingData } = votingResponse
@@ -57,4 +57,4 @@ const votingSummaryResponse = await retrieveVotingSummary({
 
 console.log('Voting summary:', votingSummaryResponse)
 
-console.log('Chcecking callbacks', await checkCallbacks())
+console.log('Checking callbacks', await checkCallbacks())

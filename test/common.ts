@@ -1,35 +1,71 @@
+import * as fs from 'fs'
 import { isCandidateBasedVotingType } from '../src/common'
 import {
   CandidateBasedVoting,
   CandidateInfo,
+  UserInfo,
   Voter,
   VoterId,
   VotingData,
   VotingId,
   VotingType,
 } from '../src/types'
+import { Scenario } from './types'
 
 // Setup
 export const nowDate = new Date()
 export const yesterdayDate = new Date(nowDate.getTime() - 1000 * 60 * 60 * 24)
 export const beforeYesterdayDate = new Date(yesterdayDate.getTime() - 1000 * 60 * 60 * 24)
 export const tomorrowDate = new Date(nowDate.getTime() + 24 * 60 * 60 * 1000)
-export const votingTypes: VotingType[] = ['election', 'judgment']
+export const votingTypes: VotingType[] = ['election', 'judgment', 'option']
 export const startedBy: Voter = {
   voterId: 'voter-123456',
   userId: 'user-123456',
   alias: 'John Doe',
   status: 'active',
 }
-export const candidates: CandidateInfo[] = [
-  { voterId: 'voter-111111', userId: 'user-111111', alias: 'Jack Bummer', status: 'active' },
-  { voterId: 'voter-222222', userId: 'user-222222', alias: 'Claire Corn', status: 'active' },
-].map(({ voterId, alias }) => ({ candidateId: voterId, alias }))
+export const candidates: CandidateInfo[] = getVoters().map(({ voterId, alias }) => ({
+  candidateId: voterId,
+  alias,
+}))
 export const totalVoters: number = candidates.length + 1
 export const allVotersIds: VoterId[] = [
   startedBy.voterId,
   ...candidates.map(({ candidateId }) => candidateId),
 ]
+
+function dateReviver(key: string, value: unknown): unknown {
+  if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/)) {
+    return new Date(value)
+  }
+  return value
+}
+
+export function getVoters(): Voter[] {
+  return JSON.parse(fs.readFileSync('test/data/voters.json', 'utf8'))
+}
+
+export function getCandidates(): CandidateInfo[] {
+  return getVoters().map(({ voterId, alias }) => ({
+    candidateId: voterId,
+    alias,
+  }))
+}
+
+export function getUsers(): UserInfo[] {
+  return JSON.parse(fs.readFileSync('test/data/users.json', 'utf8'))
+}
+
+export function getScenarios(votingType: VotingType): Scenario[] {
+  return fs.readdirSync(`test/data/scenarios/${votingType}`).map((file) => {
+    const scenarioData: Scenario = JSON.parse(
+      fs.readFileSync(`test/data/scenarios/${votingType}/${file}`, 'utf8'),
+      dateReviver
+    )
+    scenarioData.description = `${scenarioData.description} >> ${file}`
+    return scenarioData
+  })
+}
 
 function generateVotingBase(): Pick<VotingData, 'votingDescription' | 'startedBy' | 'totalVoters'> {
   return {
@@ -65,7 +101,7 @@ export function generateVotingDataOngoing(votingId: VotingId, votingType: Voting
     updatedAt: yesterdayDate,
     votingId,
     votingType,
-    ...(votingType === 'election' ? { maxElectedCandidates: 1 } : { evidences: [] }),
+    ...(votingType === 'election' ? { onlyOneSelected: true } : { evidences: [] }),
   }
 }
 
@@ -79,7 +115,7 @@ export function retrieveVotingFnOngoing(votingId: VotingId, votingType: VotingTy
 export function generateVotingDataEnded(
   votingId: VotingId,
   votingType: VotingType,
-  maxElectedCandidates?: number
+  onlyOneSelected = false
 ): VotingData {
   return {
     ...(isCandidateBasedVotingType(votingType)
@@ -91,19 +127,17 @@ export function generateVotingDataEnded(
     updatedAt: yesterdayDate,
     votingId,
     votingType,
-    ...(votingType === 'election'
-      ? { maxElectedCandidates: maxElectedCandidates ?? 1 }
-      : { evidences: [] }),
+    ...(votingType === 'election' ? { onlyOneSelected } : { evidences: [] }),
   }
 }
 
 export function retrieveVotingFnEnded(
   votingId: VotingId,
   votingType: VotingType,
-  maxElectedCandidates?: number
+  onlyOneSelected?: boolean
 ) {
   return () =>
     Promise.resolve({
-      data: generateVotingDataEnded(votingId, votingType, maxElectedCandidates),
+      data: generateVotingDataEnded(votingId, votingType, onlyOneSelected),
     })
 }

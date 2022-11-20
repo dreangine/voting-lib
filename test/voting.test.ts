@@ -82,7 +82,7 @@ describe('Voting', () => {
               startedBy: startedBy.voterId,
               candidates,
               endsAt: tomorrowDate,
-              ...(votingType === 'election' ? { maxElectedCandidates: 1 } : { evidences: [] }),
+              ...(votingType === 'election' ? { onlyOneSelected: 1 } : { evidences: [] }),
             },
           })
           const { voting: responseVoting } = response
@@ -124,7 +124,7 @@ describe('Voting', () => {
                 startedBy: startedBy.voterId,
                 candidates,
                 endsAt: tomorrowDate,
-                ...(votingType === 'election' ? { maxElectedCandidates: 1 } : { evidences: [] }),
+                ...(votingType === 'election' ? { onlyOneSelected: 1 } : { evidences: [] }),
               },
             })
           ).to.be.rejectedWith(

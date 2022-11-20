@@ -17,7 +17,7 @@ import {
 export async function validateRegisterVote(voteParams: VoteParamsValidate): Promise<void> {
   const { votingId, voterId, choices } = voteParams
 
-  const candidates = choices.map((choice) => choice.candidateId)
+  const candidates = choices.map((choice) => ('candidateId' in choice ? choice.candidateId : null))
   if (candidates.includes(voterId)) throw new Error('Voter cannot vote on themselves')
   const { data: voting } = await retrieveVoting(votingId)
   if (!voting) throw new Error('Voting does not exist')

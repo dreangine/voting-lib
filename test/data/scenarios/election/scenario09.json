@@ -1,5 +1,5 @@
 {
-  "description": "final verdict - open (one selected)",
+  "description": "final verdict - election single (pass votes - none elected)",
   "currentDate": "2019-02-01T00:00:00.000Z",
   "voters": [
     {
@@ -40,35 +40,53 @@
     }
   ],
   "voting": {
-    "votingId": "open1",
-    "votingDescription": "What shall the name of the city be?",
-    "votingType": "option",
+    "votingId": "election1",
+    "votingDescription": "Who should be the next president?",
+    "votingType": "election",
     "startedBy": "voter1",
     "startsAt": "2019-01-01T00:00:00.000Z",
     "endsAt": "2019-01-08T00:00:00.000Z",
     "totalVoters": 6,
     "requiredParticipationPercentage": 0.5,
-    "requiredVotesPercentage": 0.5
+    "onlyOneSelected": true,
+    "candidates": [
+      {
+        "candidateId": "voter5",
+        "alias": "Candidate 1",
+        "speech": "I'm good"
+      },
+      {
+        "candidateId": "voter6",
+        "alias": "Candidate 2",
+        "speech": "I'm better"
+      }
+    ]
   },
   "votes": {
-    "New York": 2,
-    "London": 1,
-    "Porto": 1,
-    "Helsinki": 1
+    "voter5": {
+      "elect": 0,
+      "pass": 0
+    },
+    "voter6": {
+      "elect": 0,
+      "pass": 3
+    }
   },
   "expected": {
     "votingStats": {
-      "New York": 2,
-      "London": 1,
-      "Porto": 1,
-      "Helsinki": 1
+      "voter5": {
+        "elect": 0,
+        "pass": 0
+      },
+      "voter6": {
+        "elect": 0,
+        "pass": 3
+      }
     },
     "votingSummaryState": "final",
     "finalVerdict": {
-      "New York": "selected",
-      "London": "rejected",
-      "Porto": "rejected",
-      "Helsinki": "rejected"
+      "voter5": "not elected",
+      "voter6": "not elected"
     }
   }
 }

@@ -74,6 +74,18 @@
         }
       ],
       "createdAt": "2019-01-02T01:00:00.000Z"
+    },
+    {
+      "voteId": "vote2",
+      "votingId": "election1",
+      "voterId": "voter2",
+      "choices": [
+        {
+          "candidateId": "voter6",
+          "verdict": "pass"
+        }
+      ],
+      "createdAt": "2019-01-02T02:00:00.000Z"
     }
   ],
   "expected": {
@@ -84,7 +96,7 @@
       },
       "voter6": {
         "elect": 0,
-        "pass": 0
+        "pass": 1
       }
     },
     "votingSummaryState": "final",

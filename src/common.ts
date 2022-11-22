@@ -74,7 +74,7 @@ export function isCandidateBasedVotingType(votingType: VotingType): boolean {
 }
 
 export function isOptionBasedVotingType(votingType: VotingType): boolean {
-  return ['open', 'selection'].includes(votingType)
+  return ['option'].includes(votingType)
 }
 
 export function persistVoting(voting: VotingData): Promise<PersistResponse> {

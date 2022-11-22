@@ -5,7 +5,12 @@ import * as chaiPromised from 'chai-as-promised'
 
 import { VoterData, VoterId, VotingId } from '../src/types'
 
-import { DEFAULT_CALLBACKS, generateVotingId, setCallbacks } from '../src/common'
+import {
+  DEFAULT_CALLBACKS,
+  generateVotingId,
+  isCandidateBasedVotingType,
+  setCallbacks,
+} from '../src/common'
 import { registerVote, registerVoteByUserId, validateRegisterVote } from '../src/vote'
 
 import {
@@ -37,20 +42,21 @@ describe('Vote', () => {
     describe(`Voting type: ${votingType}`, () => {
       const verdict = votingType === 'election' ? 'elect' : 'guilty'
       describe('validateRegisterVote', () => {
-        it('cannot vote on yourself', async () => {
-          await expect(
-            validateRegisterVote({
-              votingId: generateVotingId(),
-              voterId: startedBy.voterId,
-              choices: [
-                {
-                  candidateId: startedBy.voterId,
-                  verdict,
-                },
-              ],
-            })
-          ).to.be.rejectedWith('Voter cannot vote on themselves')
-        })
+        if (isCandidateBasedVotingType(votingType))
+          it('cannot vote on yourself', async () => {
+            await expect(
+              validateRegisterVote({
+                votingId: generateVotingId(),
+                voterId: startedBy.voterId,
+                choices: [
+                  {
+                    candidateId: startedBy.voterId,
+                    verdict,
+                  },
+                ],
+              })
+            ).to.be.rejectedWith('Voter cannot vote on themselves')
+          })
       })
       describe('registerVote', () => {
         it('should add a vote', async () => {
@@ -73,10 +79,12 @@ describe('Vote', () => {
               votingId: generatedVotingId,
               voterId: startedBy.voterId,
               choices: [
-                {
-                  candidateId: getFirstCandidateId(),
-                  verdict,
-                },
+                isCandidateBasedVotingType(votingType)
+                  ? {
+                      candidateId: getFirstCandidateId(),
+                      verdict,
+                    }
+                  : { value: 'Apple' },
               ],
             },
           })
@@ -122,10 +130,12 @@ describe('Vote', () => {
               votingId: generatedVotingId,
               userId,
               choices: [
-                {
-                  candidateId: getFirstCandidateId(),
-                  verdict,
-                },
+                isCandidateBasedVotingType(votingType)
+                  ? {
+                      candidateId: getFirstCandidateId(),
+                      verdict,
+                    }
+                  : { value: 'Apple' },
               ],
             },
           })
@@ -159,10 +169,12 @@ describe('Vote', () => {
                 votingId: generatedVotingId,
                 voterId: startedBy.voterId,
                 choices: [
-                  {
-                    candidateId: getFirstCandidateId(),
-                    verdict,
-                  },
+                  isCandidateBasedVotingType(votingType)
+                    ? {
+                        candidateId: getFirstCandidateId(),
+                        verdict,
+                      }
+                    : { value: 'Apple' },
                 ],
               },
             })
@@ -184,10 +196,12 @@ describe('Vote', () => {
                 votingId: generatedVotingId,
                 voterId: startedBy.voterId,
                 choices: [
-                  {
-                    candidateId: getFirstCandidateId(),
-                    verdict,
-                  },
+                  isCandidateBasedVotingType(votingType)
+                    ? {
+                        candidateId: getFirstCandidateId(),
+                        verdict,
+                      }
+                    : { value: 'Apple' },
                 ],
               },
             })

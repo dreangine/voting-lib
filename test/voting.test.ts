@@ -5,6 +5,7 @@ import * as chaiPromised from 'chai-as-promised'
 
 import {
   DEFAULT_CALLBACKS,
+  isCandidateBasedVotingType,
   MAX_VOTING_DURATION,
   MIN_VOTING_DURATION,
   setCallbacks,
@@ -58,12 +59,16 @@ describe('Voting', () => {
             })
           )
           const checkActiveVotersSpy = chai.spy(() =>
-            Promise.resolve({
-              ...allVotersIds.reduce((acc, candidate) => {
-                acc[candidate] = true
-                return acc
-              }, {}),
-            })
+            Promise.resolve(
+              isCandidateBasedVotingType(votingType)
+                ? {
+                    ...allVotersIds.reduce((acc, candidate) => {
+                      acc[candidate] = true
+                      return acc
+                    }, {}),
+                  }
+                : { [startedBy.voterId]: true }
+            )
           )
           const countActiveVotersSpy = chai.spy(() => Promise.resolve(totalVoters))
 
@@ -80,7 +85,7 @@ describe('Voting', () => {
               },
               votingType,
               startedBy: startedBy.voterId,
-              candidates,
+              ...(isCandidateBasedVotingType(votingType) && { candidates }),
               endsAt: tomorrowDate,
               ...(votingType === 'election' ? { onlyOneSelected: 1 } : { evidences: [] }),
             },
@@ -90,48 +95,51 @@ describe('Voting', () => {
           expect(persistVotingSpy).to.have.been.called.once
           expect(persistVotingSpy).to.have.been.called.with(responseVoting)
           expect(checkActiveVotersSpy).to.have.been.called.once
-          expect(checkActiveVotersSpy).to.have.been.called.with(allVotersIds)
+          expect(checkActiveVotersSpy).to.have.been.called.with(
+            isCandidateBasedVotingType(votingType) ? allVotersIds : [startedBy.voterId]
+          )
           expect(countActiveVotersSpy).to.have.been.called.once
           expect(responseVoting.votingId).to.exist
           expect(responseVoting.startsAt).to.exist
           expect(responseVoting.totalVoters).to.equal(totalVoters)
         })
 
-        it('should have all voters registered', async () => {
-          const [firstCandidate, ...others] = candidates
-          const checkActiveVotersSpy = chai.spy(() =>
-            Promise.resolve({
-              [startedBy.voterId]: false,
-              [firstCandidate.candidateId]: false,
-              ...others.reduce((acc, { candidateId }) => {
-                acc[candidateId] = true
-                return acc
-              }, {}),
+        if (isCandidateBasedVotingType(votingType))
+          it('should have all voters registered', async () => {
+            const [firstCandidate, ...others] = candidates
+            const checkActiveVotersSpy = chai.spy(() =>
+              Promise.resolve({
+                [startedBy.voterId]: false,
+                [firstCandidate.candidateId]: false,
+                ...others.reduce((acc, { candidateId }) => {
+                  acc[candidateId] = true
+                  return acc
+                }, {}),
+              })
+            )
+
+            setCallbacks({
+              checkActiveVoters: checkActiveVotersSpy,
             })
-          )
 
-          setCallbacks({
-            checkActiveVoters: checkActiveVotersSpy,
-          })
-
-          await expect(
-            registerVoting({
-              votingParams: {
-                votingDescription: {
-                  'en-US': 'Test voting',
+            await expect(
+              registerVoting({
+                votingParams: {
+                  votingDescription: {
+                    'en-US': 'Test voting',
+                  },
+                  votingType,
+                  startedBy: startedBy.voterId,
+                  candidates,
+                  endsAt: tomorrowDate,
+                  ...(votingType === 'election' ? { onlyOneSelected: 1 } : { evidences: [] }),
                 },
-                votingType,
-                startedBy: startedBy.voterId,
-                candidates,
-                endsAt: tomorrowDate,
-                ...(votingType === 'election' ? { onlyOneSelected: 1 } : { evidences: [] }),
-              },
-            })
-          ).to.be.rejectedWith(
-            `Voters ${[startedBy.voterId, firstCandidate.candidateId].join(', ')} do not exist`
-          )
-          expect(checkActiveVotersSpy).to.have.been.called.once
-        })
+              })
+            ).to.be.rejectedWith(
+              `Voters ${[startedBy.voterId, firstCandidate.candidateId].join(', ')} do not exist`
+            )
+            expect(checkActiveVotersSpy).to.have.been.called.once
+          })
       })
     })
   })

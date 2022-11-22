@@ -110,8 +110,6 @@ function generatePartialVerdicts(
           if (elect > pass) {
             if (onlyOneSelected) return { statsKey, verdict: 'pending elected', electVotes: elect }
             return { statsKey, verdict: 'elected' }
-          } else if (pass > elect) {
-            return { statsKey, verdict: 'not elected' }
           }
         }
         return { statsKey, verdict: 'not elected' }

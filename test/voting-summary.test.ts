@@ -14,7 +14,7 @@ import {
 import { DEFAULT_CALLBACKS, generateVotingId, setCallbacks, setHelpers } from '../src/common'
 import { retrieveVotingSummary } from '../src/voting-summary'
 
-import { generateVotingDataEnded, getScenarios, votingTypes } from './common'
+import { getScenarios, votingTypes } from './common'
 
 chai.use(spies)
 chai.use(chaiPromised)
@@ -72,34 +72,6 @@ describe('Voting summary', () => {
         })
       })
     })
-  })
-
-  it('voting has no candidates (candidate based voting)', async () => {
-    const retrieveVotingSpy = chai.spy(() =>
-      Promise.resolve({
-        data: { ...generateVotingDataEnded(generatedVotingId, 'election'), candidates: [] },
-      })
-    )
-    const retrieveVotesSpy = chai.spy(() =>
-      Promise.resolve({
-        data: [],
-      } as RetrieveResponse<VoteData[]>)
-    )
-
-    setCallbacks({
-      retrieveVoting: retrieveVotingSpy,
-      retrieveVotes: retrieveVotesSpy,
-    })
-
-    await expect(
-      retrieveVotingSummary({
-        votingId: generatedVotingId,
-      })
-    ).to.be.rejectedWith('Voting has no candidates')
-    expect(retrieveVotingSpy).to.have.been.called.once
-    expect(retrieveVotingSpy).to.have.been.called.with(generatedVotingId)
-    expect(retrieveVotesSpy).to.have.been.called.once
-    expect(retrieveVotesSpy).to.have.been.called.with(generatedVotingId)
   })
 
   it('voting not found', async () => {

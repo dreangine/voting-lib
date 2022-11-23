@@ -1,6 +1,6 @@
 {
-  "description": "partial verdict - election single (no votes)",
-  "currentDate": "2019-01-07T00:00:00.000Z",
+  "description": "final verdict - election single (pass votes - elected with 1 vote)",
+  "currentDate": "2019-02-01T00:00:00.000Z",
   "voters": [
     {
       "voterId": "voter1",
@@ -62,18 +62,31 @@
       }
     ]
   },
-  "votes": null,
+  "votes": {
+    "voter5": {
+      "elect": 1,
+      "pass": 0
+    },
+    "voter6": {
+      "elect": 0,
+      "pass": 3
+    }
+  },
   "expected": {
     "votingStats": {
       "voter5": {
-        "elect": 0,
+        "elect": 1,
         "pass": 0
       },
       "voter6": {
         "elect": 0,
-        "pass": 0
+        "pass": 3
       }
     },
-    "votingSummaryState": "partial"
+    "votingSummaryState": "final",
+    "finalVerdict": {
+      "voter5": "elected",
+      "voter6": "not elected"
+    }
   }
 }

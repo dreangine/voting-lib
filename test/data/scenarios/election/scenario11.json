@@ -1,6 +1,6 @@
 {
-  "description": "partial verdict - election single (no votes)",
-  "currentDate": "2019-01-07T00:00:00.000Z",
+  "description": "final verdict - election single (pass votes - not enough votes to be elected)",
+  "currentDate": "2019-02-01T00:00:00.000Z",
   "voters": [
     {
       "voterId": "voter1",
@@ -48,6 +48,7 @@
     "endsAt": "2019-01-08T00:00:00.000Z",
     "totalVoters": 6,
     "requiredParticipationPercentage": 0.5,
+    "requiredVotesPercentage": 0.5,
     "onlyOneSelected": true,
     "candidates": [
       {
@@ -62,18 +63,31 @@
       }
     ]
   },
-  "votes": null,
+  "votes": {
+    "voter5": {
+      "elect": 1,
+      "pass": 0
+    },
+    "voter6": {
+      "elect": 0,
+      "pass": 3
+    }
+  },
   "expected": {
     "votingStats": {
       "voter5": {
-        "elect": 0,
+        "elect": 1,
         "pass": 0
       },
       "voter6": {
         "elect": 0,
-        "pass": 0
+        "pass": 3
       }
     },
-    "votingSummaryState": "partial"
+    "votingSummaryState": "final",
+    "finalVerdict": {
+      "voter5": "not elected",
+      "voter6": "not elected"
+    }
   }
 }

@@ -18,6 +18,10 @@ import {
   VoterData,
   VoterActive,
   Helpers,
+  VoteChoice,
+  VoteChoiceCandidateBased,
+  CandidateVotingData,
+  OptionVotingData,
 } from './types'
 
 // Defaults
@@ -74,7 +78,33 @@ export function isCandidateBasedVotingType(votingType: VotingType): boolean {
 }
 
 export function isOptionBasedVotingType(votingType: VotingType): boolean {
-  return ['open', 'selection'].includes(votingType)
+  return ['option'].includes(votingType)
+}
+
+export function isCandidateBasedVoting(voting: VotingData): voting is CandidateVotingData {
+  return isCandidateBasedVotingType(voting.votingType)
+}
+
+export function isOptionBasedVoting(voting: VotingData): voting is OptionVotingData {
+  return isOptionBasedVotingType(voting.votingType)
+}
+
+export function isCandidateBasedVoteChoice(
+  voteChoice: VoteChoice
+): voteChoice is VoteChoiceCandidateBased {
+  return (voteChoice as VoteChoiceCandidateBased).candidateId !== undefined
+}
+
+export function isCandidateStatsElection(stats: VotesStats): stats is CandidateStatsElection {
+  return (stats as CandidateStatsElection).elect !== undefined
+}
+
+export function isCandidateStatsJudgment(stats: VotesStats): stats is CandidateStatsJudgment {
+  return (stats as CandidateStatsJudgment).guilty !== undefined
+}
+
+export function isOptionStats(stats: VotesStats): boolean {
+  return Number.isInteger(stats)
 }
 
 export function persistVoting(voting: VotingData): Promise<PersistResponse> {

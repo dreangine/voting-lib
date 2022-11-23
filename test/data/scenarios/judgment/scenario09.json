@@ -1,6 +1,6 @@
 {
-  "description": "partial verdict - election single (no votes)",
-  "currentDate": "2019-01-07T00:00:00.000Z",
+  "description": "final verdict - judgment (no verdicts - tie)",
+  "currentDate": "2019-02-01T00:00:00.000Z",
   "voters": [
     {
       "voterId": "voter1",
@@ -40,40 +40,62 @@
     }
   ],
   "voting": {
-    "votingId": "election1",
-    "votingDescription": "Who should be the next president?",
-    "votingType": "election",
+    "votingId": "judgment1",
+    "votingDescription": "Are they guilty?",
+    "votingType": "judgment",
     "startedBy": "voter1",
     "startsAt": "2019-01-01T00:00:00.000Z",
     "endsAt": "2019-01-08T00:00:00.000Z",
     "totalVoters": 6,
     "requiredParticipationPercentage": 0.5,
-    "onlyOneSelected": true,
     "candidates": [
       {
         "candidateId": "voter5",
         "alias": "Candidate 1",
-        "speech": "I'm good"
+        "speech": "I didn't do it"
       },
       {
         "candidateId": "voter6",
         "alias": "Candidate 2",
-        "speech": "I'm better"
+        "speech": "The other guy did it"
+      }
+    ],
+    "evidences": [
+      {
+        "type": "text",
+        "data": "Evidence 1"
+      },
+      {
+        "type": "image",
+        "data": "https://example.com/evidence1.png"
       }
     ]
   },
-  "votes": null,
+  "votes": {
+    "voter5": {
+      "guilty": 2,
+      "innocent": 2
+    },
+    "voter6": {
+      "guilty": 3,
+      "innocent": 3
+    }
+  },
   "expected": {
     "votingStats": {
       "voter5": {
-        "elect": 0,
-        "pass": 0
+        "guilty": 2,
+        "innocent": 2
       },
       "voter6": {
-        "elect": 0,
-        "pass": 0
+        "guilty": 3,
+        "innocent": 3
       }
     },
-    "votingSummaryState": "partial"
+    "votingSummaryState": "final",
+    "finalVerdict": {
+      "voter5": "undecided",
+      "voter6": "undecided"
+    }
   }
 }

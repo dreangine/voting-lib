@@ -71,7 +71,7 @@
       }
     ]
   },
-  "votes": [],
+  "votes": null,
   "expected": {
     "votingStats": {
       "voter5": {

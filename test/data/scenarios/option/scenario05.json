@@ -1,6 +1,6 @@
 {
-  "description": "partial verdict - election single",
-  "currentDate": "2019-01-07T00:00:00.000Z",
+  "description": "partial verdict - selection (invalid option in vote)",
+  "currentDate": "2019-02-01T00:00:00.000Z",
   "voters": [
     {
       "voterId": "voter1",
@@ -40,60 +40,49 @@
     }
   ],
   "voting": {
-    "votingId": "election1",
-    "votingDescription": "Who should be the next president?",
-    "votingType": "election",
+    "votingId": "selection1",
+    "votingDescription": "Which one is the best fruit?",
+    "votingType": "option",
     "startedBy": "voter1",
     "startsAt": "2019-01-01T00:00:00.000Z",
     "endsAt": "2019-01-08T00:00:00.000Z",
     "totalVoters": 6,
-    "onlyOneSelected": true,
-    "candidates": [
-      {
-        "candidateId": "voter5",
-        "alias": "Candidate 1",
-        "speech": "I'm good"
-      },
-      {
-        "candidateId": "voter6",
-        "alias": "Candidate 2",
-        "speech": "I'm better"
-      }
-    ]
+    "requiredParticipationPercentage": 0.5,
+    "options": ["apple", "orange", "banana"]
   },
   "votes": [
     {
       "voteId": "vote1",
-      "votingId": "election1",
+      "votingId": "selection1",
       "voterId": "voter1",
       "choices": [
         {
-          "candidateId": "voter5",
-          "verdict": "elect"
+          "value": "apple"
+        },
+        {
+          "value": "orange"
         }
       ],
       "createdAt": "2019-01-02T01:00:00.000Z"
     },
     {
       "voteId": "vote2",
-      "votingId": "election1",
+      "votingId": "selection1",
       "voterId": "voter2",
       "choices": [
         {
-          "candidateId": "voter6",
-          "verdict": "elect"
+          "value": "melon"
         }
       ],
       "createdAt": "2019-01-02T02:00:00.000Z"
     },
     {
       "voteId": "vote3",
-      "votingId": "election1",
+      "votingId": "selection1",
       "voterId": "voter3",
       "choices": [
         {
-          "candidateId": "voter6",
-          "verdict": "elect"
+          "value": "apple"
         }
       ],
       "createdAt": "2019-01-02T03:00:00.000Z"
@@ -101,15 +90,15 @@
   ],
   "expected": {
     "votingStats": {
-      "voter5": {
-        "elect": 1,
-        "pass": 0
-      },
-      "voter6": {
-        "elect": 2,
-        "pass": 0
-      }
+      "apple": 2,
+      "orange": 1,
+      "banana": 0
     },
-    "votingSummaryState": "partial"
+    "votingSummaryState": "final",
+    "finalVerdict": {
+      "apple": "selected",
+      "orange": "rejected",
+      "banana": "rejected"
+    }
   }
 }

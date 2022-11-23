@@ -183,7 +183,9 @@ interface BasicData {
 
 export type VoterData = Voter & BasicData
 
-export type VotingData = Voting & BasicData
+export type CandidateVotingData = (Election | Judgment) & BasicData
+export type OptionVotingData = OptionBasedVoting & BasicData
+export type VotingData = CandidateVotingData | OptionVotingData
 
 export type VoteData = Vote & Omit<BasicData, 'updatedAt'>
 

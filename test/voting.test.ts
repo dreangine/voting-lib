@@ -15,6 +15,7 @@ import { registerVoting, validateRegisterVoting } from '../src/voting'
 import {
   allVotersIds,
   candidates,
+  candidatesId,
   nowDate,
   startedBy,
   tomorrowDate,
@@ -94,10 +95,14 @@ describe('Voting', () => {
 
           expect(persistVotingSpy).to.have.been.called.once
           expect(persistVotingSpy).to.have.been.called.with(responseVoting)
-          expect(checkActiveVotersSpy).to.have.been.called.once
-          expect(checkActiveVotersSpy).to.have.been.called.with(
-            isCandidateBasedVotingType(votingType) ? allVotersIds : [startedBy.voterId]
-          )
+          if (isCandidateBasedVotingType(votingType)) {
+            expect(checkActiveVotersSpy).to.have.been.called.twice
+            expect(checkActiveVotersSpy).to.have.been.called.with(candidatesId)
+            expect(checkActiveVotersSpy).to.have.been.called.with([startedBy.voterId])
+          } else {
+            expect(checkActiveVotersSpy).to.have.been.called.once
+            expect(checkActiveVotersSpy).to.have.been.called.with([startedBy.voterId])
+          }
           expect(countActiveVotersSpy).to.have.been.called.once
           expect(responseVoting.votingId).to.exist
           expect(responseVoting.startsAt).to.exist
@@ -135,9 +140,7 @@ describe('Voting', () => {
                   ...(votingType === 'election' ? { onlyOneSelected: 1 } : { evidences: [] }),
                 },
               })
-            ).to.be.rejectedWith(
-              `Voters ${[startedBy.voterId, firstCandidate.candidateId].join(', ')} do not exist`
-            )
+            ).to.be.rejectedWith(`Voter(s) ${firstCandidate.candidateId} do not exist`)
             expect(checkActiveVotersSpy).to.have.been.called.once
           })
       })
@@ -201,5 +204,34 @@ describe('Voting', () => {
         endsAt: tomorrowDate,
       })
     ).to.be.rejectedWith('Voting cannot be started by a candidate')
+  })
+
+  it('candidate based voting without candidates (undefined)', async () => {
+    await expect(
+      validateRegisterVoting({
+        votingDescription: {
+          'en-US': 'Test election',
+        },
+        votingType: 'election',
+        startedBy: startedBy.voterId,
+        startsAt: nowDate,
+        endsAt: tomorrowDate,
+      })
+    ).to.be.rejectedWith('Voting has no candidates')
+  })
+
+  it('candidate based voting without candidates (empty)', async () => {
+    await expect(
+      validateRegisterVoting({
+        votingDescription: {
+          'en-US': 'Test election',
+        },
+        votingType: 'election',
+        startedBy: startedBy.voterId,
+        startsAt: nowDate,
+        endsAt: tomorrowDate,
+        candidates: [],
+      })
+    ).to.be.rejectedWith('Voting has no candidates')
   })
 })

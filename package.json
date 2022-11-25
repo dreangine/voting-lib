@@ -40,7 +40,6 @@
   "files": [
     "dist"
   ],
-  "dependencies": {},
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "1.0.2",
     "@types/chai": "4.3.0",

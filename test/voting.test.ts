@@ -15,7 +15,6 @@ import { registerVoting, validateRegisterVoting } from '../src/voting'
 import {
   allVotersIds,
   candidates,
-  candidatesId,
   nowDate,
   startedBy,
   tomorrowDate,
@@ -95,14 +94,10 @@ describe('Voting', () => {
 
           expect(persistVotingSpy).to.have.been.called.once
           expect(persistVotingSpy).to.have.been.called.with(responseVoting)
-          if (isCandidateBasedVotingType(votingType)) {
-            expect(checkActiveVotersSpy).to.have.been.called.twice
-            expect(checkActiveVotersSpy).to.have.been.called.with(candidatesId)
-            expect(checkActiveVotersSpy).to.have.been.called.with([startedBy.voterId])
-          } else {
-            expect(checkActiveVotersSpy).to.have.been.called.once
-            expect(checkActiveVotersSpy).to.have.been.called.with([startedBy.voterId])
-          }
+          expect(checkActiveVotersSpy).to.have.been.called.once
+          expect(checkActiveVotersSpy).to.have.been.called.with(
+            isCandidateBasedVotingType(votingType) ? allVotersIds : [startedBy.voterId]
+          )
           expect(countActiveVotersSpy).to.have.been.called.once
           expect(responseVoting.votingId).to.exist
           expect(responseVoting.startsAt).to.exist
@@ -140,7 +135,9 @@ describe('Voting', () => {
                   ...(votingType === 'election' ? { onlyOneSelected: 1 } : { evidences: [] }),
                 },
               })
-            ).to.be.rejectedWith(`Voter(s) ${firstCandidate.candidateId} do not exist`)
+            ).to.be.rejectedWith(
+              `Voter(s) ${[startedBy.voterId, firstCandidate.candidateId].join(', ')} do not exist`
+            )
             expect(checkActiveVotersSpy).to.have.been.called.once
           })
       })

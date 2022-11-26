@@ -18,7 +18,7 @@ import {
 import {
   allVotersIds,
   candidates,
-  retrieveVotingFnOngoing,
+  generateVotingDataOngoing,
   startedBy,
   tomorrowDate,
 } from './common'
@@ -33,7 +33,7 @@ beforeEach(async () => {
   setCallbacks(DEFAULT_CALLBACKS)
 })
 
-const genericFn = () => {
+const genericFn = (): Promise<never> => {
   throw new Error('Generic error')
 }
 const errorTests: [string, Partial<Callbacks>][] = [
@@ -130,7 +130,10 @@ describe('Common errors', () => {
         }
         await expect(registerVote(request)).to.be.rejectedWith(new RegExp(errorType))
         setCallbacks({
-          retrieveVoting: retrieveVotingFnOngoing(votingId, 'election'),
+          retrieveVoting: () =>
+            Promise.resolve({
+              data: generateVotingDataOngoing(votingId, 'election'),
+            }),
         })
         await expect(registerVote(request)).to.be.rejectedWith(new RegExp(errorType))
         setCallbacks({

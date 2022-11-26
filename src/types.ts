@@ -156,6 +156,10 @@ export type VoterActive = {
   [voterId: VoterId]: boolean
 }
 
+/**
+ * FUNCTIONS SETS
+ */
+
 export type Callbacks = {
   persistVoting: (voting: VotingData) => Promise<PersistResponse>
   persistVoters: (voters: VoterData[]) => Promise<PersistResponse>
@@ -193,7 +197,7 @@ export type VoteData = Vote & Omit<BasicData, 'updatedAt'>
  * PARAMS
  */
 
-interface VotingParams {
+interface VotingParamsBase {
   votingDescription: VotingDescription
   votingType: VotingType
   startedBy: VoterId
@@ -202,43 +206,38 @@ interface VotingParams {
   requiredParticipationPercentage?: number
 }
 
-interface CandidateBasedVotingParams extends VotingParams {
+interface CandidateBasedVotingParamsBase extends VotingParamsBase {
   candidates: CandidateInfo[]
 }
 
-export interface ElectionParams extends CandidateBasedVotingParams {
+export interface ElectionParams extends CandidateBasedVotingParamsBase {
   onlyOneSelected: boolean
 }
 
-export interface JudgmentParams extends CandidateBasedVotingParams {
+export interface JudgmentParams extends CandidateBasedVotingParamsBase {
   evidences: Evidence[]
 }
 
-export type OpenVotingParams = VotingParams
+export type CandidateBasedVotingParams = ElectionParams | JudgmentParams
 
-export interface SelectionParams extends VotingParams {
-  options: string[]
+export interface OptionBasedParams extends VotingParamsBase {
+  options?: string[]
 }
 
-export type VotingParamsValidate = (
-  | ElectionParams
-  | JudgmentParams
-  | OpenVotingParams
-  | SelectionParams
-) & {
+export type VotingParams = CandidateBasedVotingParams | OptionBasedParams
+
+export type VotingParamsValidate = (CandidateBasedVotingParams | OptionBasedParams) & {
   startsAt: Date
 }
 
 export type VoteParams = Omit<Vote, 'voteId'>
-
-export type VoteParamsValidate = VoteParams
 
 /**
  * REQUESTS
  */
 
 export type RegisterVotingRequest = {
-  votingParams: ElectionParams | JudgmentParams | OpenVotingParams | SelectionParams
+  votingParams: VotingParams
 }
 
 export type RegisterVotersRequest = {

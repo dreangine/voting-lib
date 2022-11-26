@@ -103,13 +103,6 @@ export function generateVotingDataOngoing(votingId: VotingId, votingType: Voting
   }
 }
 
-export function retrieveVotingFnOngoing(votingId: VotingId, votingType: VotingType) {
-  return () =>
-    Promise.resolve({
-      data: generateVotingDataOngoing(votingId, votingType),
-    })
-}
-
 export function generateVotingDataEnded(
   votingId: VotingId,
   votingType: VotingType,
@@ -127,15 +120,4 @@ export function generateVotingDataEnded(
     votingType,
     ...(votingType === 'election' ? { onlyOneSelected } : { evidences: [] }),
   }
-}
-
-export function retrieveVotingFnEnded(
-  votingId: VotingId,
-  votingType: VotingType,
-  onlyOneSelected?: boolean
-) {
-  return () =>
-    Promise.resolve({
-      data: generateVotingDataEnded(votingId, votingType, onlyOneSelected),
-    })
 }

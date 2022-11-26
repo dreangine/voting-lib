@@ -15,8 +15,8 @@ import { registerVote, registerVoteByUserId, validateRegisterVote } from '../src
 
 import {
   candidates,
-  retrieveVotingFnEnded,
-  retrieveVotingFnOngoing,
+  generateVotingDataEnded,
+  generateVotingDataOngoing,
   startedBy,
   votingTypes,
 } from './common'
@@ -60,7 +60,11 @@ describe('Vote', () => {
       })
       describe('registerVote', () => {
         it('should add a vote', async () => {
-          const retrieveVotingSpy = chai.spy(retrieveVotingFnOngoing(generatedVotingId, votingType))
+          const retrieveVotingSpy = chai.spy(() =>
+            Promise.resolve({
+              data: generateVotingDataOngoing(generatedVotingId, votingType),
+            })
+          )
           const hasVotedSpy = chai.spy(() => Promise.resolve(false))
           const persistVoteSpy = chai.spy(() =>
             Promise.resolve({
@@ -102,7 +106,11 @@ describe('Vote', () => {
 
         it('should add a vote - by userId', async () => {
           const userId = 'U1ASDF'
-          const retrieveVotingSpy = chai.spy(retrieveVotingFnOngoing(generatedVotingId, votingType))
+          const retrieveVotingSpy = chai.spy(() =>
+            Promise.resolve({
+              data: generateVotingDataOngoing(generatedVotingId, votingType),
+            })
+          )
           const hasVotedSpy = chai.spy(() => Promise.resolve(false))
           const persistVoteSpy = chai.spy(() =>
             Promise.resolve({
@@ -155,7 +163,11 @@ describe('Vote', () => {
         })
 
         it('cannot vote again', async () => {
-          const retrieveVotingSpy = chai.spy(retrieveVotingFnOngoing(generatedVotingId, votingType))
+          const retrieveVotingSpy = chai.spy(() =>
+            Promise.resolve({
+              data: generateVotingDataOngoing(generatedVotingId, votingType),
+            })
+          )
           const hasVotedSpy = chai.spy(() => Promise.resolve(true))
 
           setCallbacks({
@@ -184,7 +196,11 @@ describe('Vote', () => {
         })
 
         it('cannot vote after voting has ended', async () => {
-          const retrieveVotingSpy = chai.spy(retrieveVotingFnEnded(generatedVotingId, votingType))
+          const retrieveVotingSpy = chai.spy(() =>
+            Promise.resolve({
+              data: generateVotingDataEnded(generatedVotingId, votingType),
+            })
+          )
 
           setCallbacks({
             retrieveVoting: retrieveVotingSpy,

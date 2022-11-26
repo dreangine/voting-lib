@@ -189,7 +189,7 @@ export function hasVoted(voterId: VoterId, votingId: VotingId): Promise<boolean>
   }
 }
 
-export function setCallbacks(newCallbacks: Partial<Callbacks>) {
+export function setCallbacks(newCallbacks: Partial<Callbacks>): void {
   Object.assign(CALLBACKS, newCallbacks)
 }
 
@@ -208,7 +208,7 @@ export async function checkCallbacks(): Promise<{ [functionName: string]: boolea
   })
 }
 
-export function setHelpers(newHelpers: Partial<Helpers>) {
+export function setHelpers(newHelpers: Partial<Helpers>): void {
   Object.assign(HELPERS, newHelpers)
 }
 

@@ -24,6 +24,7 @@ import {
   OptionVotingData,
   VotingParams,
   CandidateBasedVotingParams,
+  Options,
 } from './types'
 
 // Defaults
@@ -58,22 +59,18 @@ export const DEFAULT_HELPERS: Helpers = Object.freeze({
 })
 
 // Setup
-export const MIN_VOTING_DURATION: number = +(
-  process.env.MIN_VOTING_DURATION ?? DEFAULT_MIN_VOTING_DURATION
-)
-export const MAX_VOTING_DURATION: number = +(
-  process.env.MAX_VOTING_DURATION ?? DEFAULT_MAX_VOTING_DURATION
-)
-export const MIN_CANDIDATES_ELECTION: number = +(
-  process.env.MIN_CANDIDATES_ELECTION ?? DEFAULT_MIN_CANDIDATES_ELECTION
-)
-const CALLBACKS: Callbacks = {
+export const OPTIONS: Options = Object.seal({
+  minVotingDuration: DEFAULT_MIN_VOTING_DURATION,
+  maxVotingDuration: DEFAULT_MAX_VOTING_DURATION,
+  minCandidatesElection: DEFAULT_MIN_CANDIDATES_ELECTION,
+})
+const CALLBACKS: Callbacks = Object.seal({
   ...DEFAULT_CALLBACKS,
-}
+})
 
-const HELPERS: Helpers = {
+const HELPERS: Helpers = Object.seal({
   ...DEFAULT_HELPERS,
-}
+})
 
 export function isCandidateBasedVotingType(votingType: VotingType): boolean {
   return ['election', 'judgment'].includes(votingType)

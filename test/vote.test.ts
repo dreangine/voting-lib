@@ -5,12 +5,8 @@ import * as chaiPromised from 'chai-as-promised'
 
 import { VoterData, VoterId, VotingId } from '../src/types'
 
-import {
-  DEFAULT_CALLBACKS,
-  generateVotingId,
-  isCandidateBasedVotingType,
-  setCallbacks,
-} from '../src/common'
+import { DEFAULT_CALLBACKS, generateVotingId, isCandidateBasedVotingType } from '../src/common'
+import { setCallbacks } from '../src/index'
 import { registerVote, registerVoteByUserId, validateRegisterVote } from '../src/vote'
 
 import {

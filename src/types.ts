@@ -157,6 +157,16 @@ export type VoterActive = {
 }
 
 /**
+ * OPTIONS
+ */
+
+export type Options = {
+  minVotingDuration: number
+  maxVotingDuration: number
+  minCandidatesElection: number
+}
+
+/**
  * FUNCTIONS SETS
  */
 

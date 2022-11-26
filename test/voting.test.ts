@@ -3,13 +3,8 @@ import * as chai from 'chai'
 import * as spies from 'chai-spies'
 import * as chaiPromised from 'chai-as-promised'
 
-import {
-  DEFAULT_CALLBACKS,
-  isCandidateBasedVotingType,
-  MAX_VOTING_DURATION,
-  MIN_VOTING_DURATION,
-  setCallbacks,
-} from '../src/common'
+import { DEFAULT_CALLBACKS, isCandidateBasedVotingType, OPTIONS } from '../src/common'
+import { setCallbacks } from '../src/index'
 import { registerVoting, validateRegisterVoting } from '../src/voting'
 
 import {
@@ -153,7 +148,7 @@ describe('Voting', () => {
         startedBy: startedBy.voterId,
         candidates,
         startsAt: nowDate,
-        endsAt: new Date(nowDate.getTime() + MIN_VOTING_DURATION - 1),
+        endsAt: new Date(nowDate.getTime() + OPTIONS.minVotingDuration - 1),
       })
     ).to.be.rejectedWith('Voting duration is too short')
   })
@@ -168,7 +163,7 @@ describe('Voting', () => {
         startedBy: startedBy.voterId,
         candidates,
         startsAt: nowDate,
-        endsAt: new Date(nowDate.getTime() + MAX_VOTING_DURATION + 1),
+        endsAt: new Date(nowDate.getTime() + OPTIONS.maxVotingDuration + 1),
       })
     ).to.be.rejectedWith('Voting duration is too long')
   })

@@ -1,4 +1,4 @@
-import { setCallbacks } from '../dist/index.js'
+import { OPTIONS, setCallbacks } from '../dist/index.js'
 
 export const users = [
   { userId: 'user1' },
@@ -7,6 +7,8 @@ export const users = [
 ]
 
 const data = { voters: [], votings: [], votes: [] }
+
+OPTIONS.minVotingDuration = 1000 * 60 * 60 * 12 // 12 hours
 
 setCallbacks({
   persistVoters: async (voters) => {

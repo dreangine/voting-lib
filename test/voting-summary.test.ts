@@ -11,7 +11,8 @@ import {
   RetrieveVotingSummaryResponse,
 } from '../src/types'
 
-import { DEFAULT_CALLBACKS, generateVotingId, setCallbacks, setHelpers } from '../src/common'
+import { DEFAULT_CALLBACKS, generateVotingId } from '../src/common'
+import { setCallbacks, setHelpers } from '../src/index'
 import { retrieveVotingSummary } from '../src/voting-summary'
 
 import { getScenarios, votingTypes } from './common'

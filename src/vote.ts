@@ -11,10 +11,10 @@ import {
   RegisterVoteRequest,
   RegisterVoteResponse,
   VoteData,
-  VoteParamsValidate,
+  VoteParams,
 } from './types'
 
-export async function validateRegisterVote(voteParams: VoteParamsValidate): Promise<void> {
+export async function validateRegisterVote(voteParams: VoteParams): Promise<void> {
   const { votingId, voterId, choices } = voteParams
 
   const candidates = choices.map((choice) => ('candidateId' in choice ? choice.candidateId : null))

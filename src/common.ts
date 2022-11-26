@@ -22,6 +22,8 @@ import {
   VoteChoiceCandidateBased,
   CandidateVotingData,
   OptionVotingData,
+  VotingParams,
+  CandidateBasedVotingParams,
 } from './types'
 
 // Defaults
@@ -87,6 +89,12 @@ export function isCandidateBasedVoting(voting: VotingData): voting is CandidateV
 
 export function isOptionBasedVoting(voting: VotingData): voting is OptionVotingData {
   return isOptionBasedVotingType(voting.votingType)
+}
+
+export function isCandidateBasedVotingParams(
+  votingParams: VotingParams
+): votingParams is CandidateBasedVotingParams {
+  return isCandidateBasedVotingType(votingParams.votingType)
 }
 
 export function isCandidateBasedVoteChoice(

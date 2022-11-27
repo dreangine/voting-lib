@@ -237,7 +237,7 @@ export type OptionBasedParams = VotingParamsBase & {
 
 export type VotingParams = CandidateBasedVotingParams | OptionBasedParams
 
-export type VotingParamsValidate = (CandidateBasedVotingParams | OptionBasedParams) & {
+export type VotingParamsValidate = VotingParams & {
   startsAt: Date
 }
 
@@ -272,13 +272,9 @@ export type RetrieveVotingSummaryRequest = {
  * RESPONSES
  */
 
-export type PersistResponse =
-  | {
-      inserts: number
-    }
-  | {
-      updates: number
-    }
+export type PersistResponseInsert = { inserts: number }
+export type PersistResponseUpdate = { updates: number }
+export type PersistResponse = PersistResponseInsert | PersistResponseUpdate
 
 export type RetrieveResponse<T> = {
   data: T | null

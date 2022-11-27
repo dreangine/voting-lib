@@ -184,6 +184,7 @@ export type Callbacks = {
 
 export type Helpers = {
   getCurrentDate: () => Date
+  generateRandomUUID: () => string
 }
 
 /**

@@ -56,6 +56,7 @@ export const DEFAULT_CALLBACKS: Callbacks = Object.freeze({
 })
 export const DEFAULT_HELPERS: Helpers = Object.freeze({
   getCurrentDate: () => new Date(),
+  generateRandomUUID: () => randomUUID(),
 })
 
 // Setup
@@ -209,16 +210,20 @@ export function setHelpers(newHelpers: Partial<Helpers>): void {
   Object.assign(HELPERS, newHelpers)
 }
 
+function generateRandomUUID(): string {
+  return HELPERS.generateRandomUUID()
+}
+
 export function generateVotingId(): VotingId {
-  return `voting-${randomUUID()}`
+  return `voting-${generateRandomUUID()}`
 }
 
 export function generateVoterId(): VoterId {
-  return `voter-${randomUUID()}`
+  return `voter-${generateRandomUUID()}`
 }
 
 export function generateVoteId(): VoteId {
-  return `vote-${randomUUID()}`
+  return `vote-${generateRandomUUID()}`
 }
 
 export function getDefaultStats(votingType: VotingType): CandidateStats {

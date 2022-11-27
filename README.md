@@ -72,6 +72,7 @@ This method can be called any number of times to change all or some of the callb
 Some helper functions are provided to help fine tune commonly used data generation and manipulation.
 
 - `getCurrentDate` used to retrieve the current date
+- `generateRandomUUID` used to generate a random UUID (defaults to `crypto.randomUUID`)
 
 Example:
 
@@ -80,6 +81,7 @@ import { setHelpers } from 'voting-lib'
 
 setHelpers({
   getCurrentDate: () => {...},
+  generateRandomUUID: () => {...},
 })
 ```
 

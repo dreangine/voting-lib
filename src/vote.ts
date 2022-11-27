@@ -2,6 +2,7 @@ import {
   generateVoteId,
   hasVoted,
   hasVotingEnded,
+  OPTIONS,
   persistVote,
   retrieveVoter,
   retrieveVoting,
@@ -18,7 +19,8 @@ export async function validateRegisterVote(voteParams: VoteParams): Promise<void
   const { votingId, voterId, choices } = voteParams
 
   const candidates = choices.map((choice) => ('candidateId' in choice ? choice.candidateId : null))
-  if (candidates.includes(voterId)) throw new Error('Voter cannot vote on themselves')
+  if (!OPTIONS.canVoterVoteForHimself && candidates.includes(voterId))
+    throw new Error('Voter cannot vote for themselves')
   const { data: voting } = await retrieveVoting(votingId)
   if (!voting) throw new Error('Voting does not exist')
   if (hasVotingEnded(voting)) throw new Error('Voting has ended')

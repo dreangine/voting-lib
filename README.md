@@ -22,6 +22,8 @@ Some steps are required to setup the library:
 - `minVotingDuration`: minimum duration of a voting in miliseconds
 - `maxVotingDuration`: maximum duration of a voting in miliseconds
 - `minCandidatesElection`: minimum number of candidates for an election
+- `canVoterVoteForHimself`: whether a voter can vote for himself (default: `false`)
+- `canCandidateStartVoting`: whether a candidate can start a voting (default: `false`)
 
 These options can be configured by changing the `OPTIONS` object. Default values are provided.
 
@@ -33,6 +35,7 @@ import { OPTIONS } from 'voting-lib'
 OPTIONS.minVotingDuration = 1000 * 60 * 60 * 24 // 1 day
 OPTIONS.maxVotingDuration = 1000 * 60 * 60 * 24 * 7 // 1 week
 OPTIONS.minCandidatesElection = 2
+...
 ```
 
 ### Callbacks
@@ -90,8 +93,6 @@ This method can be called any number of times to change all or some of the helpe
 ## Rules
 
 - All participants must be registered prior to starting the voting
-- A voting cannot be started by a candidate
-- A voter cannot vote on themselves
 - A voter can only vote once
 - A voter cannot vote on a voting that has already ended
 - The vote is immutable

@@ -164,6 +164,8 @@ export type Options = {
   minVotingDuration: number
   maxVotingDuration: number
   minCandidatesElection: number
+  canVoterVoteForHimself: boolean
+  canCandidateStartVoting: boolean
 }
 
 /**

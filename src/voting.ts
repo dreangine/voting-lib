@@ -30,7 +30,8 @@ function validateCandidateBasedVotingParams(votingParams: VotingParamsValidate):
     throw new Error(`Election must have at least ${OPTIONS.minCandidatesElection} candidates`)
 
   const candidatesIds = candidates.map(({ candidateId }) => candidateId)
-  if (candidatesIds.includes(startedBy)) throw new Error('Voting cannot be started by a candidate')
+  if (!OPTIONS.canCandidateStartVoting && candidatesIds.includes(startedBy))
+    throw new Error('Voting cannot be started by a candidate')
 }
 
 export async function validateRegisterVoting(votingParams: VotingParamsValidate): Promise<void> {

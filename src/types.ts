@@ -240,7 +240,7 @@ export type OptionBasedParams = VotingParamsBase & {
 export type VotingParams = CandidateBasedVotingParams | OptionBasedParams
 
 export type VotingParamsValidate = VotingParams & {
-  startsAt: Date
+  startsAt: Date // make it required
 }
 
 export type VoteParams = Omit<Vote, 'voteId'>

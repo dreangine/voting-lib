@@ -3,9 +3,7 @@ import {
   countActiveVoters,
   generateVotingId,
   isCandidateBasedVotingParams,
-  MAX_VOTING_DURATION,
-  MIN_CANDIDATES_ELECTION,
-  MIN_VOTING_DURATION,
+  OPTIONS,
   persistVoting,
 } from './common'
 import {
@@ -28,11 +26,12 @@ function validateCandidateBasedVotingParams(votingParams: VotingParamsValidate):
     throw new Error('Voting has no candidates')
 
   const { candidates, startedBy, votingType } = votingParams
-  if (candidates.length < MIN_CANDIDATES_ELECTION && votingType === 'election')
-    throw new Error(`Election must have at least ${MIN_CANDIDATES_ELECTION} candidates`)
+  if (candidates.length < OPTIONS.minCandidatesElection && votingType === 'election')
+    throw new Error(`Election must have at least ${OPTIONS.minCandidatesElection} candidates`)
 
   const candidatesIds = candidates.map(({ candidateId }) => candidateId)
-  if (candidatesIds.includes(startedBy)) throw new Error('Voting cannot be started by a candidate')
+  if (!OPTIONS.canCandidateStartVoting && candidatesIds.includes(startedBy))
+    throw new Error('Voting cannot be started by a candidate')
 }
 
 export async function validateRegisterVoting(votingParams: VotingParamsValidate): Promise<void> {
@@ -40,8 +39,8 @@ export async function validateRegisterVoting(votingParams: VotingParamsValidate)
 
   if (endsAt < startsAt) throw new Error('Voting cannot end before it starts')
   const timeDiff = endsAt.getTime() - startsAt.getTime()
-  if (timeDiff < MIN_VOTING_DURATION) throw new Error('Voting duration is too short')
-  if (timeDiff > MAX_VOTING_DURATION) throw new Error('Voting duration is too long')
+  if (timeDiff < OPTIONS.minVotingDuration) throw new Error('Voting duration is too short')
+  if (timeDiff > OPTIONS.maxVotingDuration) throw new Error('Voting duration is too long')
   const votingVoters = [startedBy]
 
   if (isCandidateBasedVotingParams(votingParams)) {

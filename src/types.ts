@@ -15,7 +15,7 @@ export type UserInfo =
 
 export type EvidenceType = 'text' | 'image'
 
-export interface Evidence {
+export type Evidence = {
   type: EvidenceType
   data: string // the actual text or an image URL
 }
@@ -35,12 +35,12 @@ export type CandidateBasedVotingType = 'election' | 'judgment'
 export type OptionBasedVotingType = 'option'
 export type VotingType = CandidateBasedVotingType | OptionBasedVotingType
 
-export interface VoteChoiceCandidateBased {
+export type VoteChoiceCandidateBased = {
   candidateId: VoterId
   verdict: Verdict
 }
 
-export interface VoteChoiceOptionBased {
+export type VoteChoiceOptionBased = {
   value: string
 }
 
@@ -103,20 +103,20 @@ export type VotingDescription = {
 export type VoterStatus = 'active' | 'inactive'
 
 // Anyone can see how the voter voted but its user information isn't public
-export interface Voter {
+export type Voter = {
   voterId: VoterId
   userId: UserId
   alias?: string
   status: VoterStatus
 }
 
-export interface CandidateInfo {
+export type CandidateInfo = {
   candidateId: VoterId
   alias?: string
   speech?: string
 }
 
-interface VotingBase {
+type VotingBase = {
   votingId: VotingId
   votingDescription: VotingDescription
   votingType: VotingType
@@ -129,23 +129,23 @@ interface VotingBase {
   onlyOneSelected?: boolean
 }
 
-export interface CandidateBasedVoting extends VotingBase {
+export type CandidateBasedVoting = VotingBase & {
   candidates: CandidateInfo[]
 }
 
 export type Election = CandidateBasedVoting
 
-export interface Judgment extends CandidateBasedVoting {
+export type Judgment = CandidateBasedVoting & {
   evidences: Evidence[]
 }
 
-export interface OptionBasedVoting extends VotingBase {
+export type OptionBasedVoting = VotingBase & {
   options?: string[]
 }
 
 export type Voting = Election | Judgment | OptionBasedVoting
 
-export interface Vote {
+export type Vote = {
   voteId: VoteId
   votingId: VotingId
   voterId: VoterId
@@ -154,6 +154,18 @@ export interface Vote {
 
 export type VoterActive = {
   [voterId: VoterId]: boolean
+}
+
+/**
+ * OPTIONS
+ */
+
+export type Options = {
+  minVotingDuration: number
+  maxVotingDuration: number
+  minCandidatesElection: number
+  canVoterVoteForHimself: boolean
+  canCandidateStartVoting: boolean
 }
 
 /**
@@ -174,13 +186,14 @@ export type Callbacks = {
 
 export type Helpers = {
   getCurrentDate: () => Date
+  generateRandomUUID: () => string
 }
 
 /**
  * DATA
  */
 
-interface BasicData {
+type BasicData = {
   createdAt: Date
   updatedAt: Date
 }
@@ -197,7 +210,7 @@ export type VoteData = Vote & Omit<BasicData, 'updatedAt'>
  * PARAMS
  */
 
-interface VotingParamsBase {
+type VotingParamsBase = {
   votingDescription: VotingDescription
   votingType: VotingType
   startedBy: VoterId
@@ -206,28 +219,28 @@ interface VotingParamsBase {
   requiredParticipationPercentage?: number
 }
 
-interface CandidateBasedVotingParamsBase extends VotingParamsBase {
+type CandidateBasedVotingParamsBase = VotingParamsBase & {
   candidates: CandidateInfo[]
 }
 
-export interface ElectionParams extends CandidateBasedVotingParamsBase {
+export type ElectionParams = CandidateBasedVotingParamsBase & {
   onlyOneSelected: boolean
 }
 
-export interface JudgmentParams extends CandidateBasedVotingParamsBase {
+export type JudgmentParams = CandidateBasedVotingParamsBase & {
   evidences: Evidence[]
 }
 
 export type CandidateBasedVotingParams = ElectionParams | JudgmentParams
 
-export interface OptionBasedParams extends VotingParamsBase {
+export type OptionBasedParams = VotingParamsBase & {
   options?: string[]
 }
 
 export type VotingParams = CandidateBasedVotingParams | OptionBasedParams
 
-export type VotingParamsValidate = (CandidateBasedVotingParams | OptionBasedParams) & {
-  startsAt: Date
+export type VotingParamsValidate = VotingParams & {
+  startsAt: Date // make it required
 }
 
 export type VoteParams = Omit<Vote, 'voteId'>
@@ -261,31 +274,27 @@ export type RetrieveVotingSummaryRequest = {
  * RESPONSES
  */
 
-export type PersistResponse =
-  | {
-      inserts: number
-    }
-  | {
-      updates: number
-    }
+export type PersistResponseInsert = { inserts: number }
+export type PersistResponseUpdate = { updates: number }
+export type PersistResponse = PersistResponseInsert | PersistResponseUpdate
 
 export type RetrieveResponse<T> = {
   data: T | null
 }
 
-export interface RegisterVotingResponse {
+export type RegisterVotingResponse = {
   voting: VotingData
 }
 
-export interface RegisterVotersResponse {
+export type RegisterVotersResponse = {
   voters?: VoterData[]
 }
 
-export interface RegisterVoteResponse {
+export type RegisterVoteResponse = {
   vote: VoteData
 }
 
-export interface RetrieveVotingSummaryResponse {
+export type RetrieveVotingSummaryResponse = {
   voting: VotingData
   votingStats: VotingStats
   votingSummaryState: VotingSummaryState

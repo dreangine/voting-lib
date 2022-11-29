@@ -7,6 +7,7 @@ import { Callbacks, RegisterVotingRequest, RegisterVoteRequest, UserInfo } from 
 import { DEFAULT_CALLBACKS, generateVotingId } from '../src/common'
 import {
   checkCallbacks,
+  OPTIONS,
   registerVote,
   registerVoteByUserId,
   registerVoters,
@@ -27,6 +28,7 @@ chai.use(chaiPromised)
 
 // Setup
 const users: UserInfo[] = [{ userId: 'user1' }, { userId: 'user2', alias: 'someone' }]
+OPTIONS.minVotingDuration = 1000 * 60 * 60 * 12 // 12 hours
 
 beforeEach(async () => {
   // Reset callbacks

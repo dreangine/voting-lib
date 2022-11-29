@@ -3,13 +3,8 @@ import * as chai from 'chai'
 import * as spies from 'chai-spies'
 import * as chaiPromised from 'chai-as-promised'
 
-import {
-  DEFAULT_CALLBACKS,
-  isCandidateBasedVotingType,
-  MAX_VOTING_DURATION,
-  MIN_VOTING_DURATION,
-  setCallbacks,
-} from '../src/common'
+import { DEFAULT_CALLBACKS, isCandidateBasedVotingType } from '../src/common'
+import { OPTIONS, setCallbacks } from '../src/index'
 import { registerVoting, validateRegisterVoting } from '../src/voting'
 
 import {
@@ -28,6 +23,7 @@ chai.use(chaiPromised)
 beforeEach(async () => {
   // Reset callbacks
   setCallbacks(DEFAULT_CALLBACKS)
+  OPTIONS.canCandidateStartVoting = false
 })
 
 describe('Voting', () => {
@@ -153,7 +149,7 @@ describe('Voting', () => {
         startedBy: startedBy.voterId,
         candidates,
         startsAt: nowDate,
-        endsAt: new Date(nowDate.getTime() + MIN_VOTING_DURATION - 1),
+        endsAt: new Date(nowDate.getTime() + OPTIONS.minVotingDuration - 1),
       })
     ).to.be.rejectedWith('Voting duration is too short')
   })
@@ -168,7 +164,7 @@ describe('Voting', () => {
         startedBy: startedBy.voterId,
         candidates,
         startsAt: nowDate,
-        endsAt: new Date(nowDate.getTime() + MAX_VOTING_DURATION + 1),
+        endsAt: new Date(nowDate.getTime() + OPTIONS.maxVotingDuration + 1),
       })
     ).to.be.rejectedWith('Voting duration is too long')
   })
@@ -201,6 +197,37 @@ describe('Voting', () => {
         endsAt: tomorrowDate,
       })
     ).to.be.rejectedWith('Voting cannot be started by a candidate')
+  })
+
+  it('a voting can be started by a candidate', async () => {
+    OPTIONS.canCandidateStartVoting = true
+
+    const checkActiveVotersSpy = chai.spy(() =>
+      Promise.resolve({
+        ...allVotersIds.reduce((acc, voterId) => {
+          acc[voterId] = true
+          return acc
+        }, {}),
+      })
+    )
+
+    setCallbacks({
+      checkActiveVoters: checkActiveVotersSpy,
+    })
+
+    await expect(
+      validateRegisterVoting({
+        votingDescription: {
+          'en-US': 'Test election',
+        },
+        votingType: 'election',
+        startedBy: startedBy.voterId,
+        candidates: [{ candidateId: startedBy.voterId }, ...candidates],
+        startsAt: nowDate,
+        endsAt: tomorrowDate,
+      })
+    ).to.be.fulfilled
+    expect(checkActiveVotersSpy).to.have.been.called.once
   })
 
   it('candidate based voting without candidates (undefined)', async () => {

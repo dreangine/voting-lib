@@ -9,7 +9,7 @@ import {
   VotingSummaryState,
 } from '../src/types'
 
-export interface Scenario {
+export type Scenario = {
   description: string
   currentDate: Date
   voters: VoterData[]

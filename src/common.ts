@@ -24,6 +24,7 @@ import {
   OptionVotingData,
   VotingParams,
   CandidateBasedVotingParams,
+  Options,
 } from './types'
 
 // Defaults
@@ -42,6 +43,8 @@ const DEFAULT_STATS = Object.freeze({
 export const DEFAULT_MIN_VOTING_DURATION = 1000 * 60 * 5 // 5 minutes
 export const DEFAULT_MAX_VOTING_DURATION = 1000 * 60 * 60 * 24 * 7 // 1 week
 export const DEFAULT_MIN_CANDIDATES_ELECTION = 2
+export const DEFAULT_CAN_VOTER_VOTE_FOR_HIMSELF = false
+export const DEFAULT_CAN_CANDIDATE_START_VOTING = false
 export const DEFAULT_CALLBACKS: Callbacks = Object.freeze({
   persistVoting: () => Promise.reject(new Error('Not implemented: persistVoting')),
   persistVoters: () => Promise.reject(new Error('Not implemented: persistVoters')),
@@ -55,25 +58,24 @@ export const DEFAULT_CALLBACKS: Callbacks = Object.freeze({
 })
 export const DEFAULT_HELPERS: Helpers = Object.freeze({
   getCurrentDate: () => new Date(),
+  generateRandomUUID: () => randomUUID(),
 })
 
 // Setup
-export const MIN_VOTING_DURATION: number = +(
-  process.env.MIN_VOTING_DURATION ?? DEFAULT_MIN_VOTING_DURATION
-)
-export const MAX_VOTING_DURATION: number = +(
-  process.env.MAX_VOTING_DURATION ?? DEFAULT_MAX_VOTING_DURATION
-)
-export const MIN_CANDIDATES_ELECTION: number = +(
-  process.env.MIN_CANDIDATES_ELECTION ?? DEFAULT_MIN_CANDIDATES_ELECTION
-)
-const CALLBACKS: Callbacks = {
+export const OPTIONS: Options = Object.seal({
+  minVotingDuration: DEFAULT_MIN_VOTING_DURATION,
+  maxVotingDuration: DEFAULT_MAX_VOTING_DURATION,
+  minCandidatesElection: DEFAULT_MIN_CANDIDATES_ELECTION,
+  canVoterVoteForHimself: DEFAULT_CAN_VOTER_VOTE_FOR_HIMSELF,
+  canCandidateStartVoting: DEFAULT_CAN_CANDIDATE_START_VOTING,
+})
+const CALLBACKS: Callbacks = Object.seal({
   ...DEFAULT_CALLBACKS,
-}
+})
 
-const HELPERS: Helpers = {
+const HELPERS: Helpers = Object.seal({
   ...DEFAULT_HELPERS,
-}
+})
 
 export function isCandidateBasedVotingType(votingType: VotingType): boolean {
   return ['election', 'judgment'].includes(votingType)
@@ -212,16 +214,20 @@ export function setHelpers(newHelpers: Partial<Helpers>): void {
   Object.assign(HELPERS, newHelpers)
 }
 
+function generateRandomUUID(): string {
+  return HELPERS.generateRandomUUID()
+}
+
 export function generateVotingId(): VotingId {
-  return `voting-${randomUUID()}`
+  return `voting-${generateRandomUUID()}`
 }
 
 export function generateVoterId(): VoterId {
-  return `voter-${randomUUID()}`
+  return `voter-${generateRandomUUID()}`
 }
 
 export function generateVoteId(): VoteId {
-  return `vote-${randomUUID()}`
+  return `vote-${generateRandomUUID()}`
 }
 
 export function getDefaultStats(votingType: VotingType): CandidateStats {

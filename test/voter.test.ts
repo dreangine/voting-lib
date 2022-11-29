@@ -5,7 +5,8 @@ import * as chaiPromised from 'chai-as-promised'
 
 import { UserInfo } from '../src/types'
 
-import { DEFAULT_CALLBACKS, setCallbacks } from '../src/common'
+import { DEFAULT_CALLBACKS } from '../src/common'
+import { setCallbacks } from '../src/index'
 import { registerVoters } from '../src/voter'
 import { getUsers } from './common'
 

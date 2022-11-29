@@ -5,12 +5,8 @@ import * as chaiPromised from 'chai-as-promised'
 
 import { VoterData, VoterId, VotingId } from '../src/types'
 
-import {
-  DEFAULT_CALLBACKS,
-  generateVotingId,
-  isCandidateBasedVotingType,
-  setCallbacks,
-} from '../src/common'
+import { DEFAULT_CALLBACKS, generateVotingId, isCandidateBasedVotingType } from '../src/common'
+import { OPTIONS, setCallbacks } from '../src/index'
 import { registerVote, registerVoteByUserId, validateRegisterVote } from '../src/vote'
 
 import {
@@ -35,6 +31,7 @@ beforeEach(async () => {
   // Reset callbacks
   setCallbacks(DEFAULT_CALLBACKS)
   generatedVotingId = generateVotingId()
+  OPTIONS.canVoterVoteForHimself = false
 })
 
 describe('Vote', () => {
@@ -42,11 +39,11 @@ describe('Vote', () => {
     describe(`Voting type: ${votingType}`, () => {
       const verdict = votingType === 'election' ? 'elect' : 'guilty'
       describe('validateRegisterVote', () => {
-        if (isCandidateBasedVotingType(votingType))
-          it('cannot vote on yourself', async () => {
+        if (isCandidateBasedVotingType(votingType)) {
+          it('cannot vote for yourself', async () => {
             await expect(
               validateRegisterVote({
-                votingId: generateVotingId(),
+                votingId: generatedVotingId,
                 voterId: startedBy.voterId,
                 choices: [
                   {
@@ -55,8 +52,41 @@ describe('Vote', () => {
                   },
                 ],
               })
-            ).to.be.rejectedWith('Voter cannot vote on themselves')
+            ).to.be.rejectedWith('Voter cannot vote for themselves')
           })
+
+          it('can vote for yourself', async () => {
+            OPTIONS.canVoterVoteForHimself = true
+
+            const retrieveVotingSpy = chai.spy(() =>
+              Promise.resolve({
+                data: generateVotingDataOngoing(generatedVotingId, votingType),
+              })
+            )
+            const hasVotedSpy = chai.spy(() => Promise.resolve(false))
+            setCallbacks({
+              retrieveVoting: retrieveVotingSpy,
+              hasVoted: hasVotedSpy,
+            })
+
+            await expect(
+              validateRegisterVote({
+                votingId: generatedVotingId,
+                voterId: startedBy.voterId,
+                choices: [
+                  {
+                    candidateId: startedBy.voterId,
+                    verdict,
+                  },
+                ],
+              })
+            ).to.be.fulfilled
+            expect(retrieveVotingSpy).to.have.been.called.once
+            expect(retrieveVotingSpy).to.have.been.called.with(generatedVotingId)
+            expect(hasVotedSpy).to.have.been.called.once
+            expect(hasVotedSpy).to.have.been.called.with(startedBy.voterId, generatedVotingId)
+          })
+        }
       })
       describe('registerVote', () => {
         it('should add a vote', async () => {

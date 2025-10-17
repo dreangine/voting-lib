@@ -61,7 +61,7 @@ describe('Voting', () => {
                     ...allVotersIds.reduce((acc, candidate) => {
                       acc[candidate] = true
                       return acc
-                    }, {}),
+                    }, {} as Record<string, boolean>),
                   }
                 : { [startedBy.voterId]: true }
             )
@@ -110,7 +110,7 @@ describe('Voting', () => {
                 ...others.reduce((acc, { candidateId }) => {
                   acc[candidateId] = true
                   return acc
-                }, {}),
+                }, {} as Record<string, boolean>),
               })
             )
 
@@ -207,7 +207,7 @@ describe('Voting', () => {
         ...allVotersIds.reduce((acc, voterId) => {
           acc[voterId] = true
           return acc
-        }, {}),
+        }, {} as Record<string, boolean>),
       })
     )
 

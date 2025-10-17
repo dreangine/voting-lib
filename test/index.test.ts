@@ -105,7 +105,7 @@ describe('Common errors', () => {
               ...allVotersIds.reduce((acc, candidate) => {
                 acc[candidate] = true
                 return acc
-              }, {}),
+              }, {} as Record<string, boolean>),
             }),
         })
         await expect(registerVoting(request)).to.be.rejectedWith(new RegExp(errorType))

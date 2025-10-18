@@ -21,7 +21,10 @@ const candidates = otherVoters.map(({ voterId: candidateId, alias }) => ({ candi
 
 const votingResponse = await registerVoting({
   votingParams: {
-    votingDescription: 'Just a test',
+    votingDescription: {
+      'en-US': 'Who deserves a cookie?',
+      'pt-BR': 'Quem merece um biscoito?',
+    },
     votingType: 'election',
     startedBy,
     candidates,

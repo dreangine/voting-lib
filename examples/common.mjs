@@ -1,3 +1,4 @@
+import { DURATION } from '../dist/common.js'
 import { OPTIONS, setCallbacks } from '../dist/index.js'
 
 export const users = [
@@ -8,7 +9,7 @@ export const users = [
 
 const data = { voters: [], votings: [], votes: [] }
 
-OPTIONS.minVotingDuration = 1000 * 60 * 60 * 12 // 12 hours
+OPTIONS.minVotingDuration = DURATION.hour * 12 // 12 hours
 
 setCallbacks({
   persistVoters: async (voters) => {

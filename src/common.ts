@@ -27,6 +27,14 @@ import {
   Options,
 } from './types'
 
+export const DURATION = Object.freeze({
+  second: 1000,
+  minute: 1000 * 60,
+  hour: 1000 * 60 * 60,
+  day: 1000 * 60 * 60 * 24,
+  week: 1000 * 60 * 60 * 24 * 7,
+})
+
 // Defaults
 export const DEFAULT_CANDIDATE_STATS_ELECTION: CandidateStatsElection = Object.freeze({
   elect: 0,
@@ -40,8 +48,8 @@ const DEFAULT_STATS = Object.freeze({
   ['election']: DEFAULT_CANDIDATE_STATS_ELECTION,
   ['judgment']: DEFAULT_CANDIDATE_STATS_JUDGMENT,
 })
-export const DEFAULT_MIN_VOTING_DURATION = 1000 * 60 * 5 // 5 minutes
-export const DEFAULT_MAX_VOTING_DURATION = 1000 * 60 * 60 * 24 * 7 // 1 week
+export const DEFAULT_MIN_VOTING_DURATION = DURATION.minute * 5 // 5 minutes
+export const DEFAULT_MAX_VOTING_DURATION = DURATION.week // 1 week
 export const DEFAULT_MIN_CANDIDATES_ELECTION = 2
 export const DEFAULT_CAN_VOTER_VOTE_FOR_HIMSELF = false
 export const DEFAULT_CAN_CANDIDATE_START_VOTING = false

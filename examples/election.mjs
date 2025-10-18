@@ -10,7 +10,9 @@ import { users } from './common.mjs'
 const votersResponse = await registerVoters({
   users: users,
 })
-console.log('Voters:', votersResponse)
+console.group('Voters:')
+console.dir(votersResponse, { depth: null })
+console.groupEnd()
 
 const { voters } = votersResponse
 const [firstVoter, ...otherVoters] = voters
@@ -19,7 +21,10 @@ const candidates = otherVoters.map(({ voterId: candidateId, alias }) => ({ candi
 
 const votingResponse = await registerVoting({
   votingParams: {
-    votingDescription: 'Just a test',
+    votingDescription: {
+      'en-US': 'Who deserves a cookie?',
+      'pt-BR': 'Quem merece um biscoito?',
+    },
     votingType: 'election',
     startedBy,
     candidates,
@@ -32,7 +37,9 @@ const votingResponse = await registerVoting({
   },
 })
 const { voting: votingData } = votingResponse
-console.log('Voting:', votingResponse)
+console.group('Voting:')
+console.dir(votingResponse, { depth: null })
+console.groupEnd()
 
 const { votingId } = votingData
 
@@ -49,12 +56,16 @@ const voteResponse = await registerVote({
   },
 })
 
-console.log('Vote', voteResponse)
+console.group('Vote:')
+console.dir(voteResponse, { depth: null })
+console.groupEnd()
 
 const votingSummaryResponse = await retrieveVotingSummary({
   votingId,
 })
 
-console.log('Voting summary:', votingSummaryResponse)
+console.group('Voting Summary:')
+console.dir(votingSummaryResponse, { depth: null })
+console.groupEnd()
 
 console.log('Checking callbacks', await checkCallbacks())

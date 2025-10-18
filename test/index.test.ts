@@ -4,7 +4,7 @@ import * as chaiPromised from 'chai-as-promised'
 
 import { Callbacks, RegisterVotingRequest, RegisterVoteRequest, UserInfo } from '../src/types'
 
-import { DEFAULT_CALLBACKS, generateVotingId } from '../src/common'
+import { DEFAULT_CALLBACKS, DURATION, generateVotingId } from '../src/common'
 import {
   checkCallbacks,
   OPTIONS,
@@ -28,7 +28,7 @@ chai.use(chaiPromised)
 
 // Setup
 const users: UserInfo[] = [{ userId: 'user1' }, { userId: 'user2', alias: 'someone' }]
-OPTIONS.minVotingDuration = 1000 * 60 * 60 * 12 // 12 hours
+OPTIONS.minVotingDuration = DURATION.hour * 12 // 12 hours
 
 beforeEach(async () => {
   // Reset callbacks
@@ -105,7 +105,7 @@ describe('Common errors', () => {
               ...allVotersIds.reduce((acc, candidate) => {
                 acc[candidate] = true
                 return acc
-              }, {}),
+              }, {} as Record<string, boolean>),
             }),
         })
         await expect(registerVoting(request)).to.be.rejectedWith(new RegExp(errorType))

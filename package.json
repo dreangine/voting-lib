@@ -18,7 +18,8 @@
     "coverage": "nyc npm run test",
     "prepublish": "npm run build",
     "examples:election": "npm run build && node examples/election.mjs",
-    "examples:judgment": "npm run build && node examples/judgment.mjs"
+    "examples:judgment": "npm run build && node examples/judgment.mjs",
+    "examples:option": "npm run build && node examples/option.mjs"
   },
   "engines": {
     "node": ">=14.17.0"

@@ -8,7 +8,7 @@ A library to manage voting systems, having its own voting rules and options whil
 - **Flexibility**: to allow the voter to decide how their vote will be composed and to support multiple voting methods, including:
   - **Election**: each person votes for one candidate and the elected candidate is the one with the most votes
   - **Judgment**: each person votes for one or more candidates and the guilty ones are the ones with more votes for guilty than for innocent
-  - **Option**: each person votes for one or more options (either from a predefined list or open suggestions) and the selected option is the one with the most votes
+  - **Option**: each person votes for one or more options from a predefined list and the selected option is the one with the most votes
 
 ## Installation
 

@@ -25,6 +25,7 @@ import {
   VotingParams,
   CandidateBasedVotingParams,
   Options,
+  OptionBasedVotingParams,
 } from './types'
 
 export const DURATION = Object.freeze({
@@ -105,6 +106,12 @@ export function isCandidateBasedVotingParams(
   votingParams: VotingParams
 ): votingParams is CandidateBasedVotingParams {
   return isCandidateBasedVotingType(votingParams.votingType)
+}
+
+export function isOptionBasedVotingParams(
+  votingParams: VotingParams
+): votingParams is OptionBasedVotingParams {
+  return isOptionBasedVotingType(votingParams.votingType)
 }
 
 export function isCandidateBasedVoteChoice(

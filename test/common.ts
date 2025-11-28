@@ -99,7 +99,7 @@ export function generateVotingDataOngoing(votingId: VotingId, votingType: Voting
     updatedAt: yesterdayDate,
     votingId,
     votingType,
-    ...(votingType === 'election' ? { onlyOneSelected: true } : { evidences: [] }),
+    ...getExtraVotingDataParams(votingType),
   }
 }
 
@@ -118,6 +118,23 @@ export function generateVotingDataEnded(
     updatedAt: yesterdayDate,
     votingId,
     votingType,
-    ...(votingType === 'election' ? { onlyOneSelected } : { evidences: [] }),
+    ...getExtraVotingDataParams(votingType, onlyOneSelected),
+  }
+}
+
+function getExtraVotingDataParams(
+  votingType: VotingType,
+  onlyOneSelected = true
+): Partial<VotingData> {
+  if (votingType === 'election') {
+    return {
+      onlyOneSelected,
+    }
+  } else if (votingType === 'judgment') {
+    return {
+      evidences: [],
+    }
+  } else {
+    return {}
   }
 }

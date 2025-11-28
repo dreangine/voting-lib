@@ -42,6 +42,7 @@ describe('Voting', () => {
                 candidates: [candidates[0]],
                 startsAt: nowDate,
                 endsAt: tomorrowDate,
+                onlyOneSelected: true,
               })
             ).to.be.rejectedWith(/Election must have at least \d+ candidates/)
           })
@@ -81,9 +82,12 @@ describe('Voting', () => {
               },
               votingType,
               startedBy: startedBy.voterId,
-              ...(isCandidateBasedVotingType(votingType) && { candidates }),
               endsAt: tomorrowDate,
-              ...(votingType === 'election' ? { onlyOneSelected: 1 } : { evidences: [] }),
+              ...(votingType === 'election'
+                ? { candidates, onlyOneSelected: true }
+                : votingType === 'judgment'
+                ? { candidates, evidences: [] }
+                : { options: [] }),
             },
           })
           const { voting: responseVoting } = response
@@ -128,7 +132,7 @@ describe('Voting', () => {
                   startedBy: startedBy.voterId,
                   candidates,
                   endsAt: tomorrowDate,
-                  ...(votingType === 'election' ? { onlyOneSelected: 1 } : { evidences: [] }),
+                  ...(votingType === 'election' ? { onlyOneSelected: true } : { evidences: [] }),
                 },
               })
             ).to.be.rejectedWith(
@@ -150,6 +154,7 @@ describe('Voting', () => {
         candidates,
         startsAt: nowDate,
         endsAt: new Date(nowDate.getTime() + OPTIONS.minVotingDuration - 1),
+        onlyOneSelected: true,
       })
     ).to.be.rejectedWith('Voting duration is too short')
   })
@@ -165,6 +170,7 @@ describe('Voting', () => {
         candidates,
         startsAt: nowDate,
         endsAt: new Date(nowDate.getTime() + OPTIONS.maxVotingDuration + 1),
+        onlyOneSelected: true,
       })
     ).to.be.rejectedWith('Voting duration is too long')
   })
@@ -180,6 +186,7 @@ describe('Voting', () => {
         candidates,
         startsAt: tomorrowDate,
         endsAt: new Date(tomorrowDate.getTime() - 1),
+        onlyOneSelected: true,
       })
     ).to.be.rejectedWith(`Voting cannot end before it starts`)
   })
@@ -195,6 +202,7 @@ describe('Voting', () => {
         candidates: [{ candidateId: startedBy.voterId }, ...candidates],
         startsAt: nowDate,
         endsAt: tomorrowDate,
+        onlyOneSelected: true,
       })
     ).to.be.rejectedWith('Voting cannot be started by a candidate')
   })
@@ -225,6 +233,7 @@ describe('Voting', () => {
         candidates: [{ candidateId: startedBy.voterId }, ...candidates],
         startsAt: nowDate,
         endsAt: tomorrowDate,
+        onlyOneSelected: true,
       })
     ).to.be.fulfilled
     expect(checkActiveVotersSpy).to.have.been.called.once
@@ -232,6 +241,7 @@ describe('Voting', () => {
 
   it('candidate based voting without candidates (undefined)', async () => {
     await expect(
+      // @ts-expect-error testing wrong argument type
       validateRegisterVoting({
         votingDescription: {
           'en-US': 'Test election',
@@ -255,6 +265,7 @@ describe('Voting', () => {
         startsAt: nowDate,
         endsAt: tomorrowDate,
         candidates: [],
+        onlyOneSelected: true,
       })
     ).to.be.rejectedWith('Voting has no candidates')
   })

@@ -233,11 +233,11 @@ export type JudgmentParams = CandidateBasedVotingParamsBase & {
 
 export type CandidateBasedVotingParams = ElectionParams | JudgmentParams
 
-export type OptionBasedParams = VotingParamsBase & {
-  options?: string[]
+export type OptionBasedVotingParams = VotingParamsBase & {
+  options: string[]
 }
 
-export type VotingParams = CandidateBasedVotingParams | OptionBasedParams
+export type VotingParams = CandidateBasedVotingParams | OptionBasedVotingParams
 
 export type VotingParamsValidate = VotingParams & {
   startsAt: Date // make it required

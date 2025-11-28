@@ -108,12 +108,6 @@ export function isCandidateBasedVotingParams(
   return isCandidateBasedVotingType(votingParams.votingType)
 }
 
-export function isOptionBasedVotingParams(
-  votingParams: VotingParams
-): votingParams is OptionBasedVotingParams {
-  return isOptionBasedVotingType(votingParams.votingType)
-}
-
 export function isCandidateBasedVoteChoice(
   voteChoice: VoteChoice
 ): voteChoice is VoteChoiceCandidateBased {

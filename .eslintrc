@@ -9,7 +9,7 @@
     "eqeqeq": "error",
     "no-undef": "off",
     "no-unused-vars": "off",
-    "prettier/prettier": ["error", { "semi": false }],
+    "prettier/prettier": "error",
     "@typescript-eslint/explicit-module-boundary-types": "warn",
     "@typescript-eslint/explicit-function-return-type": "warn",
     "@typescript-eslint/naming-convention": "warn",

@@ -25,7 +25,6 @@ import {
   VotingParams,
   CandidateBasedVotingParams,
   Options,
-  OptionBasedVotingParams,
 } from './types'
 
 export const DURATION = Object.freeze({

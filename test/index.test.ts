@@ -96,7 +96,7 @@ describe('Common errors', () => {
             startedBy: startedBy.voterId,
             candidates,
             endsAt: tomorrowDate,
-            onlyOneSelected: true,
+            isSingleSelection: true,
           },
         }
         await expect(registerVoting(request)).to.be.rejectedWith(new RegExp(errorType))

@@ -4,7 +4,7 @@ import { RegisterVotersRequest, RegisterVotersResponse, VoterData } from './type
 export async function registerVoters(
   request: RegisterVotersRequest
 ): Promise<RegisterVotersResponse> {
-  const { users, omitReturnedData } = request
+  const { users, shouldOmitReturnedData } = request
   const now = new Date()
   const voters = await Promise.all(
     users.map(
@@ -20,5 +20,5 @@ export async function registerVoters(
     )
   )
   await persistVoters(voters)
-  return { voters: omitReturnedData ? undefined : voters }
+  return { voters: shouldOmitReturnedData ? undefined : voters }
 }

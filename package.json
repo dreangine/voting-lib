@@ -11,9 +11,10 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "prebuild": "rm -rf dist",
     "build": "tsc",
     "start": "tsc && node dist/index.js",
-    "lint": "eslint src/**/*.ts",
+    "lint": "eslint src/**/*.ts test/**/*.ts examples/**/*.mjs",
     "test": "mocha -r ts-node/register 'test/**/*.test.ts'",
     "coverage": "nyc npm run test",
     "prepublish": "npm run build",

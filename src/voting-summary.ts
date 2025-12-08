@@ -108,7 +108,7 @@ function generatePartialVerdicts(
   votingStats: VotingStats,
   requiredParticipation: number,
   requiredVotes: number,
-  onlyOneSelected: boolean
+  isSingleSelection: boolean
 ): PartialVerdict[] {
   const hasEnoughVotes =
     !requiredParticipation || calculateParticipation(votingStats) >= requiredParticipation
@@ -123,7 +123,8 @@ function generatePartialVerdicts(
         const { elect, pass } = stats as CandidateStatsElection
         if (!requiredVotes || elect >= requiredVotes) {
           if (elect > pass) {
-            if (onlyOneSelected) return { statsKey, verdict: 'pending elected', electVotes: elect }
+            if (isSingleSelection)
+              return { statsKey, verdict: 'pending elected', electVotes: elect }
             return { statsKey, verdict: 'elected' }
           }
         }
@@ -171,13 +172,13 @@ function processVotingStats(
   votingStats: VotingStats,
   requiredParticipation: number,
   requiredVotes: number,
-  onlyOneSelected = false
+  isSingleSelection = false
 ): FinalVerdictStats {
   const verdicts = generatePartialVerdicts(
     votingStats,
     requiredParticipation,
     requiredVotes,
-    onlyOneSelected
+    isSingleSelection
   )
   const electedId = findElectedId(verdicts)
   const finalVerdict = generateFinalVerdict(verdicts, electedId)
@@ -201,7 +202,7 @@ async function processCandidatesVoting(
       votingStats as VotingStats,
       requiredParticipation,
       requiredVotes,
-      (voting as Election).onlyOneSelected
+      (voting as Election).isSingleSelection
     )
 
   return {
@@ -230,7 +231,7 @@ async function processOptionsVoting(
   const {
     requiredParticipationPercentage = 0,
     requiredVotesPercentage = 0,
-    onlyOneSelected = false,
+    isSingleSelection = false,
     totalVoters,
   } = voting
   const requiredParticipation = Math.ceil(requiredParticipationPercentage * totalVoters)
@@ -238,7 +239,7 @@ async function processOptionsVoting(
   const votingStats = generateVotesStats(voting, votes) as OptionsStats
   const finalVerdict =
     isVotingFinal &&
-    processVotingStats(votingStats, requiredParticipation, requiredVotes, onlyOneSelected)
+    processVotingStats(votingStats, requiredParticipation, requiredVotes, isSingleSelection)
   return {
     voting,
     votingStats,

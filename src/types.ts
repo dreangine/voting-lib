@@ -126,7 +126,7 @@ type VotingBase = {
   totalVoters: number
   requiredParticipationPercentage?: number
   requiredVotesPercentage?: number
-  onlyOneSelected?: boolean
+  isSingleSelection?: boolean
 }
 
 export type CandidateBasedVoting = VotingBase & {
@@ -224,7 +224,7 @@ type CandidateBasedVotingParamsBase = VotingParamsBase & {
 }
 
 export type ElectionParams = CandidateBasedVotingParamsBase & {
-  onlyOneSelected: boolean
+  isSingleSelection: boolean
 }
 
 export type JudgmentParams = CandidateBasedVotingParamsBase & {
@@ -255,7 +255,7 @@ export type RegisterVotingRequest = {
 
 export type RegisterVotersRequest = {
   users: UserInfo[]
-  omitReturnedData?: boolean
+  shouldOmitReturnedData?: boolean
 }
 
 export type RegisterVoteRequest = {

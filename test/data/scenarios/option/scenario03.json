@@ -49,7 +49,7 @@
     "totalVoters": 6,
     "requiredParticipationPercentage": 0.5,
     "requiredVotesPercentage": 0.5,
-    "onlyOneSelected": true
+    "isSingleSelection": true
   },
   "votes": [
     {

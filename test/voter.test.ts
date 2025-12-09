@@ -60,7 +60,7 @@ describe('Voter', () => {
 
     const response = await registerVoters({
       users,
-      omitReturnedData: true,
+      shouldOmitReturnedData: true,
     })
 
     expect(persistVotersSpy).to.have.been.called.once

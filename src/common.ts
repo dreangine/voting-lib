@@ -25,7 +25,6 @@ import {
   VotingParams,
   CandidateBasedVotingParams,
   Options,
-  OptionBasedVotingParams,
 } from './types'
 
 export const DURATION = Object.freeze({
@@ -37,6 +36,14 @@ export const DURATION = Object.freeze({
 })
 
 // Defaults
+export const DEFAULT_OPTIONS: Options = Object.freeze({
+  minVotingDuration: DURATION.minute * 5, // 5 minutes
+  maxVotingDuration: DURATION.week, // 1 week
+  minCandidatesElection: 2,
+  canVoterVoteForHimself: false,
+  canCandidateStartVoting: false,
+})
+
 export const DEFAULT_CANDIDATE_STATS_ELECTION: CandidateStatsElection = Object.freeze({
   elect: 0,
   pass: 0,
@@ -49,11 +56,6 @@ const DEFAULT_STATS = Object.freeze({
   ['election']: DEFAULT_CANDIDATE_STATS_ELECTION,
   ['judgment']: DEFAULT_CANDIDATE_STATS_JUDGMENT,
 })
-export const DEFAULT_MIN_VOTING_DURATION = DURATION.minute * 5 // 5 minutes
-export const DEFAULT_MAX_VOTING_DURATION = DURATION.week // 1 week
-export const DEFAULT_MIN_CANDIDATES_ELECTION = 2
-export const DEFAULT_CAN_VOTER_VOTE_FOR_HIMSELF = false
-export const DEFAULT_CAN_CANDIDATE_START_VOTING = false
 export const DEFAULT_CALLBACKS: Callbacks = Object.freeze({
   persistVoting: () => Promise.reject(new Error('Not implemented: persistVoting')),
   persistVoters: () => Promise.reject(new Error('Not implemented: persistVoters')),
@@ -72,11 +74,7 @@ export const DEFAULT_HELPERS: Helpers = Object.freeze({
 
 // Setup
 export const OPTIONS: Options = Object.seal({
-  minVotingDuration: DEFAULT_MIN_VOTING_DURATION,
-  maxVotingDuration: DEFAULT_MAX_VOTING_DURATION,
-  minCandidatesElection: DEFAULT_MIN_CANDIDATES_ELECTION,
-  canVoterVoteForHimself: DEFAULT_CAN_VOTER_VOTE_FOR_HIMSELF,
-  canCandidateStartVoting: DEFAULT_CAN_CANDIDATE_START_VOTING,
+  ...DEFAULT_OPTIONS,
 })
 const CALLBACKS: Callbacks = Object.seal({
   ...DEFAULT_CALLBACKS,

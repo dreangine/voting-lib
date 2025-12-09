@@ -20,6 +20,7 @@ import {
   allVotersIds,
   candidates,
   generateVotingDataOngoing,
+  getUsers,
   startedBy,
   tomorrowDate,
 } from './common'
@@ -27,7 +28,7 @@ import {
 chai.use(chaiPromised)
 
 // Setup
-const users: UserInfo[] = [{ userId: 'user1' }, { userId: 'user2', alias: 'someone' }]
+const users: UserInfo[] = getUsers()
 OPTIONS.minVotingDuration = DURATION.hour * 12 // 12 hours
 
 beforeEach(async () => {
@@ -95,7 +96,7 @@ describe('Common errors', () => {
             startedBy: startedBy.voterId,
             candidates,
             endsAt: tomorrowDate,
-            onlyOneSelected: true,
+            isSingleSelection: true,
           },
         }
         await expect(registerVoting(request)).to.be.rejectedWith(new RegExp(errorType))

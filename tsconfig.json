@@ -11,10 +11,10 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "lib": ["es2020", "dom"],
-    "baseUrl": "./src",
     "paths": {
       "*": ["./node_modules/*"]
     }
   },
-  "exclude": ["test/**/*", "dist/**/*", "examples/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["dist/**/*", "examples/**/*"]
 }

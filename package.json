@@ -11,9 +11,10 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "prebuild": "rimraf dist",
     "build": "tsc",
     "start": "tsc && node dist/index.js",
-    "lint": "eslint src/**/*.ts",
+    "lint": "eslint src/**/*.ts test/**/*.ts examples/**/*.mjs",
     "test": "mocha -r ts-node/register 'test/**/*.test.ts'",
     "coverage": "nyc npm run test",
     "prepublish": "npm run build",
@@ -59,6 +60,7 @@
     "mocha": "11.7.4",
     "nyc": "15.1.0",
     "prettier": "2.5.1",
+    "rimraf": "5.0.9",
     "ts-node": "10.4.0",
     "typescript": "4.5.4"
   }

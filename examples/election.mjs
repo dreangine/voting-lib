@@ -33,7 +33,7 @@ const votingResponse = await registerVoting({
       tomorrow.setDate(tomorrow.getDate() + 1)
       return tomorrow
     })(),
-    onlyOneSelected: true,
+    isSingleSelection: true,
   },
 })
 const { voting: votingData } = votingResponse

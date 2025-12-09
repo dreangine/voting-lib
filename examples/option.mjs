@@ -15,7 +15,7 @@ console.dir(votersResponse, { depth: null })
 console.groupEnd()
 
 const { voters } = votersResponse
-const [firstVoter, ...otherVoters] = voters
+const [firstVoter] = voters
 const { voterId: startedBy } = firstVoter
 
 const votingResponse = await registerVoting({
@@ -32,7 +32,7 @@ const votingResponse = await registerVoting({
       return tomorrow
     })(),
     options: ['Alpha', 'Beta', 'Gamma', 'Delta'],
-    onlyOneSelected: true,
+    isSingleSelection: true,
   },
 })
 const { voting: votingData } = votingResponse

@@ -128,7 +128,7 @@ function getExtraVotingDataParams(
 ): Partial<VotingData> {
   if (votingType === 'election') {
     return {
-      isSingleSelection: isSingleSelection,
+      isSingleSelection,
     }
   } else if (votingType === 'judgment') {
     return {

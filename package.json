@@ -11,7 +11,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "prebuild": "rm -rf dist",
+    "prebuild": "rimraf dist",
     "build": "tsc",
     "start": "tsc && node dist/index.js",
     "lint": "eslint src/**/*.ts test/**/*.ts examples/**/*.mjs",
@@ -60,6 +60,7 @@
     "mocha": "11.7.4",
     "nyc": "15.1.0",
     "prettier": "2.5.1",
+    "rimraf": "^5.0.9",
     "ts-node": "10.4.0",
     "typescript": "4.5.4"
   }

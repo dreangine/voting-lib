@@ -44,3 +44,6 @@ node_modules/
 dist
 
 .vscode
+
+# Claude Code agent worktrees — machine-local scratch checkouts
+.claude/worktrees/
